@@ -1,58 +1,175 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PojokTV.com — Portal Berita JAMstack (Next.js + Supabase)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Portal berita modern yang dibangun dengan Next.js (Pages Router) dan Supabase sebagai backend cloud.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Frontend:** Next.js 15 (React), Tailwind CSS
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Supabase Auth
+- **Storage:** Supabase Storage (untuk gambar berita dan iklan)
+- **Editor:** React-Quill (WYSIWYG)
+- **Deploy:** Vercel
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Setup Cepat
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 1. Clone & Install
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### 2. Konfigurasi Supabase
 
-## Contributing
+Edit file `.env.local` dan isi dengan nilai dari Supabase Dashboard Anda:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
 
-## Code of Conduct
+> Dapatkan nilai-nilai ini di: **Supabase Dashboard → Project → Settings → API**
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 3. Setup Database Supabase
 
-## Security Vulnerabilities
+Buat tabel-tabel berikut di Supabase SQL Editor:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```sql
+-- TABEL POSTS (Berita)
+create table posts (
+  id uuid default gen_random_uuid() primary key,
+  title text not null,
+  slug text unique not null,
+  category text,
+  content text,
+  image text,
+  author text,
+  status text default 'Published',
+  views integer default 0,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
 
-## License
+-- TABEL CATEGORIES (Rubrik)
+create table categories (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  slug text unique not null,
+  status text default 'Aktif',
+  created_at timestamp with time zone default now()
+);
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+-- TABEL VIDEOS
+create table videos (
+  id uuid default gen_random_uuid() primary key,
+  judul text not null,
+  youtube_id text not null,
+  deskripsi text,
+  created_at timestamp with time zone default now()
+);
+
+-- TABEL ADS (Iklan)
+create table ads (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  position text not null,
+  image text,
+  link text,
+  is_active boolean default true,
+  created_at timestamp with time zone default now()
+);
+```
+
+### 4. Row Level Security (RLS) Supabase
+
+Di Supabase Dashboard → Authentication → Policies, aktifkan RLS dan tambahkan policy:
+
+**Untuk table `posts`, `categories`, `videos`, `ads` (SELECT publik):**
+```sql
+-- Policy: Allow public read
+create policy "Allow public read" on posts
+  for select using (true);
+```
+
+**Untuk INSERT/UPDATE/DELETE, hanya user terautentikasi:**
+```sql
+create policy "Allow authenticated write" on posts
+  for all using (auth.role() = 'authenticated');
+```
+
+### 5. Setup Supabase Storage
+
+Di Supabase Dashboard → Storage, buat bucket bernama `media` dengan akses **Public**.
+
+### 6. Tambahkan User Admin
+
+Di Supabase Dashboard → Authentication → Users → Add User, tambahkan email dan password admin.
+
+### 7. Jalankan Development Server
+
+```bash
+npm run dev
+```
+
+Buka: http://localhost:3000
+
+---
+
+## Struktur Folder
+
+```
+pojoktv.com/
+├── src/
+│   ├── components/         # Navbar, Footer
+│   ├── layouts/            # PublicLayout, AdminLayout
+│   ├── lib/                # supabaseClient.js
+│   ├── pages/
+│   │   ├── index.jsx       # Halaman Utama
+│   │   ├── login.jsx       # Halaman Login
+│   │   ├── berita/
+│   │   │   └── [slug].jsx  # Detail Artikel
+│   │   ├── kategori/
+│   │   │   └── [slug].jsx  # Halaman Kategori
+│   │   └── admin/
+│   │       ├── dashboard.jsx
+│   │       ├── posts/
+│   │       │   ├── index.jsx   # Daftar Berita
+│   │       │   ├── create.jsx  # Tulis Berita Baru
+│   │       │   └── edit/[id].jsx
+│   │       ├── categories.jsx
+│   │       ├── ads.jsx
+│   │       └── videos.jsx
+│   └── styles/
+│       └── globals.css     # Design system utama
+├── public/                 # Aset statis
+├── .env.local              # Variabel environment (jangan di-commit!)
+├── next.config.js
+├── tailwind.config.js
+└── vercel.json             # Konfigurasi Vercel
+```
+
+---
+
+## Deploy ke Vercel
+
+1. Push ke GitHub repository
+2. Hubungkan di **vercel.com** → Import Project
+3. Isi Environment Variables di Vercel Dashboard:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+4. Deploy!
+
+---
+
+## Akses Admin
+
+- URL: `/login`
+- Login dengan email dan password yang dibuat di Supabase Authentication
+
+---
+
+*PojokTV.com — Tajam, Terpercaya, Terkini.*
