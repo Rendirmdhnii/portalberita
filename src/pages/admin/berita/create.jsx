@@ -7,7 +7,10 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 
 // Safely load ReactQuill client-side only
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill'), { 
+  ssr: false, 
+  loading: () => <p className="text-gray-500 font-bold p-4">Memuat editor teks...</p> 
+});
 import 'react-quill/dist/quill.snow.css';
 
 export default function BeritaCreate() {

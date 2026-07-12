@@ -36,9 +36,50 @@ export default function VideoIndex() {
   }, []);
 
   const extractYoutubeId = (url) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|live\/|shorts\/)|youtu\.be\/).+$/;
+    if (!youtubeRegex.test(url)) return null;
+
+    try {
+      const cleanedUrl = url.trim();
+
+      // Case 1: youtu.be/<id>
+      if (cleanedUrl.includes('youtu.be/')) {
+        const parts = cleanedUrl.split('youtu.be/');
+        if (parts[1]) {
+          const id = parts[1].split(/[?#&]/)[0];
+          if (id.length === 11) return id;
+        }
+      }
+
+      // Case 2: youtube.com/live/<id>
+      if (cleanedUrl.includes('/live/')) {
+        const parts = cleanedUrl.split('/live/');
+        if (parts[1]) {
+          const id = parts[1].split(/[?#&]/)[0];
+          if (id.length === 11) return id;
+        }
+      }
+
+      // Case 3: youtube.com/shorts/<id>
+      if (cleanedUrl.includes('/shorts/')) {
+        const parts = cleanedUrl.split('/shorts/');
+        if (parts[1]) {
+          const id = parts[1].split(/[?#&]/)[0];
+          if (id.length === 11) return id;
+        }
+      }
+
+      // Case 4: watch?v=<id> or embed/<id>
+      const regExp = /^.*(v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = cleanedUrl.match(regExp);
+      if (match && match[2] && match[2].length === 11) {
+        return match[2];
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
   };
 
   const handleSubmit = async (e) => {
