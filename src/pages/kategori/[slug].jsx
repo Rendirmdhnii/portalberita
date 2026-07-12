@@ -417,16 +417,17 @@ export default function KategoriPage() {
             </div>
           </div>
 
-          <div className="footer-bottom border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-            <div className="footer-copyright text-center md:text-left">
+          {/* Footer Paling Bawah */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 py-6 mt-8 border-t border-gray-800 text-sm text-gray-400">
+            <div className="footer-copyright text-center md:text-left text-xs text-slate-500">
               &copy; 2026 pojoktv.com. Jaringan Berita Nasional Terpercaya. Hak Cipta Dilindungi Undang-Undang.
             </div>
-            <div className="footer-bottom-links flex flex-wrap justify-center gap-4">
-              <Link href="/tentang-kami" className="hover:text-slate-350">Tentang Kami</Link>
-              <Link href="/pedoman-media" className="hover:text-slate-350">Pedoman Media Siber</Link>
-              <Link href="/kebijakan-privasi" className="hover:text-slate-350">Kebijakan Privasi</Link>
-              <Link href="/ketentuan-layanan" className="hover:text-slate-350">Ketentuan Layanan</Link>
-              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold">Login Admin</Link>
+            <div className="flex flex-wrap justify-center md:justify-end items-center gap-4 md:gap-6">
+              <Link href="/tentang-kami" className="hover:text-white transition-colors duration-200">Tentang Kami</Link>
+              <Link href="/pedoman-media" className="hover:text-white transition-colors duration-200">Pedoman Media Siber</Link>
+              <Link href="/kebijakan-privasi" className="hover:text-white transition-colors duration-200">Kebijakan Privasi</Link>
+              <Link href="/ketentuan-layanan" className="hover:text-white transition-colors duration-200">Ketentuan Layanan</Link>
+              <Link href="/admin/login" className="hover:text-white transition-colors duration-200">Login</Link>
             </div>
           </div>
         </div>
