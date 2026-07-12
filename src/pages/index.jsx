@@ -2,164 +2,7 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import AdSlot from '@/components/AdSlot';
-
-// Dummy data for Berita, Video, etc. from index.html/style.css markup
-const DUMMY_CATEGORIES = [
-  { id: 1, name: 'Berita Utama', slug: 'utama' },
-  { id: 2, name: 'Kriminal', slug: 'kriminal' },
-  { id: 3, name: 'Politik', slug: 'politik' },
-  { id: 4, name: 'Dunia', slug: 'dunia' },
-  { id: 5, name: 'Otomotif', slug: 'otomotif' },
-  { id: 6, name: 'Olahraga', slug: 'olahraga' },
-  { id: 7, name: 'Hiburan', slug: 'hiburan' },
-  { id: 8, name: 'Pojok Video', slug: 'video' }
-];
-
-const DUMMY_BREAKING_NEWS = [
-  { id: 1, title: 'Gunung Merapi Kembali Muntahkan Awan Panas Guguran Sejauh 1,5 Kilometer ke Arah Barat Daya. Masyarakat Diminta Waspada.' },
-  { id: 2, title: 'KPK Gelar Operasi Tangkap Tangan di Wilayah Jabodetabek, Lima Orang Pejabat Daerah Resmi Diamankan.' },
-  { id: 3, title: 'Nilai Tukar Rupiah Terus Menguat Terhadap Dolar AS Pagi Ini Menembus Rp15.200 per Dolar.' },
-  { id: 4, title: 'Persiapan Laga Semifinal Piala Asia U-23: Timnas Indonesia Bersiap Hadapi Arab Saudi Malam Ini.' }
-];
-
-const DUMMY_POSTS = [
-  {
-    id: 1,
-    title: 'Rizza Ali Faizin Pimpin DPC PKB Sidoarjo Periode 2026-2031, Targetkan 18 Kursi di Pileg 2029',
-    slug: 'rizza-ali-faizin-pimpin-dpc-pkb-sidoarjo-periode-2026-2031',
-    category: 'Politik',
-    image: 'gusrizal.jpeg',
-    author: 'Redaksi PojokTV',
-    time: '10 Menit yang Lalu',
-    views: 1240
-  },
-  {
-    id: 2,
-    title: 'Sindikat Curanmor Mewah Lintas Provinsi Diringkus Polisi di Surabaya',
-    slug: 'sindikat-curanmor-mewah-lintas-provinsi-diringkus-polisi',
-    category: 'Kriminal',
-    type: 'svg_car',
-    time: '35 Menit Lalu',
-    views: 890
-  },
-  {
-    id: 3,
-    title: 'KTT Perubahan Iklim PBB Resmi Dibuka, 120 Negara Bahas Emisi',
-    slug: 'ktt-perubahan-iklim-pbb-resmi-dibuka-120-negara-bahas-emisi',
-    category: 'Dunia',
-    type: 'svg_earth',
-    time: '1 Jam Lalu',
-    views: 760
-  },
-  {
-    id: 4,
-    title: 'Review Lengkap SUV Listrik Nasional Dengan Jarak Tempuh Ekstra Jauh',
-    slug: 'review-lengkap-suv-listrik-nasional-jarak-tempuh-ekstra-jauh',
-    category: 'Otomotif',
-    type: 'svg_auto',
-    time: '2 Jam Lalu',
-    views: 450
-  },
-  {
-    id: 5,
-    title: 'Pemerintah Resmikan Proyek Infrastruktur Tol Baru Penghubung Jatim-Jateng',
-    slug: 'pemerintah-resmikan-proyek-infrastruktur-tol-baru-penghubung',
-    category: 'Nasional',
-    type: 'svg_highway',
-    time: '3 Jam Lalu',
-    views: 610
-  }
-];
-
-const DUMMY_KRIMINAL_NEWS = [
-  {
-    id: 1,
-    title: 'Polda Jatim Ringkus Bandar Judi Online Terbesar Lintas Negara di Surabaya',
-    slug: 'polda-jatim-ringkus-bandar-judi-online-terbesar-lintas-negara',
-    category: 'Kriminal',
-    type: 'svg_crime_1',
-    time: '1 Jam Lalu'
-  },
-  {
-    id: 2,
-    title: 'Polisi Telusuri Aliran Dana Korban Penipuan Berkedok Investasi Emas',
-    slug: 'polisi-telusuri-aliran-dana-korban-penipuan-berkedok-investasi-emas',
-    category: 'Kriminal',
-    type: 'svg_crime_2',
-    time: '3 Jam Lalu'
-  },
-  {
-    id: 3,
-    title: 'Aksi Curanmor Bersenjata Tajam di Waru Berhasil Digagalkan Warga',
-    slug: 'aksi-curanmor-bersenjata-tajam-di-waru-berhasil-digagalkan-warga',
-    category: 'Kriminal',
-    type: 'svg_crime_3',
-    time: '5 Jam Lalu'
-  },
-  {
-    id: 4,
-    title: 'Kejaksaan Negeri Sidoarjo Tahan Tersangka Penggelapan Aset Daerah',
-    slug: 'kejaksaan-negeri-sidoarjo-tahan-tersangka-penggelapan-aset-daerah',
-    category: 'Kriminal',
-    type: 'svg_crime_4',
-    time: '8 Jam Lalu'
-  }
-];
-
-const DUMMY_VIDEOS = [
-  { id: 1, judul: 'LIVE: Detik-detik Pengesahan Pengurus Baru DPC PKB Sidoarjo', type: 'svg_vid_1', isLive: true },
-  { id: 2, judul: 'Eksklusif: Wawancara Khusus Gus Rizza Terkait Porsi Milenial', type: 'svg_vid_2', duration: 'Durasi 12:45' },
-  { id: 3, judul: 'Kilas Balik Sejarah Politik PKB di Kabupaten Sidoarjo', type: 'svg_vid_3', duration: 'Durasi 08:30' },
-  { id: 4, judul: 'Tanggapan Masyarakat Mengenai Kepemimpinan Baru PKB', type: 'svg_vid_4', duration: 'Durasi 05:15' },
-  { id: 5, judul: 'Analisis Politik Sidoarjo Menjelang Kontestasi Pilkada 2026', type: 'svg_vid_5', duration: 'Durasi 10:20' }
-];
-
-const DUMMY_EKONOMI = [
-  {
-    id: 1,
-    title: 'Nilai Tukar Rupiah Terus Menguat Terhadap Dolar AS Sentuh Rp15.200',
-    slug: 'nilai-tukar-rupiah-terus-menguat-terhadap-dolar-as',
-    excerpt: 'Penguatan nilai tukar rupiah didorong oleh masuknya aliran modal asing ke pasar keuangan domestik serta sentimen positif pelaku pasar terhadap stabilitas makroekonomi nasional.',
-    category: 'Ekonomi Makro',
-    type: 'svg_ekonomi_1',
-    time: '2 Jam Lalu'
-  },
-  {
-    id: 2,
-    title: 'Sektor UMKM Sidoarjo Mengalami Kenaikan Omzet Signifikan Pasca Kemudahan Izin Usaha',
-    slug: 'sektor-umkm-sidoarjo-mengalami-kenaikan-omzet-signifikan',
-    excerpt: 'Dinas Koperasi dan UMKM Kabupaten Sidoarjo mencatat pertumbuhan produktivitas usaha mikro mencapai 15 persen berkat penyederhanaan izin usaha dan insentif modal kerja.',
-    category: 'UMKM',
-    type: 'svg_ekonomi_2',
-    time: '5 Jam Lalu'
-  },
-  {
-    id: 3,
-    title: 'Pemkab Sidoarjo Gelar Pameran Produk Kreatif Unggulan Ekspor',
-    slug: 'pemkab-sidoarjo-gelar-pameran-produk-kreatif-unggulan-ekspor',
-    excerpt: 'Pameran ini bertujuan untuk memperkenalkan produk-produk kerajinan lokal ke pasar internasional. Beberapa perwakilan negara sahabat turut diundang dalam acara pembukaan.',
-    category: 'Perdagangan',
-    type: 'svg_ekonomi_3',
-    time: '8 Jam Lalu'
-  },
-  {
-    id: 4,
-    title: 'Suku Bunga KPR Naik, Begini Strategi Developer Menarik Minat Konsumen',
-    slug: 'suku-bunga-kpr-naik-begini-strategi-developer-menarik',
-    excerpt: 'Menghadapi tren kenaikan suku bunga perbankan, sejumlah pengembang properti menawarkan program angsuran langsung ke developer serta subsidi bunga untuk tahun pertama.',
-    category: 'Properti',
-    type: 'svg_ekonomi_4',
-    time: '12 Jam Lalu'
-  }
-];
-
-const DUMMY_POPULAR = [
-  { id: 1, title: 'Viral! Detik-detik Aksi Polantas Selamatkan Balita Hanyut Saat Banjir Bandang' },
-  { id: 2, title: 'Harga Logam Mulia Meroket Tajam Tembus Rekor Tertinggi Sepanjang Sejarah' },
-  { id: 3, title: 'Jadwal Lengkap Putaran Final Kualifikasi Piala Dunia Zona Asia Minggu Ini' },
-  { id: 4, title: 'Panduan Kesehatan: Mengatasi Gejala Varian Flu Singapura Pada Anak' },
-  { id: 5, title: 'Berburu Kuliner Legendaris Khas Keraton Yogyakarta yang Wajib Dicoba' }
-];
+import { supabase } from '@/lib/supabase';
 
 export default function Home() {
   const [currentDate, setCurrentDate] = useState('Kamis, 9 Juli 2026');
@@ -168,7 +11,15 @@ export default function Home() {
   const [videoIndex, setVideoIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Dynamic States from Supabase
+  const [categories, setCategories] = useState([]);
+  const [berita, setBerita] = useState([]);
+  const [ads, setAds] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    // Realtime Clock
     const updateDateTime = () => {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
@@ -178,12 +29,60 @@ export default function Home() {
 
       const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
       const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-      setCurrentDate(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
+      setCurrentDate(`${days[now.getDay()]} , ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
     };
     const timer = setInterval(updateDateTime, 1000);
     updateDateTime();
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch data on load
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [
+        { data: catData },
+        { data: beritaData },
+        { data: adsData },
+        { data: videosData }
+      ] = await Promise.all([
+        supabase.from('categories').select('*').eq('status', 'Aktif').order('name'),
+        supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+        supabase.from('ads').select('*').eq('is_active', true),
+        supabase.from('videos').select('*').order('created_at', { ascending: false })
+      ]);
+
+      setCategories(catData || []);
+      setBerita(beritaData || []);
+      setAds(adsData || []);
+      setVideos(videosData || []);
+    } catch (err) {
+      console.error('Error fetching public data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return '';
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHrs = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHrs / 24);
+
+    if (diffSec < 60) return 'Baru Saja';
+    if (diffMin < 60) return `${diffMin} Menit Lalu`;
+    if (diffHrs < 24) return `${diffHrs} Jam Lalu`;
+    return `${diffDays} Hari Lalu`;
+  };
 
   const handleLiveTv = () => {
     alert("🔴 Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
@@ -198,16 +97,32 @@ export default function Home() {
   };
 
   const handlePrevVideo = () => {
-    setVideoIndex((prev) => (prev > 0 ? prev - 1 : DUMMY_VIDEOS.length - 1));
+    if (videos.length === 0) return;
+    setVideoIndex((prev) => (prev > 0 ? prev - 1 : videos.length - 1));
   };
 
   const handleNextVideo = () => {
-    setVideoIndex((prev) => (prev < DUMMY_VIDEOS.length - 1 ? prev + 1 : 0));
+    if (videos.length === 0) return;
+    setVideoIndex((prev) => (prev < videos.length - 1 ? prev + 1 : 0));
   };
 
   const handlePlayVideo = (title) => {
     alert(`Memutar Video: "${title}" (Simulasi Video Player Overlay)`);
   };
+
+  // Find Ads by Position
+  const headerAd = ads?.find(a => a.position === 'Header' || a.position === 'header');
+  const sidebarTopAd = ads?.find(a => a.position === 'Sidebar Atas' || a.position === 'sidebar');
+  const sidebarBottomAd = ads?.find(a => a.position === 'Sidebar Bawah');
+  const middleAd = ads?.find(a => a.position === 'Tengah Konten');
+  const footerAd = ads?.find(a => a.position === 'Footer');
+
+  // Filter Categories
+  const kriminalNews = berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [];
+  const ekonomiNews = berita?.filter(b => b.category?.toLowerCase() === 'ekonomi' || b.category?.toLowerCase() === 'ekonomi & bisnis') || [];
+  
+  // Sorted by views
+  const popularNews = berita ? [...berita].sort((a, b) => (b.views || 0) - (a.views || 0)) : [];
 
   return (
     <div className="w-full">
@@ -270,20 +185,24 @@ export default function Home() {
 
             {/* Slot Iklan 1: Header (Sebelah kanan logo) */}
             <div className="hidden lg:block w-[468px] h-[60px] mx-4 flex-shrink">
-              <AdSlot size="468x60" className="h-full py-1 text-[9px]" />
+              <AdSlot size="468x60" className="h-full py-1 text-[9px]" ad={headerAd} />
             </div>
 
             {/* Menu Navigasi Utama */}
             <nav className={`main-nav ${isMobileMenuOpen ? 'active' : ''}`} id="main-navigation">
               <ul className="nav-list">
                 <li><Link href="/" className="nav-link active">Berita Utama</Link></li>
-                <li><a href="#kriminal-section" className="nav-link">Kriminal</a></li>
-                <li><a href="#" className="nav-link">Politik</a></li>
-                <li><a href="#" className="nav-link">Dunia</a></li>
-                <li><a href="#" className="nav-link">Otomotif</a></li>
-                <li><a href="#" className="nav-link">Olahraga</a></li>
-                <li><a href="#" className="nav-link">Hiburan</a></li>
-                <li><a href="#video-section" className="nav-link">Pojok Video</a></li>
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <li key={cat.id}>
+                      <Link href={`/kategori/${cat.slug}`} className="nav-link">
+                        {cat.name}
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className="nav-link text-slate-400 text-xs px-4">Belum ada rubrik</li>
+                )}
               </ul>
             </nav>
 
@@ -325,17 +244,15 @@ export default function Home() {
           <div className="ticker-label">⚠️ BREAKING NEWS</div>
           <div className="ticker-content">
             <div className="ticker-track" id="breaking-ticker">
-              {DUMMY_BREAKING_NEWS.map((news) => (
-                <div key={news.id} className="ticker-item">
-                  <span className="ticker-bullet">•</span> {news.title}
-                </div>
-              ))}
-              {/* Repeat for marquee loop */}
-              {DUMMY_BREAKING_NEWS.map((news) => (
-                <div key={`dup-${news.id}`} className="ticker-item">
-                  <span className="ticker-bullet">•</span> {news.title}
-                </div>
-              ))}
+              {berita.slice(0, 4).length > 0 ? (
+                berita.slice(0, 4).map((post) => (
+                  <div key={post.id} className="ticker-item">
+                    <span className="ticker-bullet">•</span> {post.title}
+                  </div>
+                ))
+              ) : (
+                <div className="ticker-item">Selamat Datang di PojokTV.com - Portal Berita Terpercaya</div>
+              )}
             </div>
           </div>
         </div>
@@ -346,77 +263,75 @@ export default function Home() {
         <div className="container">
           {/* 3. Hero Section (Grid Berita Utama Asimetris) */}
           <section className="hero-section">
-            <div className="hero-grid">
-              {/* Berita Sorotan Utama (Kiri, 65%) */}
-              <div className="hero-main">
-                <div className="hero-card">
-                  <img src="gusrizal.jpeg" alt="Rizza Ali Faizin Pimpin DPC PKB Sidoarjo" className="hero-img" />
-                  <div className="gradient-overlay">
-                    <span className="tag-badge">Politik</span>
-                    <h1 className="hero-title-main">
-                      <Link href={`/berita/${DUMMY_POSTS[0].slug}`}>
-                        {DUMMY_POSTS[0].title}
-                      </Link>
-                    </h1>
-                    <div className="hero-meta">
-                      <span><i className="fa-regular fa-user"></i> {DUMMY_POSTS[0].author}</span>
-                      <span>•</span>
-                      <span><i className="fa-regular fa-clock"></i> {DUMMY_POSTS[0].time}</span>
+            {berita.length === 0 ? (
+              <div className="w-full text-center py-20 bg-white border border-gray-250 rounded-xl shadow-sm text-gray-500 font-bold text-lg">
+                Belum ada berita yang dipublikasikan
+              </div>
+            ) : (
+              <div className="hero-grid">
+                {/* Berita Sorotan Utama (Kiri, 65%) */}
+                <div className="hero-main">
+                  <div className="hero-card">
+                    {berita[0]?.image ? (
+                      <img src={berita[0].image} alt={berita[0].title} className="hero-img" />
+                    ) : (
+                      <div className="hero-img bg-slate-900 flex items-center justify-center text-slate-600 font-bold">
+                        No Image
+                      </div>
+                    )}
+                    <div className="gradient-overlay">
+                      <span className="tag-badge">{berita[0]?.category}</span>
+                      <h1 className="hero-title-main">
+                        <Link href={`/berita/${berita[0]?.slug}`}>
+                          {berita[0]?.title}
+                        </Link>
+                      </h1>
+                      <div className="hero-meta">
+                        <span><i className="fa-regular fa-user"></i> {berita[0]?.author || 'Redaksi'}</span>
+                        <span>•</span>
+                        <span><i className="fa-regular fa-clock"></i> {formatTimeAgo(berita[0]?.created_at)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Berita Pendamping (Kanan, 35% - 4 Stacked Cards) */}
-              <div className="hero-side" style={{ gap: '0.75rem' }}>
-                {DUMMY_POSTS.slice(1, 5).map((post) => (
-                  <div key={post.id} className="hero-side-card" style={{ height: '120px' }}>
-                    <div className="side-img-wrapper">
-                      {post.type === 'svg_car' && (
-                        <svg className="side-img" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="300" height="200" fill="#1E293B" />
-                          <rect x="10" y="10" width="40" height="15" fill="#D32F2F" />
-                          <rect x="250" y="10" width="40" height="15" fill="#3B82F6" />
-                          <circle cx="150" cy="100" r="30" fill="none" stroke="#D32F2F" stroke-dasharray="5 5" stroke-width="2" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_earth' && (
-                        <svg className="side-img" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="300" height="200" fill="#0F172A" />
-                          <circle cx="150" cy="100" r="50" fill="none" stroke="rgba(255, 255, 255, 0.15)" stroke-width="2" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_auto' && (
-                        <svg className="side-img" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="300" height="200" fill="#334155" />
-                          <circle cx="90" cy="140" r="20" fill="#0F172A" />
-                          <circle cx="210" cy="140" r="20" fill="#0F172A" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_highway' && (
-                        <svg className="side-img" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="300" height="200" fill="#1e1b4b" />
-                          <polygon points="150,50 200,150 100,150" fill="rgba(255,255,255,0.05)" stroke="#38BDF8" stroke-width="2" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="side-content" style={{ padding: '0.5rem 0.75rem' }}>
-                      <div>
-                        <div className="category-row">
-                          <span className="side-category">{post.category}</span>
+                {/* Berita Pendamping (Kanan, 35% - 4 Stacked Cards) */}
+                <div className="hero-side" style={{ gap: '0.75rem' }}>
+                  {berita.slice(1, 5).length > 0 ? (
+                    berita.slice(1, 5).map((post) => (
+                      <div key={post.id} className="hero-side-card" style={{ height: '120px' }}>
+                        <div className="side-img-wrapper">
+                          {post.image ? (
+                            <img src={post.image} alt={post.title} className="side-img" />
+                          ) : (
+                            <div className="side-img bg-slate-900 flex items-center justify-center text-slate-600 text-xs">
+                              No Image
+                            </div>
+                          )}
                         </div>
-                        <h2 className="side-title" style={{ fontSize: '0.95rem', WebkitLineClamp: 2, lineClamp: 2 }}>
-                          <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                        </h2>
+                        <div className="side-content" style={{ padding: '0.5rem 0.75rem' }}>
+                          <div>
+                            <div className="category-row">
+                              <span className="side-category">{post.category}</span>
+                            </div>
+                            <h2 className="side-title" style={{ fontSize: '0.95rem', WebkitLineClamp: 2, lineClamp: 2 }}>
+                              <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                            </h2>
+                          </div>
+                          <div className="side-meta">
+                            <span>{formatTimeAgo(post.created_at)}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="side-meta">
-                        <span>{post.time}</span>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-gray-400 font-bold border-2 border-dashed border-gray-200 rounded-lg py-12">
+                      Belum ada berita lainnya
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </section>
 
           {/* Seksi 1: Kriminal Hari Ini (Grid 4 Kartu) */}
@@ -427,57 +342,40 @@ export default function Home() {
             </div>
 
             <div className="kriminal-grid">
-              {DUMMY_KRIMINAL_NEWS.map((post) => (
-                <article key={post.id} className="politik-card">
-                  <div className="politik-img-wrapper">
-                    {post.type === 'svg_crime_1' && (
-                      <svg className="politik-img" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="300" height="160" fill="#0F172A" />
-                        <path d="M 0 110 L 300 140 L 300 150 L 0 120 Z" fill="#EAB308" />
-                        <circle cx="120" cy="80" r="20" fill="none" stroke="#64748B" stroke-width="3" />
-                        <circle cx="180" cy="80" r="20" fill="none" stroke="#64748B" stroke-width="3" />
-                      </svg>
-                    )}
-                    {post.type === 'svg_crime_2' && (
-                      <svg className="politik-img" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="300" height="160" fill="#1E293B" />
-                        <rect x="50" y="40" width="200" height="10" rx="3" fill="#D32F2F" opacity="0.6" />
-                        <rect x="50" y="60" width="200" height="10" rx="3" fill="#475569" />
-                        <rect x="50" y="80" width="140" height="10" rx="3" fill="#475569" />
-                      </svg>
-                    )}
-                    {post.type === 'svg_crime_3' && (
-                      <svg className="politik-img" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="300" height="160" fill="#334155" />
-                        <circle cx="150" cy="80" r="30" fill="none" stroke="#EF4444" stroke-width="3" />
-                        <path d="M 150 65 L 150 95 M 135 80 L 165 80" stroke="#EF4444" stroke-width="3" />
-                      </svg>
-                    )}
-                    {post.type === 'svg_crime_4' && (
-                      <svg className="politik-img" viewBox="0 0 300 160" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="300" height="160" fill="#1e1b4b" />
-                        <rect x="80" y="30" width="140" height="90" rx="4" fill="#312E81" stroke="#4338CA" stroke-width="2" />
-                        <text x="150" y="80" fill="#EF4444" fontWeight="bold" fontSize="24" textAnchor="middle">!</text>
-                      </svg>
-                    )}
-                  </div>
-                  <div className="politik-content">
-                    <span className="crimson-tag" style={{ marginBottom: '0.5rem', display: 'block' }}>KRIMINAL</span>
-                    <h3 className="politik-title" style={{ fontSize: '1.05rem', lineHeight: '1.35' }}>
-                      <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                    </h3>
-                    <div className="politik-meta">
-                      <span>{post.time}</span>
+              {kriminalNews.length === 0 ? (
+                <div className="col-span-full text-center py-12 bg-white border border-gray-200 rounded-lg text-gray-500 font-bold">
+                  Belum ada berita kriminal
+                </div>
+              ) : (
+                kriminalNews.slice(0, 4).map((post) => (
+                  <article key={post.id} className="politik-card">
+                    <div className="politik-img-wrapper">
+                      {post.image ? (
+                        <img src={post.image} alt={post.title} className="politik-img" />
+                      ) : (
+                        <div className="politik-img bg-slate-900 flex items-center justify-center text-slate-600">
+                          No Image
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </article>
-              ))}
+                    <div className="politik-content">
+                      <span className="crimson-tag" style={{ marginBottom: '0.5rem', display: 'block' }}>KRIMINAL</span>
+                      <h3 className="politik-title" style={{ fontSize: '1.05rem', lineHeight: '1.35' }}>
+                        <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                      </h3>
+                      <div className="politik-meta">
+                        <span>{formatTimeAgo(post.created_at)}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))
+              )}
             </div>
           </section>
 
           {/* Slot Iklan 4: Tengah-tengah daftar berita */}
           <div className="w-full my-8">
-            <AdSlot size="728x90" className="h-[90px]" />
+            <AdSlot size="728x90" className="h-[90px]" ad={middleAd} />
           </div>
         </div>
 
@@ -498,62 +396,39 @@ export default function Home() {
             </div>
 
             <div className="video-carousel-wrapper">
-              <div
-                className="video-carousel-inner"
-                id="video-carousel-track"
-                style={{
-                  transform: `translateX(-${videoIndex * 220}px)`,
-                  transition: 'transform 0.4s ease'
-                }}
-              >
-                {DUMMY_VIDEOS.map((video) => (
-                  <div key={video.id} className="video-carousel-card" onClick={() => handlePlayVideo(video.judul)}>
-                    <div className="video-thumb-container">
-                      {video.type === 'svg_vid_1' && (
-                        <svg className="video-thumb-img-new" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="200" height="120" fill="#020617" />
-                          <text x="100" y="65" fill="#EF4444" fontFamily="Oswald" fontSize="14" textAnchor="middle" fontWeight="bold">STUDIO 1 LIVE</text>
-                        </svg>
-                      )}
-                      {video.type === 'svg_vid_2' && (
-                        <svg className="video-thumb-img-new" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="200" height="120" fill="#0b132b" />
-                          <circle cx="100" cy="60" r="20" fill="#1e293b" />
-                        </svg>
-                      )}
-                      {video.type === 'svg_vid_3' && (
-                        <svg className="video-thumb-img-new" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="200" height="120" fill="#1F1A3A" />
-                          <rect x="50" y="30" width="100" height="60" fill="#2D2A4A" />
-                        </svg>
-                      )}
-                      {video.type === 'svg_vid_4' && (
-                        <svg className="video-thumb-img-new" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="200" height="120" fill="#122620" />
-                          <ellipse cx="100" cy="60" rx="30" ry="15" fill="#1e3a2b" />
-                        </svg>
-                      )}
-                      {video.type === 'svg_vid_5' && (
-                        <svg className="video-thumb-img-new" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="200" height="120" fill="#2d0b22" />
-                          <polygon points="100,20 130,90 70,90" fill="#4a153b" />
-                        </svg>
-                      )}
-                      <div className="video-play-center-btn">
-                        <i className="fa-solid fa-play"></i>
+              {videos.length === 0 ? (
+                <div className="w-full text-center py-12 text-gray-500 font-bold">
+                  Belum ada video tayang
+                </div>
+              ) : (
+                <div
+                  className="video-carousel-inner"
+                  id="video-carousel-track"
+                  style={{
+                    transform: `translateX(-${videoIndex * 220}px)`,
+                    transition: 'transform 0.4s ease'
+                  }}
+                >
+                  {videos.map((video) => (
+                    <div key={video.id} className="video-carousel-card" onClick={() => handlePlayVideo(video.judul)}>
+                      <div className="video-thumb-container">
+                        <img
+                          src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                          alt={video.judul}
+                          className="video-thumb-img-new object-cover"
+                        />
+                        <div className="video-play-center-btn">
+                          <i className="fa-solid fa-play"></i>
+                        </div>
+                      </div>
+                      <div className="video-carousel-info">
+                        <h4 className="video-carousel-title">{video.judul}</h4>
+                        <span className="video-carousel-meta"><i className="fa-brands fa-youtube text-red-650"></i> YouTube</span>
                       </div>
                     </div>
-                    <div className="video-carousel-info">
-                      <h4 className="video-carousel-title">{video.judul}</h4>
-                      {video.isLive ? (
-                        <span className="video-carousel-meta"><i className="fa-solid fa-tower-broadcast text-crimson"></i> LIVE TV</span>
-                      ) : (
-                        <span className="video-carousel-meta"><i className="fa-regular fa-clock"></i> {video.duration}</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -569,52 +444,36 @@ export default function Home() {
               </div>
 
               <div className="ekonomi-grid">
-                {DUMMY_EKONOMI.map((post) => (
-                  <article key={post.id} className="ekonomi-item">
-                    <div className="ekonomi-img-wrapper">
-                      {post.type === 'svg_ekonomi_1' && (
-                        <svg className="ekonomi-img" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="180" height="120" fill="#0F172A" />
-                          <line x1="20" y1="100" x2="60" y2="70" stroke="#10B981" stroke-width="3" />
-                          <line x1="60" y1="70" x2="100" y2="80" stroke="#10B981" stroke-width="3" />
-                          <line x1="100" y1="80" x2="160" y2="30" stroke="#10B981" stroke-width="4" />
-                          <circle cx="160" cy="30" r="5" fill="#10B981" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_ekonomi_2' && (
-                        <svg className="ekonomi-img" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="180" height="120" fill="#1E293B" />
-                          <rect x="40" y="30" width="100" height="60" rx="3" fill="#D32F2F" opacity="0.3" />
-                          <circle cx="90" cy="60" r="15" fill="#EF4444" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_ekonomi_3' && (
-                        <svg className="ekonomi-img" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="180" height="120" fill="#334155" />
-                          <polygon points="90,20 140,100 40,100" fill="#EAB308" opacity="0.8" />
-                        </svg>
-                      )}
-                      {post.type === 'svg_ekonomi_4' && (
-                        <svg className="ekonomi-img" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg">
-                          <rect width="180" height="120" fill="#1e1b4b" />
-                          <line x1="30" y1="30" x2="150" y2="90" stroke="#EF4444" stroke-width="4" />
-                          <line x1="30" y1="90" x2="150" y2="30" stroke="#EF4444" stroke-width="4" />
-                        </svg>
-                      )}
-                    </div>
-                    <div className="ekonomi-content">
-                      <div>
-                        <h3 className="ekonomi-title">
-                          <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                        </h3>
-                        <p className="ekonomi-snippet">{post.excerpt}</p>
+                {ekonomiNews.length === 0 ? (
+                  <div className="text-center py-12 bg-white border border-gray-200 rounded-lg text-gray-500 font-bold">
+                    Belum ada berita ekonomi & bisnis
+                  </div>
+                ) : (
+                  ekonomiNews.slice(0, 4).map((post) => (
+                    <article key={post.id} className="ekonomi-item">
+                      <div className="ekonomi-img-wrapper">
+                        {post.image ? (
+                          <img src={post.image} alt={post.title} className="ekonomi-img" />
+                        ) : (
+                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-600">
+                            No Image
+                          </div>
+                        )}
                       </div>
-                      <div className="ekonomi-meta">
-                        <span>{post.time} | {post.category}</span>
+                      <div className="ekonomi-content">
+                        <div>
+                          <h3 className="ekonomi-title">
+                            <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                          </h3>
+                          <p className="ekonomi-snippet">{post.content?.slice(0, 160)}...</p>
+                        </div>
+                        <div className="ekonomi-meta">
+                          <span>{formatTimeAgo(post.created_at)} | {post.category}</span>
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                ))}
+                    </article>
+                  ))
+                )}
               </div>
             </div>
 
@@ -627,24 +486,32 @@ export default function Home() {
                     <h2 className="section-title">Terpopuler</h2>
                   </div>
                   <ul className="popular-list">
-                    {DUMMY_POPULAR.map((post, idx) => (
-                      <li key={idx} className="popular-item">
-                        <span className="popular-number">{String(idx + 1).padStart(2, '0')}</span>
-                        <div className="popular-content">
-                          <h4 className="popular-title">
-                            <a href="#">{post.title}</a>
-                          </h4>
-                        </div>
-                      </li>
-                    ))}
+                    {popularNews.length === 0 ? (
+                      <li className="py-6 text-center text-gray-500 font-bold">Belum ada berita terpopuler</li>
+                    ) : (
+                      popularNews.slice(0, 5).map((post, idx) => (
+                        <li key={post.id} className="popular-item">
+                          <span className="popular-number">{String(idx + 1).padStart(2, '0')}</span>
+                          <div className="popular-content">
+                            <h4 className="popular-title">
+                              <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                            </h4>
+                          </div>
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </div>
 
                 {/* Slot Iklan 2: Sidebar Kanan Atas */}
-                <AdSlot size="300x250" className="w-full h-[250px]" />
+                <div className="w-full h-[250px] mb-4">
+                  <AdSlot size="300x250" className="w-full h-full" ad={sidebarTopAd} />
+                </div>
 
                 {/* Slot Iklan 3: Sidebar Kanan Bawah */}
-                <AdSlot size="300x600" className="w-full h-[500px]" />
+                <div className="w-full h-[500px]">
+                  <AdSlot size="300x600" className="w-full h-full" ad={sidebarBottomAd} />
+                </div>
               </div>
             </aside>
           </div>
@@ -653,7 +520,7 @@ export default function Home() {
 
       {/* Slot Iklan 5: Bagian Atas Footer */}
       <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
-        <AdSlot size="970x250" className="w-full max-w-[970px] h-[200px]" />
+        <AdSlot size="970x250" className="w-full max-w-[970px] h-[200px]" ad={footerAd} />
       </div>
 
       {/* 6. Footer (Gelap) */}
@@ -681,11 +548,15 @@ export default function Home() {
               <h4 className="footer-col-title">Kategori</h4>
               <div className="footer-links">
                 <Link href="/">Berita Utama</Link>
-                <a href="#kriminal-section">Kriminal</a>
-                <a href="#">Politik</a>
-                <a href="#">Dunia</a>
-                <a href="#">Otomotif</a>
-                <a href="#video-section">Pojok Video</a>
+                {categories.length > 0 ? (
+                  categories.map((cat) => (
+                    <Link key={cat.id} href={`/kategori/${cat.slug}`}>
+                      {cat.name}
+                    </Link>
+                  ))
+                ) : (
+                  <span className="text-slate-500 text-xs">Belum ada rubrik</span>
+                )}
               </div>
             </div>
 
@@ -724,7 +595,7 @@ export default function Home() {
               <Link href="/kebijakan-privasi">Kebijakan Privasi</Link>
               <Link href="/ketentuan-layanan">Ketentuan Layanan</Link>
               {/* Login link di Footer bottom */}
-              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold ml-2">Login Admin</Link>
+              <Link href="/admin/login" className="text-red-505 hover:text-red-400 font-bold ml-2">Login Admin</Link>
             </div>
           </div>
         </div>
