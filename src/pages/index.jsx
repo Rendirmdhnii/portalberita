@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import AdSlot from '@/components/AdSlot';
 
 // Dummy data for Berita, Video, etc. from index.html/style.css markup
 const DUMMY_CATEGORIES = [
@@ -166,9 +167,6 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [newsletterStatus, setNewsletterStatus] = useState(false);
-  const [newsletterLoading, setNewsletterLoading] = useState(false);
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -197,17 +195,6 @@ export default function Home() {
       alert(`Pencarian untuk: "${searchQuery}" (Simulasi Halaman Hasil Pencarian)`);
       setSearchQuery('');
     }
-  };
-
-  const handleNewsletter = (e) => {
-    e.preventDefault();
-    setNewsletterLoading(true);
-    setTimeout(() => {
-      setNewsletterLoading(false);
-      setNewsletterStatus(true);
-      setNewsletterEmail('');
-      setTimeout(() => setNewsletterStatus(false), 4000);
-    }, 1200);
   };
 
   const handlePrevVideo = () => {
@@ -258,11 +245,15 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="social-icons">
+            <div className="social-icons flex items-center">
               <a href="#" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
               <a href="#" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
               <a href="#" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
               <a href="#" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
+              {/* Button Login Admin di Top Bar */}
+              <Link href="/admin/login" className="ml-3 text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded transition-all">
+                LOGIN
+              </Link>
             </div>
           </div>
         </div>
@@ -271,11 +262,16 @@ export default function Home() {
       {/* 2. Main Header & Navigation (Sticky) */}
       <header className="main-header">
         <div className="container">
-          <div className="header-main-bar">
+          <div className="header-main-bar flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="logo" id="main-logo">
+            <Link href="/" className="logo flex-shrink-0" id="main-logo">
               Pojok<span>TV.com</span>
             </Link>
+
+            {/* Slot Iklan 1: Header (Sebelah kanan logo) */}
+            <div className="hidden lg:block w-[468px] h-[60px] mx-4 flex-shrink">
+              <AdSlot size="468x60" className="h-full py-1 text-[9px]" />
+            </div>
 
             {/* Menu Navigasi Utama */}
             <nav className={`main-nav ${isMobileMenuOpen ? 'active' : ''}`} id="main-navigation">
@@ -478,13 +474,18 @@ export default function Home() {
               ))}
             </div>
           </section>
+
+          {/* Slot Iklan 4: Tengah-tengah daftar berita */}
+          <div className="w-full my-8">
+            <AdSlot size="728x90" className="h-[90px]" />
+          </div>
         </div>
 
         {/* Seksi 2: Pojok Video (Carousel Slider Horizontal - Mode Gelap) */}
         <section className="video-section" id="video-section" style={{ marginBottom: '3rem' }}>
           <div className="container">
             <div className="section-header">
-              <h2 className="section-title"><i class="fa-solid fa-circle-play text-crimson"></i> Pojok Video</h2>
+              <h2 className="section-title"><i className="fa-solid fa-circle-play text-crimson"></i> Pojok Video</h2>
               {/* Carousel Arrows */}
               <div className="editor-controls" style={{ marginTop: '0' }}>
                 <button className="carousel-arrow" id="video-prev" aria-label="Sebelumnya" onClick={handlePrevVideo}>
@@ -639,25 +640,28 @@ export default function Home() {
                   </ul>
                 </div>
 
-                {/* Ad Space 300x250 */}
-                <div className="sidebar-widget ad-square-widget">
-                  <div className="ad-placeholder-sq">
-                    <span className="ad-text" style={{ color: 'rgba(255,255,255,0.65)' }}>POJOKTV AD NETWORK</span>
-                    <span className="ad-size">Square Banner 300 x 250</span>
-                  </div>
-                </div>
+                {/* Slot Iklan 2: Sidebar Kanan Atas */}
+                <AdSlot size="300x250" className="w-full h-[250px]" />
+
+                {/* Slot Iklan 3: Sidebar Kanan Bawah */}
+                <AdSlot size="300x600" className="w-full h-[500px]" />
               </div>
             </aside>
           </div>
         </div>
       </main>
 
+      {/* Slot Iklan 5: Bagian Atas Footer */}
+      <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
+        <AdSlot size="970x250" className="w-full max-w-[970px] h-[200px]" />
+      </div>
+
       {/* 6. Footer (Gelap) */}
       <footer className="footer">
         <div className="container">
           <div className="footer-grid">
             {/* Kolom 1: Logo & Tentang */}
-            <div className="footer-col">
+            <div className="footer-col md:col-span-2">
               <div className="footer-about-logo">
                 PojokTV<span>.com</span>
               </div>
@@ -686,47 +690,26 @@ export default function Home() {
             </div>
 
             {/* Kolom 3: Redaksi & Kontak */}
-            <div className="footer-col">
+            <div className="footer-col md:col-span-1">
               <h4 className="footer-col-title">Hubungi Kami</h4>
-              <div className="footer-links">
+              <div className="footer-links text-slate-400 space-y-2">
                 <div className="footer-contact-item">
-                  <i className="fa-solid fa-location-dot"></i>
-                  <span>Gedung Pojok Media Utama Lantai 5, Kav. 12-14, Jl. Jenderal Sudirman, Jakarta Selatan, 12190</span>
+                  <i className="fa-solid fa-user text-crimson mt-0.5"></i>
+                  <span>Nama: Mujianto Primadi</span>
                 </div>
                 <div className="footer-contact-item">
-                  <i className="fa-solid fa-phone"></i>
-                  <span>(021) 555-8989</span>
+                  <i className="fa-solid fa-location-dot text-crimson mt-0.5"></i>
+                  <span>Alamat: Perum Citra Oma Pesona Blok E3/25 RT 37 RW 07, Desa Sidokepung, Kecamatan Buduran, Sidoarjo, Jatim</span>
                 </div>
                 <div className="footer-contact-item">
-                  <i className="fa-solid fa-envelope"></i>
-                  <span>redaksi@pojoktv.com</span>
+                  <i className="fa-brands fa-whatsapp text-crimson mt-0.5"></i>
+                  <span>WhatsApp: <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="hover:text-white underline">+62 813-3116-0799</a></span>
+                </div>
+                <div className="footer-contact-item">
+                  <i className="fa-solid fa-envelope text-crimson mt-0.5"></i>
+                  <span>Email: <a href="mailto:redaksi@pojoktv.com" className="hover:text-white underline">redaksi@pojoktv.com</a></span>
                 </div>
               </div>
-            </div>
-
-            {/* Kolom 4: Newsletter */}
-            <div className="footer-col">
-              <h4 className="footer-col-title">Langganan</h4>
-              <p className="footer-about-text" style={{ color: '#94A3B8' }}>
-                Dapatkan rangkuman berita terpopuler harian langsung di kotak masuk email Anda secara gratis.
-              </p>
-              <form className="newsletter-form" id="newsletter-subscription" onSubmit={handleNewsletter}>
-                <input
-                  type="email"
-                  className="newsletter-input"
-                  id="newsletter-email"
-                  placeholder="Alamat Email Anda"
-                  required
-                  value={newsletterEmail}
-                  onChange={(e) => setNewsletterEmail(e.target.value)}
-                />
-                <button type="submit" className="newsletter-btn" id="newsletter-submit-btn" disabled={newsletterLoading}>
-                  {newsletterLoading ? 'Memproses...' : 'Berlangganan'}
-                </button>
-                <span className={`newsletter-feedback ${newsletterStatus ? 'success' : ''}`} id="newsletter-msg">
-                  Terima kasih! Anda berhasil terdaftar.
-                </span>
-              </form>
             </div>
           </div>
 
@@ -735,11 +718,13 @@ export default function Home() {
             <div className="footer-copyright">
               &copy; 2026 pojoktv.com. Jaringan Berita Nasional Terpercaya. Hak Cipta Dilindungi Undang-Undang.
             </div>
-            <div className="footer-bottom-links">
-              <a href="#">Tentang Kami</a>
-              <a href="#">Pedoman Media Siber</a>
-              <a href="#">Kebijakan Privasi</a>
-              <a href="#">Ketentuan Layanan</a>
+            <div className="footer-bottom-links flex items-center gap-4">
+              <Link href="/tentang-kami">Tentang Kami</Link>
+              <Link href="/pedoman-media">Pedoman Media Siber</Link>
+              <Link href="/kebijakan-privasi">Kebijakan Privasi</Link>
+              <Link href="/ketentuan-layanan">Ketentuan Layanan</Link>
+              {/* Login link di Footer bottom */}
+              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold ml-2">Login Admin</Link>
             </div>
           </div>
         </div>
