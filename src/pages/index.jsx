@@ -151,8 +151,8 @@ export default function Home() {
   return (
     <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans overflow-x-hidden">
       <Head>
-        <title>PojokTV.com - Portal Berita Nasional Terpercaya & Tercepat</title>
-        <meta name="description" content="PojokTV.com menyajikan berita terkini, kriminal, politik, dunia, otomotif, olahraga, hiburan, dan video berita eksklusif nasional terpercaya secara cepat dan akurat." />
+        <title>PojokTV - Jaringan Berita Nasional Terpercaya</title>
+        <meta name="description" content="Portal berita terkini, tajam, dan independen. Menghadirkan informasi dan jurnalisme terpercaya dari seluruh penjuru nusantara setiap hari." />
       </Head>
 
       {/* Baris 1: Top Bar */}
