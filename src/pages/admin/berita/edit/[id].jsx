@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+
+// Safely load ReactQuill client-side only
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
 
 export default function BeritaEdit() {
   const router = useRouter();
   const { id } = router.query;
+  const quillRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
   const [post, setPost] = useState(null);
@@ -17,7 +23,9 @@ export default function BeritaEdit() {
   const [content, setContent] = useState('');
   const [status, setStatus] = useState('Published');
   const [existingImage, setExistingImage] = useState('');
+  
   const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -71,9 +79,59 @@ export default function BeritaEdit() {
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
+
+  // Custom Quill Image Handler
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, 4, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        image: () => {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+          input.click();
+
+          input.onchange = async () => {
+            const file = input.files[0];
+            if (file) {
+              try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_editor_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `berita/editor/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                  .from('images')
+                  .upload(filePath, file);
+
+                if (uploadError) throw new Error('Gagal upload gambar ke editor: ' + uploadError.message);
+
+                const { data: { publicUrl } } = supabase.storage
+                  .from('images')
+                  .getPublicUrl(filePath);
+
+                const quill = quillRef.current.getEditor();
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', publicUrl);
+              } catch (err) {
+                alert(err.message);
+              }
+            }
+          };
+        }
+      }
+    }
+  }), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -197,16 +255,30 @@ export default function BeritaEdit() {
           <div>
             <label className="block text-base font-bold text-gray-800 mb-1">Upload Gambar Baru</label>
             <p className="text-sm text-gray-700 mb-2 leading-relaxed">Klik di bawah untuk mengganti gambar. Biarkan kosong jika tidak ingin mengganti gambar saat ini.</p>
-            {existingImage && (
-              <div className="mb-3">
-                <p className="text-sm text-gray-700 mb-1 font-bold">Gambar saat ini:</p>
-                <img
-                  src={existingImage}
-                  alt="Thumbnail saat ini"
-                  className="h-24 w-40 object-cover rounded-lg border border-gray-300 bg-gray-100"
-                />
-              </div>
-            )}
+            
+            <div className="flex gap-4 flex-wrap items-end mb-3">
+              {existingImage && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1 font-bold">Gambar saat ini:</p>
+                  <img
+                    src={existingImage}
+                    alt="Thumbnail saat ini"
+                    className="h-24 w-40 object-cover rounded-lg border border-gray-300 bg-gray-100"
+                  />
+                </div>
+              )}
+              {previewUrl && (
+                <div>
+                  <p className="text-xs text-slate-500 mb-1 font-bold">Pratinjau Gambar Baru:</p>
+                  <img
+                    src={previewUrl}
+                    alt="Pratinjau Gambar Baru"
+                    className="h-24 w-40 object-cover rounded-lg border border-gray-300 bg-gray-100"
+                  />
+                </div>
+              )}
+            </div>
+
             <input
               type="file"
               accept="image/*"
@@ -231,13 +303,17 @@ export default function BeritaEdit() {
           {/* Isi Berita */}
           <div>
             <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita <span className="text-red-500">*</span></label>
-            <textarea
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              rows="12"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium resize-y leading-relaxed"
-              required
-            ></textarea>
+            <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden">
+              <ReactQuill 
+                ref={quillRef}
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                placeholder="Ketik isi berita lengkap di sini..."
+                theme="snow"
+                className="min-h-[300px] text-base"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-4 pt-2">

@@ -1,17 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 
+// Safely load ReactQuill client-side only
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css';
+
 export default function BeritaCreate() {
   const router = useRouter();
+  const quillRef = useRef(null);
+
   const [categories, setCategories] = useState([]);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
+  
   const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
   
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -40,9 +49,59 @@ export default function BeritaCreate() {
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
+
+  // Custom Quill Image Handler
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, 4, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean']
+      ],
+      handlers: {
+        image: () => {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+          input.click();
+
+          input.onchange = async () => {
+            const file = input.files[0];
+            if (file) {
+              try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_editor_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const filePath = `berita/editor/${fileName}`;
+
+                const { error: uploadError } = await supabase.storage
+                  .from('images')
+                  .upload(filePath, file);
+
+                if (uploadError) throw new Error('Gagal upload gambar ke editor: ' + uploadError.message);
+
+                const { data: { publicUrl } } = supabase.storage
+                  .from('images')
+                  .getPublicUrl(filePath);
+
+                const quill = quillRef.current.getEditor();
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', publicUrl);
+              } catch (err) {
+                alert(err.message);
+              }
+            }
+          };
+        }
+      }
+    }
+  }), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -172,18 +231,30 @@ export default function BeritaCreate() {
               required
             />
             <p className="text-xs text-gray-700 mt-1 leading-relaxed">Klik di sini untuk memasukkan gambar utama dari komputer Anda (format JPG/PNG/WebP, maksimal ukuran 2MB).</p>
+            
+            {/* Image Preview */}
+            {previewUrl && (
+              <div className="mt-3">
+                <p className="text-xs font-bold text-slate-500 mb-1">Pratinjau Thumbnail Baru:</p>
+                <img src={previewUrl} alt="Preview Thumbnail" className="w-full max-h-48 object-contain border rounded" />
+              </div>
+            )}
           </div>
 
           <div>
             <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita</label>
-            <textarea 
-              value={content} 
-              onChange={e => setContent(e.target.value)} 
-              rows="12" 
-              placeholder="Ketik isi berita lengkap di sini..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium leading-relaxed" 
-              required
-            ></textarea>
+            {/* Rich Text Editor React Quill */}
+            <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden">
+              <ReactQuill 
+                ref={quillRef}
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                placeholder="Ketik isi berita lengkap di sini..."
+                theme="snow"
+                className="min-h-[300px] text-base"
+              />
+            </div>
           </div>
 
           <button 

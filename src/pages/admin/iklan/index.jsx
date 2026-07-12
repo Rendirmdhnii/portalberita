@@ -16,6 +16,7 @@ export default function AdIndex() {
   const [link, setLink] = useState('');
   const [tanggalBerakhir, setTanggalBerakhir] = useState('');
   const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
 
   const fetchAds = async () => {
     try {
@@ -40,7 +41,9 @@ export default function AdIndex() {
 
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -91,6 +94,7 @@ export default function AdIndex() {
       setLink('');
       setTanggalBerakhir('');
       setImageFile(null);
+      setPreviewUrl('');
       
       // Reset input element value
       const fileInput = document.getElementById('ad-image-input');
@@ -227,6 +231,14 @@ export default function AdIndex() {
                 required
               />
               <p className="text-xs text-gray-700 mt-1 leading-relaxed">Format JPG, PNG, GIF, atau WebP (maks. 2MB)</p>
+              
+              {/* Ad Image Preview */}
+              {previewUrl && (
+                <div className="mt-3">
+                  <p className="text-xs font-bold text-slate-500 mb-1">Pratinjau Gambar:</p>
+                  <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-48 object-contain border rounded" />
+                </div>
+              )}
             </div>
 
             <button
