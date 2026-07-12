@@ -29,7 +29,7 @@ export default function Home() {
 
       const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
       const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-      setCurrentDate(`${days[now.getDay()]} , ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
+      setCurrentDate(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
     };
     const timer = setInterval(updateDateTime, 1000);
     updateDateTime();
@@ -135,17 +135,9 @@ export default function Home() {
       <div className="top-bar">
         <div className="container">
           <div className="top-bar-left">
-            <div className="top-bar-item" id="realtime-date">
-              <i className="fa-regular fa-calendar-days text-crimson"></i>
-              <span>{currentDate}</span>
-            </div>
-            <div className="top-bar-item" id="realtime-clock">
+            <div className="top-bar-item" id="realtime-date-clock">
               <i className="fa-regular fa-clock text-crimson"></i>
-              <span>{currentTime}</span>
-            </div>
-            <div className="top-bar-item" id="weather-info">
-              <i className="fa-solid fa-cloud-sun text-crimson"></i>
-              <span>Surabaya, 30°C (Cerah)</span>
+              <span>{currentDate} | {currentTime}</span>
             </div>
           </div>
 
@@ -153,10 +145,11 @@ export default function Home() {
             <div className="trending-tags">
               <span className="trending-label">🔴 TRENDING:</span>
               <div className="trending-list">
-                <a href="#">#Pemilu2026</a>
-                <a href="#">#KriminalHariIni</a>
-                <a href="#">#RupiahMenguat</a>
-                <a href="#">#TimnasDay</a>
+                {categories.slice(0, 4).map(cat => (
+                  <Link key={cat.id} href={`/kategori/${cat.slug}`}>
+                    #{cat.name}
+                  </Link>
+                ))}
               </div>
             </div>
 
@@ -244,14 +237,14 @@ export default function Home() {
           <div className="ticker-label">⚠️ BREAKING NEWS</div>
           <div className="ticker-content">
             <div className="ticker-track" id="breaking-ticker">
-              {berita.slice(0, 4).length > 0 ? (
-                berita.slice(0, 4).map((post) => (
+              {berita.slice(0, 5).length > 0 ? (
+                berita.slice(0, 5).map((post) => (
                   <div key={post.id} className="ticker-item">
                     <span className="ticker-bullet">•</span> {post.title}
                   </div>
                 ))
               ) : (
-                <div className="ticker-item">Selamat Datang di PojokTV.com - Portal Berita Terpercaya</div>
+                <div className="ticker-item">Belum ada berita</div>
               )}
             </div>
           </div>
@@ -259,10 +252,10 @@ export default function Home() {
       </header>
 
       {/* Main Wrapper */}
-      <main className="main-wrapper">
+      <main className="main-wrapper my-8 gap-6 flex flex-col">
         <div className="container">
           {/* 3. Hero Section (Grid Berita Utama Asimetris) */}
-          <section className="hero-section">
+          <section className="hero-section mb-8">
             {berita.length === 0 ? (
               <div className="w-full text-center py-20 bg-white border border-gray-250 rounded-xl shadow-sm text-gray-500 font-bold text-lg">
                 Belum ada berita yang dipublikasikan
@@ -335,7 +328,7 @@ export default function Home() {
           </section>
 
           {/* Seksi 1: Kriminal Hari Ini (Grid 4 Kartu) */}
-          <section className="kriminal-section" id="kriminal-section" style={{ marginBottom: '3rem' }}>
+          <section className="kriminal-section mb-8" id="kriminal-section">
             <div className="section-header">
               <h2 className="section-title crimson-title">Kriminal Hari Ini</h2>
               <a href="#" className="section-link">Indeks Kriminal <i className="fa-solid fa-chevron-right"></i></a>
@@ -380,7 +373,7 @@ export default function Home() {
         </div>
 
         {/* Seksi 2: Pojok Video (Carousel Slider Horizontal - Mode Gelap) */}
-        <section className="video-section" id="video-section" style={{ marginBottom: '3rem' }}>
+        <section className="video-section py-8" id="video-section">
           <div className="container">
             <div className="section-header">
               <h2 className="section-title"><i className="fa-solid fa-circle-play text-crimson"></i> Pojok Video</h2>
@@ -435,7 +428,7 @@ export default function Home() {
 
         {/* 5. Seksi Ekonomi & Bisnis + Sidebar */}
         <div className="container">
-          <div className="content-grid">
+          <div className="content-grid gap-6">
             {/* Kolom Kiri: Ekonomi & Bisnis (70%) */}
             <div className="content-left" id="ekonomi-section">
               <div className="section-header">
@@ -479,7 +472,7 @@ export default function Home() {
 
             {/* Kolom Kanan: Sidebar (30%) */}
             <aside className="sidebar-wrapper">
-              <div className="sidebar-sticky">
+              <div className="sidebar-sticky gap-6 flex flex-col">
                 {/* Terpopuler */}
                 <div className="sidebar-widget" id="popular-widget">
                   <div className="section-header">
@@ -504,7 +497,7 @@ export default function Home() {
                 </div>
 
                 {/* Slot Iklan 2: Sidebar Kanan Atas */}
-                <div className="w-full h-[250px] mb-4">
+                <div className="w-full h-[250px]">
                   <AdSlot size="300x250" className="w-full h-full" ad={sidebarTopAd} />
                 </div>
 
@@ -595,7 +588,7 @@ export default function Home() {
               <Link href="/kebijakan-privasi">Kebijakan Privasi</Link>
               <Link href="/ketentuan-layanan">Ketentuan Layanan</Link>
               {/* Login link di Footer bottom */}
-              <Link href="/admin/login" className="text-red-505 hover:text-red-400 font-bold ml-2">Login Admin</Link>
+              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold ml-2">Login Admin</Link>
             </div>
           </div>
         </div>
