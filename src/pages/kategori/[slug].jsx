@@ -135,134 +135,170 @@ export default function KategoriPage() {
   const footerAd = ads?.find(a => a.position === 'Footer');
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans">
       <Head>
         <title>{activeCategory ? `Rubrik ${activeCategory.name} - PojokTV.com` : 'Rubrik Kategori - PojokTV.com'}</title>
         <meta name="description" content={activeCategory ? `Kumpulan berita terkini seputar rubrik ${activeCategory.name} hanya di PojokTV.com.` : 'PojokTV.com'} />
       </Head>
 
-      {/* 1. Top Bar */}
-      <div className="top-bar">
-        <div className="container">
-          <div className="top-bar-left">
-            <div className="top-bar-item" id="realtime-date-clock">
-              <i className="fa-regular fa-clock text-crimson"></i>
-              <span>{currentDate} | {currentTime}</span>
-            </div>
+      {/* Baris 1: Top Bar */}
+      <div className="top-bar bg-slate-950 text-slate-300 py-2 border-b border-slate-800">
+        <div className="container mx-auto px-4 flex flex-wrap justify-between items-center gap-2">
+          {/* Left: Clock & Date */}
+          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+            <i className="fa-regular fa-clock text-red-500"></i>
+            <span>{currentDate} | {currentTime}</span>
           </div>
 
-          <div className="top-bar-right">
-            <div className="trending-tags">
-              <span className="trending-label">🔴 TRENDING:</span>
-              <div className="trending-list">
-                {categories.slice(0, 4).map(cat => (
-                  <Link key={cat.id} href={`/kategori/${cat.slug}`}>
-                    #{cat.name}
-                  </Link>
-                ))}
+          {/* Right: Trending, Socials & Login */}
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            {categories.length > 0 && (
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="font-bold text-red-500 uppercase tracking-wider text-[10px]">🔴 Trending:</span>
+                <div className="flex items-center gap-2.5 text-slate-400">
+                  {categories.slice(0, 4).map(cat => (
+                    <Link key={cat.id} href={`/kategori/${cat.slug}`} className="hover:text-red-500 transition-colors">
+                      #{cat.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className="flex items-center gap-3 text-slate-400">
+              <a href="#" className="hover:text-white transition-colors" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
             </div>
+            <Link href="/admin/login" className="px-3 py-1 text-xs font-bold rounded bg-red-650 text-white hover:bg-red-700 transition shadow-sm">
+              LOGIN
+            </Link>
+          </div>
+        </div>
+      </div>
 
-            <div className="social-icons flex items-center">
-              <a href="#" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
-              <a href="#" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
-              <a href="#" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
-              <a href="#" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
-              <Link href="/admin/login" className="ml-3 text-[10px] bg-red-600 hover:bg-red-700 text-white font-bold px-2.5 py-1 rounded transition-all">
-                LOGIN
-              </Link>
+      {/* Baris 2: Main Branding & Ad Slot */}
+      <div className="bg-white py-5 border-b border-gray-100">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+          {/* Left: Logo */}
+          <Link href="/" className="logo text-4xl font-black tracking-tighter leading-none shrink-0">
+            Pojok<span className="text-red-600">TV.com</span>
+          </Link>
+          
+          {/* Right: Ad Slot */}
+          <div className="hidden md:block w-full max-w-[728px] h-[90px] shrink">
+            <AdSlot size="728x90" className="h-full py-1 text-[9px]" ad={headerAd} />
+          </div>
+        </div>
+      </div>
+
+      {/* Baris 3: Navigation, Search, & Live TV */}
+      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 flex items-center justify-between gap-4 py-2">
+          {/* Left: Scrollable Rubrik Menu */}
+          <nav className="overflow-x-auto whitespace-nowrap scrollbar-none flex-1 max-w-full">
+            <ul className="flex items-center gap-6 text-sm font-bold text-slate-700 uppercase py-1">
+              <li>
+                <Link href="/" className="hover:text-red-600 transition-colors pb-1">
+                  Berita Utama
+                </Link>
+              </li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link href={`/kategori/${cat.slug}`} className={`hover:text-red-600 transition-colors pb-1 ${cat.slug === slug ? 'border-b-2 border-red-600 text-red-650' : ''}`}>
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3 shrink-0">
+            <form onSubmit={handleSearch} className="search-box relative hidden sm:flex items-center bg-gray-50 border border-gray-300 rounded-lg overflow-hidden px-2.5 py-1">
+              <input
+                type="text"
+                className="bg-transparent text-xs text-slate-800 outline-none w-36 focus:w-48 transition-all"
+                placeholder="Cari berita..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1 text-xs">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </form>
+
+            <button 
+              className="flex items-center gap-2 px-4 py-1.5 bg-red-600 text-white text-xs font-black rounded-full hover:bg-red-750 transition shadow-sm cursor-pointer" 
+              onClick={handleLiveTv}
+            >
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+              <span>LIVE TV</span>
+            </button>
+
+            {/* Mobile search toggle */}
+            <button 
+              className="block sm:hidden text-slate-700 hover:text-red-600 p-1 text-lg"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <i className="fa-solid fa-magnifying-glass"></i>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Search input bar */}
+        {isMobileMenuOpen && (
+          <div className="bg-slate-50 border-t border-gray-200 px-4 py-2 block sm:hidden">
+            <form onSubmit={handleSearch} className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden px-3 py-1.5">
+              <input
+                type="text"
+                className="bg-transparent text-sm text-slate-800 outline-none w-full"
+                placeholder="Ketik kata kunci pencarian..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1">
+                <i className="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* Breaking News Ticker */}
+      <div className="ticker-bar bg-red-50 border-b border-red-150">
+        <div className="container mx-auto px-4 flex items-center h-9">
+          <div className="ticker-label bg-red-600 text-white text-xs font-extrabold px-3 py-1 flex items-center h-full">
+            ⚠️ BREAKING NEWS
+          </div>
+          <div className="ticker-content flex-1 overflow-hidden relative h-full flex items-center ml-3">
+            <div className="ticker-track flex items-center" id="breaking-ticker">
+              {latestBerita.length > 0 ? (
+                latestBerita.map((post) => (
+                  <div key={post.id} className="ticker-item text-xs font-bold text-slate-800 whitespace-nowrap">
+                    <span className="ticker-bullet text-red-600 font-extrabold mx-2">•</span> {post.title}
+                  </div>
+                ))
+              ) : (
+                <div className="ticker-item text-xs text-slate-600">Belum ada berita</div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Header */}
-      <header className="main-header">
-        <div className="container">
-          <div className="header-main-bar flex items-center justify-between">
-            <Link href="/" className="logo flex-shrink-0" id="main-logo">
-              Pojok<span>TV.com</span>
-            </Link>
-
-            <div className="hidden lg:block w-[468px] h-[60px] mx-4 flex-shrink">
-              <AdSlot size="468x60" className="h-full py-1 text-[9px]" ad={headerAd} />
-            </div>
-
-            <nav className={`main-nav ${isMobileMenuOpen ? 'active' : ''}`} id="main-navigation">
-              <ul className="nav-list">
-                <li><Link href="/" className="nav-link">Berita Utama</Link></li>
-                {categories.map((cat) => (
-                  <li key={cat.id}>
-                    <Link href={`/kategori/${cat.slug}`} className={`nav-link ${cat.slug === slug ? 'active' : ''}`}>
-                      {cat.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            <div className="header-actions">
-              <form onSubmit={handleSearch} className="search-box">
-                <input
-                  type="text"
-                  className="search-input"
-                  id="search-bar"
-                  placeholder="Cari berita..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className="search-btn" aria-label="Cari">
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                </button>
-              </form>
-
-              <button className="live-tv-btn" id="live-tv-trigger" onClick={handleLiveTv}>
-                <span className="live-dot"></span>
-                <span>🔴 LIVE TV</span>
-              </button>
-
-              <div
-                className="mobile-toggle"
-                id="mobile-menu-toggle"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                <i className={`fa-solid ${isMobileMenuOpen ? 'fa-xmark' : 'fa-bars'}`}></i>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Ticker Bar */}
-        <div className="ticker-bar">
-          <div className="ticker-label">⚠️ BREAKING NEWS</div>
-          <div className="ticker-content">
-            <div className="ticker-track" id="breaking-ticker">
-              {latestBerita.length > 0 ? (
-                latestBerita.map((post) => (
-                  <div key={post.id} className="ticker-item">
-                    <span className="ticker-bullet">•</span> {post.title}
-                  </div>
-                ))
-              ) : (
-                <div className="ticker-item">Belum ada berita</div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Content Wrapper */}
       <main className="main-wrapper my-8">
         <div className="container">
-          <div className="section-header border-b pb-2 mb-6">
-            <h1 className="text-3xl font-black text-slate-900 uppercase">
-              Rubrik: <span className="text-crimson">{activeCategory ? activeCategory.name : 'Memuat...'}</span>
+          <div className="section-header border-b border-gray-250 pb-2 mb-6">
+            <h1 className="text-2xl font-black text-slate-900 uppercase">
+              Rubrik: <span className="text-red-605">{activeCategory ? activeCategory.name : 'Memuat...'}</span>
             </h1>
           </div>
 
-          <div className="content-grid gap-6">
+          <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Grid Berita (Kiri - 70%) */}
-            <div className="content-left">
+            <div className="content-left lg:col-span-2">
               {loading ? (
                 <div className="text-center py-20 text-gray-400 font-bold">
                   <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat artikel rubrik...
@@ -272,28 +308,28 @@ export default function KategoriPage() {
                   Belum ada berita di rubrik ini
                 </div>
               ) : (
-                <div className="ekonomi-grid gap-6">
+                <div className="ekonomi-grid flex flex-col gap-4">
                   {berita.map((post) => (
-                    <article key={post.id} className="ekonomi-item">
-                      <div className="ekonomi-img-wrapper">
+                    <article key={post.id} className="ekonomi-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex gap-4 hover:shadow-md transition">
+                      <div className="ekonomi-img-wrapper w-36 h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {post.image ? (
-                          <img src={post.image} alt={post.title} className="ekonomi-img" />
+                          <img src={post.image} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
                         ) : (
-                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-650 font-bold text-sm">
+                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-650 font-bold text-sm w-full h-full">
                             No Image
                           </div>
                         )}
                       </div>
-                      <div className="ekonomi-content">
+                      <div className="ekonomi-content flex-1 flex flex-col justify-between overflow-hidden">
                         <div>
-                          <h3 className="ekonomi-title text-lg font-bold hover:text-red-600 transition-colors">
+                          <h3 className="ekonomi-title text-base font-bold text-slate-900 hover:text-red-655 line-clamp-1">
                             <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                           </h3>
-                          <p className="ekonomi-snippet text-slate-600 text-sm mt-2 line-clamp-3">
-                            {post.content?.slice(0, 180)}...
+                          <p className="ekonomi-snippet text-slate-500 text-xs line-clamp-2 mt-1 leading-relaxed">
+                            {post.content?.replace(/<[^>]*>/g, '')?.slice(0, 180)}...
                           </p>
                         </div>
-                        <div className="ekonomi-meta text-xs text-slate-400 mt-4">
+                        <div className="ekonomi-meta text-[10px] text-slate-400 mt-2">
                           <span>{formatTimeAgo(post.created_at)}</span>
                         </div>
                       </div>
@@ -327,69 +363,69 @@ export default function KategoriPage() {
       </div>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="footer bg-slate-950 text-slate-350 border-t-4 border-red-600 pt-12 pb-6">
         <div className="container">
-          <div className="footer-grid">
+          <div className="footer-grid grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="footer-col md:col-span-2">
-              <div className="footer-about-logo">
-                PojokTV<span>.com</span>
+              <div className="footer-about-logo text-3xl font-black tracking-tighter text-white mb-3">
+                Pojok<span className="text-red-600">TV.com</span>
               </div>
-              <p className="footer-about-text">
+              <p className="footer-about-text text-sm text-slate-400 leading-relaxed">
                 PojokTV.com adalah bagian dari jaringan televisi berita digital nasional terkemuka yang berdedikasi menghadirkan jurnalisme berwibawa, independen, tajam, dan tercepat dari seluruh penjuru nusantara.
               </p>
-              <div className="social-icons" style={{ marginTop: '0.5rem' }}>
-                <a href="#" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
-                <a href="#" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
-                <a href="#" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
-                <a href="#" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
+              <div className="social-icons flex gap-3 text-slate-400 mt-4">
+                <a href="#" className="hover:text-white transition" aria-label="Facebook"><i className="fa-brands fa-facebook-f text-lg"></i></a>
+                <a href="#" className="hover:text-white transition" aria-label="Instagram"><i className="fa-brands fa-instagram text-lg"></i></a>
+                <a href="#" className="hover:text-white transition" aria-label="Youtube"><i className="fa-brands fa-youtube text-lg"></i></a>
+                <a href="#" className="hover:text-white transition" aria-label="TikTok"><i className="fa-brands fa-tiktok text-lg"></i></a>
               </div>
             </div>
 
             <div className="footer-col">
-              <h4 className="footer-col-title">Kategori</h4>
-              <div className="footer-links">
-                <Link href="/">Berita Utama</Link>
+              <h4 className="footer-col-title text-white font-bold text-sm uppercase mb-3 tracking-wider">Kategori</h4>
+              <div className="footer-links flex flex-col gap-2 text-sm text-slate-400">
+                <Link href="/" className="hover:text-white transition">Berita Utama</Link>
                 {categories.map((cat) => (
-                  <Link key={cat.id} href={`/kategori/${cat.slug}`}>
+                  <Link key={cat.id} href={`/kategori/${cat.slug}`} className="hover:text-white transition">
                     {cat.name}
                   </Link>
                 ))}
               </div>
             </div>
 
-            <div className="footer-col md:col-span-1">
-              <h4 className="footer-col-title">Hubungi Kami</h4>
-              <div className="footer-links text-slate-400 space-y-2">
-                <div className="footer-contact-item">
-                  <i className="fa-solid fa-user text-crimson mt-0.5"></i>
-                  <span>Nama: Mujianto Primadi</span>
+            <div className="footer-col">
+              <h4 className="footer-col-title text-white font-bold text-sm uppercase mb-3 tracking-wider">Hubungi Kami</h4>
+              <div className="footer-links text-slate-400 space-y-2 text-sm">
+                <div className="footer-contact-item flex gap-2">
+                  <i className="fa-solid fa-user text-red-600 mt-1 shrink-0"></i>
+                  <span>Mujianto Primadi</span>
                 </div>
-                <div className="footer-contact-item">
-                  <i className="fa-solid fa-location-dot text-crimson mt-0.5"></i>
-                  <span>Alamat: Perum Citra Oma Pesona Blok E3/25 RT 37 RW 07, Desa Sidokepung, Kecamatan Buduran, Sidoarjo, Jatim</span>
+                <div className="footer-contact-item flex gap-2">
+                  <i className="fa-solid fa-location-dot text-red-600 mt-1 shrink-0"></i>
+                  <span>Perum Citra Oma Pesona Blok E3/25 RT 37 RW 07, Desa Sidokepung, Kecamatan Buduran, Sidoarjo, Jatim</span>
                 </div>
-                <div className="footer-contact-item">
-                  <i className="fa-brands fa-whatsapp text-crimson mt-0.5"></i>
+                <div className="footer-contact-item flex gap-2">
+                  <i className="fa-brands fa-whatsapp text-red-600 mt-1 shrink-0"></i>
                   <span>WhatsApp: <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="hover:text-white underline">+62 813-3116-0799</a></span>
                 </div>
-                <div className="footer-contact-item">
-                  <i className="fa-solid fa-envelope text-crimson mt-0.5"></i>
+                <div className="footer-contact-item flex gap-2">
+                  <i className="fa-solid fa-envelope text-red-600 mt-1 shrink-0"></i>
                   <span>Email: <a href="mailto:redaksi@pojoktv.com" className="hover:text-white underline">redaksi@pojoktv.com</a></span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="footer-bottom">
-            <div className="footer-copyright">
+          <div className="footer-bottom border-t border-slate-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+            <div className="footer-copyright text-center md:text-left">
               &copy; 2026 pojoktv.com. Jaringan Berita Nasional Terpercaya. Hak Cipta Dilindungi Undang-Undang.
             </div>
-            <div className="footer-bottom-links flex items-center gap-4">
-              <Link href="/tentang-kami">Tentang Kami</Link>
-              <Link href="/pedoman-media">Pedoman Media Siber</Link>
-              <Link href="/kebijakan-privasi">Kebijakan Privasi</Link>
-              <Link href="/ketentuan-layanan">Ketentuan Layanan</Link>
-              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold ml-2">Login Admin</Link>
+            <div className="footer-bottom-links flex flex-wrap justify-center gap-4">
+              <Link href="/tentang-kami" className="hover:text-slate-350">Tentang Kami</Link>
+              <Link href="/pedoman-media" className="hover:text-slate-350">Pedoman Media Siber</Link>
+              <Link href="/kebijakan-privasi" className="hover:text-slate-350">Kebijakan Privasi</Link>
+              <Link href="/ketentuan-layanan" className="hover:text-slate-350">Ketentuan Layanan</Link>
+              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold">Login Admin</Link>
             </div>
           </div>
         </div>
