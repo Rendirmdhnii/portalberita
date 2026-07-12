@@ -50,7 +50,7 @@ Buat sebuah berkas bernama **`.env.local`** pada folder root proyek Anda dan mas
 ```env
 # URL & Kunci Anonim Supabase Publik
 NEXT_PUBLIC_SUPABASE_URL=https://nama-proyek-anda.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 ### 4. Menjalankan Server Pengembangan (Dev Server)
 Nyalakan server pengembangan lokal:
