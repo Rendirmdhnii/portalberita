@@ -100,17 +100,16 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Quick Actions */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
             <h3 className="text-gray-900 text-base font-bold uppercase tracking-wide mb-4">Aksi Menu Cepat Redaksi</h3>
             <div className="flex flex-wrap gap-4">
               <Link href="/admin/berita/create" className="text-base bg-blue-100 hover:bg-blue-200 text-blue-900 px-6 py-3 rounded-md font-bold transition-colors border border-blue-300 shadow-sm">
                 Tulis Berita Baru
               </Link>
-              <Link href="/admin/categories" className="text-base bg-green-100 hover:bg-green-200 text-green-900 px-6 py-3 rounded-md font-bold transition-colors border border-green-300 shadow-sm">
+              <Link href="/admin/rubrik" className="text-base bg-green-100 hover:bg-green-200 text-green-900 px-6 py-3 rounded-md font-bold transition-colors border border-green-300 shadow-sm">
                 Kelola Rubrik
               </Link>
-              <Link href="/admin/ads" className="text-base bg-orange-100 hover:bg-orange-200 text-orange-900 px-6 py-3 rounded-md font-bold transition-colors border border-orange-300 shadow-sm">
+              <Link href="/admin/iklan" className="text-base bg-orange-100 hover:bg-orange-200 text-orange-900 px-6 py-3 rounded-md font-bold transition-colors border border-orange-300 shadow-sm">
                 Kelola Iklan
               </Link>
               <Link href="/admin/videos" className="text-base bg-red-100 hover:bg-red-200 text-red-900 px-6 py-3 rounded-md font-bold transition-colors border border-red-300 shadow-sm">

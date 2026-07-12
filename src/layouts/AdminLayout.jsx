@@ -38,8 +38,8 @@ export default function AdminLayout({ children }) {
       if (pathname.includes('edit')) return 'Panel Admin / Kelola Berita / Ubah Berita';
       return 'Panel Admin / Kelola Berita';
     }
-    if (pathname.includes('categories')) return 'Panel Admin / Kelola Rubrik';
-    if (pathname.includes('ads')) return 'Panel Admin / Kelola Iklan';
+    if (pathname.includes('rubrik')) return 'Panel Admin / Kelola Rubrik';
+    if (pathname.includes('iklan')) return 'Panel Admin / Kelola Iklan';
     if (pathname.includes('videos')) return 'Panel Admin / Kelola Video';
     return 'Panel Admin';
   };
@@ -83,10 +83,10 @@ export default function AdminLayout({ children }) {
           <Link href="/admin/berita" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-newspaper w-5"></i> Kelola Berita
           </Link>
-          <Link href="/admin/categories" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/admin/rubrik" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-folder w-5"></i> Kelola Rubrik
           </Link>
-          <Link href="/admin/ads" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/admin/iklan" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-bullhorn w-5"></i> Kelola Iklan
           </Link>
           <Link href="/admin/videos" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
