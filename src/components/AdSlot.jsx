@@ -1,8 +1,8 @@
-export default function AdSlot({ size = "728x90", className = "", ad = null }) {
+export default function AdSlot({ size = "728x90", className = "", imgClassName = "w-full h-auto object-contain max-w-full block", ad = null }) {
   if (ad && ad.image) {
     const isExternal = ad.link && ad.link.startsWith('http');
     return (
-      <div className={`relative overflow-hidden w-full max-w-full flex items-center justify-center rounded-lg shadow-sm border border-slate-200 ${className}`}>
+      <div className={`relative overflow-hidden w-full max-w-full flex items-center justify-center rounded-lg ${className}`}>
         <a 
           href={ad.link && ad.link !== '-' ? ad.link : '#'} 
           target={isExternal ? "_blank" : "_self"} 
@@ -12,7 +12,7 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
           <img 
             src={ad.image} 
             alt={ad.name || "Iklan PojokTV"} 
-            className="w-full h-auto object-contain max-w-full block"
+            className={imgClassName}
           />
         </a>
       </div>

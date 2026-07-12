@@ -140,7 +140,7 @@ export default function Home() {
             <span>{currentDate} | {currentTime}</span>
           </div>
 
-          {/* Right: Trending, Socials & Login */}
+          {/* Right: Trending & Socials (Hapus Tombol Login) */}
           <div className="flex flex-wrap items-center gap-4 text-xs">
             {categories.length > 0 && (
               <div className="hidden sm:flex items-center gap-2">
@@ -160,42 +160,33 @@ export default function Home() {
               <a href="#" className="hover:text-white transition-colors" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
               <a href="#" className="hover:text-white transition-colors" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
             </div>
-            <Link href="/admin/login" className="px-3 py-1 text-xs font-bold rounded bg-red-600 text-white hover:bg-red-700 transition shadow-sm">
-              LOGIN
-            </Link>
           </div>
         </div>
       </div>
 
-      {/* Baris 2: Main Branding & Ad Slot */}
+      {/* Baris 2: Main Branding (Logo di kiri Desktop, tengah HP. Hapus iklan di sini) */}
       <div className="bg-white py-5 border-b border-gray-100">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          {/* Left: Logo */}
+        <div className="container mx-auto px-4 flex justify-center md:justify-start">
           <Link href="/" className="logo text-4xl font-black tracking-tighter leading-none shrink-0">
-            Pojok<span className="text-red-650">TV.com</span>
+            Pojok<span className="text-red-605">TV.com</span>
           </Link>
-          
-          {/* Right: Ad Slot */}
-          <div className="hidden md:block w-full max-w-[728px] h-[90px] shrink">
-            <AdSlot size="728x90" className="h-full py-1 text-[9px]" ad={headerAd} />
-          </div>
         </div>
       </div>
 
       {/* Baris 3: Navigation, Search, & Live TV */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <div className="bg-white border-b border-gray-250 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 flex items-center justify-between gap-4 py-2">
           {/* Left: Scrollable Rubrik Menu */}
           <nav className="overflow-x-auto whitespace-nowrap scrollbar-none flex-1 max-w-full">
             <ul className="flex items-center gap-6 text-sm font-bold text-slate-700 uppercase py-1">
               <li>
-                <Link href="/" className="hover:text-red-600 transition-colors pb-1 border-b-2 border-red-600 text-red-600">
+                <Link href="/" className="hover:text-red-650 transition-colors pb-1 border-b-2 border-red-600 text-red-600">
                   Berita Utama
                 </Link>
               </li>
               {categories.map((cat) => (
                 <li key={cat.id}>
-                  <Link href={`/kategori/${cat.slug}`} className="hover:text-red-600 transition-colors pb-1">
+                  <Link href={`/kategori/${cat.slug}`} className="hover:text-red-650 transition-colors pb-1">
                     {cat.name}
                   </Link>
                 </li>
@@ -256,7 +247,7 @@ export default function Home() {
       </div>
 
       {/* Breaking News Ticker */}
-      <div className="ticker-bar bg-red-50 border-b border-red-150">
+      <div className="ticker-bar bg-red-50 border-b border-red-155">
         <div className="container mx-auto px-4 flex items-center h-9">
           <div className="ticker-label bg-red-600 text-white text-xs font-extrabold px-3 py-1 flex items-center h-full">
             ⚠️ BREAKING NEWS
@@ -270,20 +261,30 @@ export default function Home() {
                   </div>
                 ))
               ) : (
-                <div className="ticker-item text-xs text-slate-600">Belum ada berita</div>
+                <div className="ticker-item text-xs text-slate-605">Belum ada berita</div>
               )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Hero) */}
+      <div className="w-full max-w-5xl mx-auto my-6 px-4 flex justify-center">
+        <AdSlot 
+          size="970x90" 
+          className="w-full h-auto" 
+          imgClassName="w-full h-auto max-h-[120px] md:max-h-[200px] object-contain rounded-lg shadow-sm block mx-auto"
+          ad={headerAd} 
+        />
+      </div>
+
       {/* Main Wrapper */}
-      <main className="main-wrapper my-8 gap-8 flex flex-col">
+      <main className="main-wrapper my-8 gap-8 flex flex-col pt-0">
         <div className="container">
           {/* 3. Hero Section */}
           <section className="hero-section mb-8">
             {berita.length === 0 ? (
-              <div className="w-full text-center py-20 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-500 font-bold text-lg">
+              <div className="w-full text-center py-20 bg-white border border-gray-205 rounded-xl shadow-sm text-gray-500 font-bold text-lg">
                 Belum ada berita yang dipublikasikan
               </div>
             ) : (
@@ -300,7 +301,7 @@ export default function Home() {
                     )}
                     <div className="gradient-overlay p-6 flex flex-col justify-end">
                       <span className="tag-badge bg-red-600 text-white text-xs font-extrabold px-2.5 py-1 rounded w-fit mb-2">{berita[0]?.category}</span>
-                      <h1 className="hero-title-main text-2xl md:text-3xl font-black text-white hover:text-red-200 leading-tight">
+                      <h1 className="hero-title-main text-2xl md:text-3xl font-black text-white hover:text-red-205 leading-tight">
                         <Link href={`/berita/${berita[0]?.slug}`}>
                           {berita[0]?.title}
                         </Link>
@@ -331,9 +332,9 @@ export default function Home() {
                         <div className="side-content flex-1 p-3 flex flex-col justify-between overflow-hidden">
                           <div>
                             <div className="category-row">
-                              <span className="side-category text-red-600 text-[10px] font-extrabold uppercase">{post.category}</span>
+                              <span className="side-category text-red-605 text-[10px] font-extrabold uppercase">{post.category}</span>
                             </div>
-                            <h2 className="side-title text-sm font-bold text-slate-900 hover:text-red-600 line-clamp-2 mt-0.5 leading-snug">
+                            <h2 className="side-title text-sm font-bold text-slate-900 hover:text-red-606 line-clamp-2 mt-0.5 leading-snug">
                               <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                             </h2>
                           </div>
@@ -359,7 +360,7 @@ export default function Home() {
               <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
                 <span className="border-b-4 border-red-650 pb-2">Kriminal Hari Ini</span>
               </h2>
-              <a href="#" className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+              <a href="#" className="text-xs font-bold text-red-600 hover:text-red-750 flex items-center gap-1">
                 Indeks Kriminal <i className="fa-solid fa-chevron-right"></i>
               </a>
             </div>
@@ -382,7 +383,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className="politik-content p-4">
-                      <span className="crimson-tag text-red-600 text-[10px] font-extrabold uppercase">KRIMINAL</span>
+                      <span className="crimson-tag text-red-650 text-[10px] font-extrabold uppercase">KRIMINAL</span>
                       <h3 className="politik-title text-sm font-bold text-slate-900 hover:text-red-600 line-clamp-2 mt-1 leading-snug">
                         <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                       </h3>
@@ -447,7 +448,7 @@ export default function Home() {
                       </div>
                       <div className="video-carousel-info p-3">
                         <h4 className="video-carousel-title text-xs font-bold text-slate-100 line-clamp-2 leading-snug">{video.judul}</h4>
-                        <span className="video-carousel-meta text-[10px] text-slate-400 mt-2 block"><i className="fa-brands fa-youtube text-red-600"></i> YouTube</span>
+                        <span className="video-carousel-meta text-[10px] text-slate-405 mt-2 block"><i className="fa-brands fa-youtube text-red-600"></i> YouTube</span>
                       </div>
                     </div>
                   ))}
@@ -483,7 +484,7 @@ export default function Home() {
                         {post.image ? (
                           <img src={post.image} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
                         ) : (
-                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-650 w-full h-full">
+                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full">
                             No Image
                           </div>
                         )}
@@ -509,7 +510,7 @@ export default function Home() {
             <aside className="sidebar-wrapper">
               <div className="sidebar-sticky flex flex-col gap-6">
                 {/* Terpopuler */}
-                <div className="sidebar-widget bg-white rounded-xl shadow-sm border border-gray-150 p-4" id="popular-widget">
+                <div className="sidebar-widget bg-white rounded-xl shadow-sm border border-gray-155 p-4" id="popular-widget">
                   <div className="section-header border-b border-gray-200 pb-2 mb-4">
                     <h3 className="section-title text-base font-black text-slate-900 uppercase">Terpopuler</h3>
                   </div>
@@ -521,7 +522,7 @@ export default function Home() {
                         <li key={post.id} className="popular-item flex gap-3 items-start border-b border-gray-100 pb-3 last:border-0 last:pb-0">
                           <span className="popular-number text-2xl font-black text-slate-300 w-8 text-center shrink-0">{String(idx + 1).padStart(2, '0')}</span>
                           <div className="popular-content flex-1">
-                            <h4 className="popular-title text-xs font-bold text-slate-800 hover:text-red-600 line-clamp-2 leading-snug">
+                            <h4 className="popular-title text-xs font-bold text-slate-800 hover:text-red-605 line-clamp-2 leading-snug">
                               <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                             </h4>
                           </div>
@@ -618,7 +619,7 @@ export default function Home() {
               <Link href="/pedoman-media" className="hover:text-slate-350">Pedoman Media Siber</Link>
               <Link href="/kebijakan-privasi" className="hover:text-slate-350">Kebijakan Privasi</Link>
               <Link href="/ketentuan-layanan" className="hover:text-slate-350">Ketentuan Layanan</Link>
-              <Link href="/admin/login" className="text-red-500 hover:text-red-400 font-bold">Login Admin</Link>
+              <Link href="/admin/login" className="text-red-505 hover:text-red-405 font-bold">Login Admin</Link>
             </div>
           </div>
         </div>

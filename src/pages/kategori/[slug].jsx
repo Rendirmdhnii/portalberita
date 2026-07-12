@@ -150,7 +150,7 @@ export default function KategoriPage() {
             <span>{currentDate} | {currentTime}</span>
           </div>
 
-          {/* Right: Trending, Socials & Login */}
+          {/* Right: Trending & Socials (Hapus Tombol Login) */}
           <div className="flex flex-wrap items-center gap-4 text-xs">
             {categories.length > 0 && (
               <div className="hidden sm:flex items-center gap-2">
@@ -170,25 +170,16 @@ export default function KategoriPage() {
               <a href="#" className="hover:text-white transition-colors" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
               <a href="#" className="hover:text-white transition-colors" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
             </div>
-            <Link href="/admin/login" className="px-3 py-1 text-xs font-bold rounded bg-red-650 text-white hover:bg-red-700 transition shadow-sm">
-              LOGIN
-            </Link>
           </div>
         </div>
       </div>
 
-      {/* Baris 2: Main Branding & Ad Slot */}
+      {/* Baris 2: Main Branding (Logo di kiri Desktop, tengah HP. Hapus iklan di sini) */}
       <div className="bg-white py-5 border-b border-gray-100">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          {/* Left: Logo */}
+        <div className="container mx-auto px-4 flex justify-center md:justify-start">
           <Link href="/" className="logo text-4xl font-black tracking-tighter leading-none shrink-0">
             Pojok<span className="text-red-600">TV.com</span>
           </Link>
-          
-          {/* Right: Ad Slot */}
-          <div className="hidden md:block w-full max-w-[728px] h-[90px] shrink">
-            <AdSlot size="728x90" className="h-full py-1 text-[9px]" ad={headerAd} />
-          </div>
         </div>
       </div>
 
@@ -287,12 +278,22 @@ export default function KategoriPage() {
         </div>
       </div>
 
+      {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Kategori) */}
+      <div className="w-full max-w-5xl mx-auto my-6 px-4 flex justify-center">
+        <AdSlot 
+          size="970x90" 
+          className="w-full h-auto" 
+          imgClassName="w-full h-auto max-h-[120px] md:max-h-[200px] object-contain rounded-lg shadow-sm block mx-auto"
+          ad={headerAd} 
+        />
+      </div>
+
       {/* Content Wrapper */}
-      <main className="main-wrapper my-8">
+      <main className="main-wrapper my-8 pt-0">
         <div className="container">
           <div className="section-header border-b border-gray-250 pb-2 mb-6">
             <h1 className="text-2xl font-black text-slate-900 uppercase">
-              Rubrik: <span className="text-red-605">{activeCategory ? activeCategory.name : 'Memuat...'}</span>
+              Rubrik: <span className="text-red-600">{activeCategory ? activeCategory.name : 'Memuat...'}</span>
             </h1>
           </div>
 
@@ -315,7 +316,7 @@ export default function KategoriPage() {
                         {post.image ? (
                           <img src={post.image} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
                         ) : (
-                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-650 font-bold text-sm w-full h-full">
+                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 font-bold text-sm w-full h-full">
                             No Image
                           </div>
                         )}
@@ -363,7 +364,7 @@ export default function KategoriPage() {
       </div>
 
       {/* Footer */}
-      <footer className="footer bg-slate-950 text-slate-350 border-t-4 border-red-600 pt-12 pb-6">
+      <footer className="footer bg-slate-950 text-slate-355 border-t-4 border-red-600 pt-12 pb-6">
         <div className="container">
           <div className="footer-grid grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="footer-col md:col-span-2">
