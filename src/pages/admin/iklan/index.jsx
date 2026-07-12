@@ -1,7 +1,79 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import Cropper from 'react-easy-crop';
+
+// ============================================================
+// Canvas Cropping Helpers
+// ============================================================
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    if (url && !url.startsWith('data:')) {
+      image.setAttribute('crossOrigin', 'anonymous');
+    }
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) { reject(new Error('Canvas is empty')); return; }
+      resolve(blob);
+    }, 'image/jpeg', 0.95);
+  });
+}
+
+// ============================================================
+// Shared Sub-Components
+// ============================================================
+function GuideBox({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 overflow-hidden">
+      <button onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left text-blue-800 font-semibold text-sm hover:bg-blue-100 transition-colors">
+        <span>{title}</span>
+        <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'} text-xs`}></i>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 text-sm text-blue-700 leading-relaxed border-t border-blue-200">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <p className="text-sm text-gray-500">Hal. <strong>{currentPage}</strong> / <strong>{totalPages}</strong></p>
+      <div className="flex gap-2">
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">← Prev</button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">Next →</button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Main Component
+// ============================================================
+const ITEMS_PER_PAGE = 8;
 
 export default function AdIndex() {
   const [ads, setAds] = useState([]);
@@ -9,6 +81,9 @@ export default function AdIndex() {
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showFormModal, setShowFormModal] = useState(false);
 
   // Form states
   const [name, setName] = useState('');
@@ -18,306 +93,417 @@ export default function AdIndex() {
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
 
-  const fetchAds = async () => {
-    try {
-      setLoading(true);
-      const { data, error: fetchErr } = await supabase
-        .from('ads')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Cropper states
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [originalFileName, setOriginalFileName] = useState('');
 
-      if (fetchErr) throw fetchErr;
-      setAds(data || []);
-    } catch (err) {
-      console.error('Error fetching ads:', err);
-    } finally {
-      setLoading(false);
+  const getAspectForPosition = (pos) => {
+    switch (pos) {
+      case 'Header': case 'Tengah Konten': case 'header': case 'Header (728x90)': return 728 / 90;
+      case 'Sidebar Atas': case 'sidebar': case 'Sidebar (300x250)': return 300 / 250;
+      case 'Sidebar Bawah': return 300 / 600;
+      case 'Footer': case 'Footer (970x250)': return 970 / 250;
+      default: return 728 / 90;
     }
   };
 
-  useEffect(() => {
-    fetchAds();
-  }, []);
-
-  const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!imageFile) {
-      alert('Pilih berkas gambar iklan terlebih dahulu!');
-      return;
-    }
-    setProcessing(true);
-    setError('');
-
-    try {
-      // 1. Upload to Supabase Storage
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `ads/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(filePath, imageFile);
-
-      if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('images')
-        .getPublicUrl(filePath);
-
-      // 2. Insert to Supabase ads table
-      const { error: insertError } = await supabase
-        .from('ads')
-        .insert([
-          {
-            name,
-            position,
-            image: publicUrl,
-            link: link || '-',
-            is_active: true
-          }
-        ]);
-
-      if (insertError) throw insertError;
-
-      // Reset Form
-      setName('');
-      setPosition('Header');
-      setLink('');
-      setTanggalBerakhir('');
-      setImageFile(null);
-      setPreviewUrl('');
-      
-      // Reset input element value
-      const fileInput = document.getElementById('ad-image-input');
-      if (fileInput) fileInput.value = '';
-
-      setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
-      fetchAds();
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      setError(err.message || 'Gagal menambahkan iklan.');
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus iklan ini dari sistem?')) {
-      try {
-        const { error: deleteErr } = await supabase
-          .from('ads')
-          .delete()
-          .eq('id', id);
-
-        if (deleteErr) throw deleteErr;
-
-        setMessage('Iklan berhasil dihapus.');
-        fetchAds();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        alert('Gagal menghapus iklan: ' + err.message);
-      }
+  const getGuidelineText = (pos) => {
+    switch (pos) {
+      case 'Header': case 'Tengah Konten': case 'header': case 'Header (728x90)': return 'Rekomendasi: 728×90 px (Rasio lebar 8:1)';
+      case 'Sidebar Atas': case 'sidebar': case 'Sidebar (300x250)': return 'Rekomendasi: 300×250 px (Rasio 6:5)';
+      case 'Sidebar Bawah': return 'Rekomendasi: 300×600 px (Portrait 1:2)';
+      case 'Footer': case 'Footer (970x250)': return 'Rekomendasi: 970×250 px (Rasio 4:1)';
+      default: return 'Pilih file banner iklan.';
     }
   };
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Header (Atas - 728x90)',
-      'Tengah Konten': 'Tengah Konten (In-Feed - 728x90)',
-      'Sidebar Atas': 'Sidebar Atas (Kanan - 300x250)',
-      'Sidebar Bawah': 'Sidebar Bawah (Kanan Panjang - 300x600)',
-      'Footer': 'Footer (Bawah - 970x250)',
-      'header': 'Header (Atas - 728x90)',
-      'Header (728x90)': 'Header (Atas - 728x90)',
-      'sidebar': 'Sidebar Atas (Kanan - 300x250)',
-      'Sidebar (300x250)': 'Sidebar Atas (Kanan - 300x250)',
-      'Footer (970x250)': 'Footer (Bawah - 970x250)'
+      'Header': 'Header (728×90)', 'Tengah Konten': 'Tengah Konten (728×90)',
+      'Sidebar Atas': 'Sidebar Atas (300×250)', 'Sidebar Bawah': 'Sidebar Bawah (300×600)',
+      'Footer': 'Footer (970×250)', 'header': 'Header (728×90)',
+      'sidebar': 'Sidebar Atas (300×250)',
     };
     return labels[pos] || pos;
   };
 
+  const positionBadgeColor = (pos) => {
+    if (pos?.includes('Header') || pos === 'header') return 'bg-purple-100 text-purple-800 border-purple-300';
+    if (pos?.includes('Sidebar')) return 'bg-blue-100 text-blue-800 border-blue-300';
+    if (pos?.includes('Footer')) return 'bg-green-100 text-green-800 border-green-300';
+    if (pos?.includes('Tengah')) return 'bg-orange-100 text-orange-800 border-orange-300';
+    return 'bg-gray-100 text-gray-800 border-gray-300';
+  };
+
+  const fetchAds = async () => {
+    try {
+      setLoading(true);
+      const { data, error: fetchErr } = await supabase.from('ads').select('*').order('id', { ascending: false });
+      if (fetchErr) throw fetchErr;
+      setAds(data || []);
+    } catch (err) { console.error('Error fetching ads:', err); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchAds(); }, []);
+
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setOriginalFileName(file.name);
+      const reader = new FileReader();
+      reader.addEventListener('load', () => { setCropImageSrc(reader.result); setIsCropModalOpen(true); });
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const onCropComplete = (_, croppedAreaPixels) => { setCroppedAreaPixels(croppedAreaPixels); };
+
+  const handleSaveCrop = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+      const fileExt = originalFileName.split('.').pop() || 'jpg';
+      const file = new File([croppedBlob], `cropped_${Date.now()}.${fileExt}`, { type: croppedBlob.type });
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(croppedBlob));
+      setIsCropModalOpen(false);
+    } catch (err) { alert('Gagal memotong gambar: ' + err.message); }
+  };
+
+  const resetForm = () => {
+    setName(''); setPosition('Header'); setLink(''); setTanggalBerakhir('');
+    setImageFile(null); setPreviewUrl('');
+    const fileInput = document.getElementById('ad-image-input');
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
+    setProcessing(true);
+    setError('');
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `ads/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
+      if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
+      if (insertError) throw insertError;
+      resetForm();
+      setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
+      setShowFormModal(false);
+      fetchAds();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      setError(err.message || 'Gagal menambahkan iklan.');
+    } finally { setProcessing(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm('Apakah Anda yakin ingin menghapus iklan ini dari sistem?')) {
+      try {
+        const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
+        if (deleteErr) throw deleteErr;
+        setMessage('Iklan berhasil dihapus.');
+        fetchAds();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }
+    }
+  };
+
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return ads;
+    return ads.filter(a => a.name?.toLowerCase().includes(q) || a.position?.toLowerCase().includes(q));
+  }, [ads, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery]);
+
   return (
     <AdminLayout>
-      <Head>
-        <title>Kelola Iklan - PojokTV</title>
-      </Head>
+      <Head><title>Kelola Iklan - PojokTV</title></Head>
 
-      {message && (
-        <div className="mb-6 p-4 bg-green-100 border-2 border-green-300 rounded-lg text-green-900 text-base font-bold">
-          {message}
+      {/* Crop Modal (always on top) */}
+      {isCropModalOpen && cropImageSrc && (
+        <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <i className="fa-solid fa-crop-simple text-red-500"></i>
+                Sesuaikan Gambar ({positionLabel(position)})
+              </h3>
+              <button type="button" onClick={() => { setIsCropModalOpen(false); const f = document.getElementById('ad-image-input'); if (f) f.value = ''; }}
+                className="text-gray-400 hover:text-white text-sm">Batal</button>
+            </div>
+            <div className="relative flex-1 bg-slate-950 min-h-[280px] sm:min-h-[380px]">
+              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={getAspectForPosition(position)}
+                onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
+            </div>
+            <div className="px-6 py-5 bg-slate-900 border-t border-slate-800 flex flex-col gap-4 text-white">
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-semibold text-slate-400">Zoom</span>
+                <input type="range" value={zoom} min={1} max={3} step={0.1} aria-label="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-red-600 cursor-pointer" />
+                <span className="text-xs text-slate-300 font-bold">{zoom.toFixed(1)}x</span>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={() => { setIsCropModalOpen(false); const f = document.getElementById('ad-image-input'); if (f) f.value = ''; }}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">Batal</button>
+                <button type="button" onClick={handleSaveCrop}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow cursor-pointer">
+                  Potong &amp; Gunakan
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 border-2 border-red-300 rounded-lg text-red-900 text-base font-bold">
-          {error}
+      {/* Form Modal (Mobile Slide-Up) */}
+      {showFormModal && (
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 px-4" onClick={() => setShowFormModal(false)}>
+          <div className="bg-white rounded-2xl rounded-b-none sm:rounded-2xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-gray-900">Pasang Iklan Baru</h3>
+              <button onClick={() => setShowFormModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Nama Iklan / Klien</label>
+                <input type="text" value={name} onChange={e => setName(e.target.value)}
+                  placeholder="Cth: Iklan Banner Pemkab Sidoarjo"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required autoFocus />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
+                <select value={position} onChange={e => setPosition(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
+                  <option value="Header">Header (Atas - 728×90)</option>
+                  <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
+                  <option value="Sidebar Atas">Sidebar Atas (Kanan - 300×250)</option>
+                  <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
+                  <option value="Footer">Footer (Bawah - 970×250)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Link Tujuan (Opsional)</label>
+                <input type="url" value={link} onChange={e => setLink(e.target.value)}
+                  placeholder="https://tautan-iklan.com"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Tanggal Berakhir Kontrak (Opsional)</label>
+                <input type="date" value={tanggalBerakhir} onChange={e => setTanggalBerakhir(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 text-slate-700" />
+                <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
+                  <i className="fa-solid fa-crop-simple mr-1"></i>{getGuidelineText(position)} — Sistem akan Auto-Crop otomatis.
+                </div>
+                <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
+                {previewUrl && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold text-gray-600 mb-1">✅ Pratinjau Hasil Crop:</p>
+                    <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
+                  </div>
+                )}
+              </div>
+              <button type="submit" disabled={processing}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm">
+                {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Kelola Kontrak Pemasangan Iklan</h1>
+      {message && <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold"><i className="fa-solid fa-check mr-2"></i>{message}</div>}
+
+      {/* Page Header */}
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Kelola Pemasangan Iklan</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{ads.length} iklan terdaftar</p>
+        </div>
+        <button onClick={() => setShowFormModal(true)}
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors">
+          <i className="fa-solid fa-plus"></i>
+          <span className="hidden sm:inline">Pasang Iklan Baru</span>
+          <span className="sm:hidden">Pasang</span>
+        </button>
+      </div>
+
+      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
+        <p>Klik <strong>Pasang Iklan Baru</strong> → isi nama klien, pilih posisi slot, upload foto → sistem akan <strong>Auto-Crop</strong> gambar secara otomatis sesuai rasio slot. Iklan yang aktif dapat dihapus kapan saja dari daftar di bawah.</p>
+      </GuideBox>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form Tambah Iklan */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-lg text-gray-900 mb-4 border-b pb-2">Pasang Iklan Baru</h3>
+        {/* Desktop Form (sidebar kiri) */}
+        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Pasang Iklan Baru</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Nama Iklan / Klien</label>
-              <input
-                type="text"
-                value={name}
-                onChange={e => setName(e.target.value)}
+              <label className="block text-sm font-bold text-gray-800 mb-1">Nama Iklan / Klien</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder="Cth: Iklan Banner Pemkab Sidoarjo"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
-                required
-              />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                required />
             </div>
-
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Pilih Posisi Iklan</label>
-              <select
-                value={position}
-                onChange={e => setPosition(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
-                required
-              >
-                <option value="Header">Header (Atas - 728x90)</option>
-                <option value="Tengah Konten">Tengah Konten (In-Feed - 728x90)</option>
-                <option value="Sidebar Atas">Sidebar Atas (Kanan - 300x250)</option>
-                <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300x600)</option>
-                <option value="Footer">Footer (Bawah - 970x250)</option>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
+              <select value={position} onChange={e => setPosition(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
+                <option value="Header">Header (Atas - 728×90)</option>
+                <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
+                <option value="Sidebar Atas">Sidebar Atas (Kanan - 300×250)</option>
+                <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
+                <option value="Footer">Footer (Bawah - 970×250)</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Tautan / Link Tujuan (Opsional)</label>
-              <input
-                type="url"
-                value={link}
-                onChange={e => setLink(e.target.value)}
+              <label className="block text-sm font-bold text-gray-800 mb-1">Link Tujuan (Opsional)</label>
+              <input type="url" value={link} onChange={e => setLink(e.target.value)}
                 placeholder="https://tautan-iklan.com"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
-              />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
             </div>
-
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Tanggal Berakhir Kontrak (Opsional)</label>
-              <input
-                type="date"
-                value={tanggalBerakhir}
-                onChange={e => setTanggalBerakhir(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-slate-700 font-medium"
-              />
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">*Kosongkan jika iklan tayang permanen.</p>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Tanggal Berakhir Kontrak (Opsional)</label>
+              <input type="date" value={tanggalBerakhir} onChange={e => setTanggalBerakhir(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 text-slate-700" />
+              <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
             </div>
-
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
-              <input
-                id="ad-image-input"
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none text-gray-950"
-                required
-              />
-              <p className="text-xs text-gray-700 mt-1 leading-relaxed">Format JPG, PNG, GIF, atau WebP (maks. 2MB)</p>
-              
-              {/* Ad Image Preview */}
+              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
+                <i className="fa-solid fa-crop-simple mr-1"></i>{getGuidelineText(position)} — Sistem akan Auto-Crop otomatis.
+              </div>
+              <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
               {previewUrl && (
                 <div className="mt-3">
-                  <p className="text-xs font-bold text-slate-500 mb-1">Pratinjau Gambar:</p>
-                  <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-48 object-contain border rounded" />
+                  <p className="text-xs font-bold text-gray-600 mb-1">✅ Pratinjau Hasil Crop:</p>
+                  <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                 </div>
               )}
             </div>
-
-            <button
-              type="submit"
-              disabled={processing}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md text-base transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
-            >
+            <button type="submit" disabled={processing}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm">
               {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
             </button>
           </form>
         </div>
 
-        {/* Tabel Daftar Iklan */}
+        {/* Daftar Iklan */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-950 text-lg">Daftar Iklan Aktif</h3>
-            <p className="text-sm text-gray-700 mt-0.5">Terdapat {ads.length} iklan yang terdaftar di database</p>
+          {/* Search */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input type="text" placeholder="Cari nama iklan atau posisi..."
+                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-400 font-bold">
-              <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat iklan...
-            </div>
-          ) : ads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-              <p className="font-bold text-lg">Belum ada iklan terdaftar</p>
-              <p className="text-sm mt-1">Tambahkan iklan pertama Anda melalui form di sebelah kiri.</p>
+            <div className="text-center py-12 text-gray-400 font-bold"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat iklan...</div>
+          ) : paginated.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 font-bold text-sm">
+              {searchQuery ? `Tidak ada iklan "${searchQuery}"` : 'Belum ada iklan terdaftar.'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-base">
-                <thead className="bg-gray-50 text-sm uppercase text-gray-800 font-bold border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4">Preview</th>
-                    <th className="px-6 py-4">Nama Iklan</th>
-                    <th className="px-6 py-4">Posisi</th>
-                    <th className="px-6 py-4">Link Tujuan</th>
-                    <th className="px-6 py-4 text-right">Tindakan</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {ads.map(ad => (
-                    <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <img
-                          src={ad.image}
-                          alt={ad.name}
-                          className="h-12 w-24 object-cover rounded-md border border-gray-300 bg-gray-100"
-                          onError={e => { e.target.src = ''; e.target.className = 'h-12 w-24 bg-gray-200 rounded-md'; }}
-                        />
-                      </td>
-                      <td className="px-6 py-4 font-bold text-gray-900">{ad.name}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-900 border border-blue-300">
-                          {positionLabel(ad.position)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {ad.link && ad.link !== '-' ? (
-                          <a href={ad.link} target="_blank" rel="noreferrer" className="text-blue-700 hover:text-blue-900 hover:underline text-sm font-bold truncate max-w-[120px] block">
-                            {ad.link}
-                          </a>
-                        ) : (
-                          <span className="text-gray-500 text-sm">—</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDelete(ad.id)}
-                          className="text-red-700 hover:text-red-900 font-bold text-sm bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg border border-red-300 transition-colors cursor-pointer"
-                        >
-                          Hapus
-                        </button>
-                      </td>
+            <>
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-100">
+                {paginated.map(ad => (
+                  <div key={ad.id} className="p-4 flex gap-3 items-start">
+                    <img src={ad.image} alt={ad.name}
+                      className="w-16 h-12 object-cover rounded-lg border border-gray-200 shrink-0 bg-gray-100"
+                      onError={e => { e.target.src = ''; e.target.className = 'w-16 h-12 bg-gray-200 rounded-lg shrink-0'; }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-sm line-clamp-1">{ad.name}</p>
+                      <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${positionBadgeColor(ad.position)}`}>
+                        {positionLabel(ad.position)}
+                      </span>
+                      {ad.link && ad.link !== '-' && (
+                        <p className="text-xs text-blue-600 truncate mt-0.5">{ad.link}</p>
+                      )}
+                      <button onClick={() => handleDelete(ad.id)}
+                        className="mt-2 text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                        <i className="fa-solid fa-trash mr-1"></i>Hapus
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
+                    <tr>
+                      <th className="px-5 py-3">Preview</th>
+                      <th className="px-5 py-3">Nama Iklan</th>
+                      <th className="px-5 py-3">Posisi</th>
+                      <th className="px-5 py-3">Link Tujuan</th>
+                      <th className="px-5 py-3 text-right">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginated.map(ad => (
+                      <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-5 py-3">
+                          <img src={ad.image} alt={ad.name}
+                            className="h-10 w-20 object-cover rounded-md border border-gray-200 bg-gray-100"
+                            onError={e => { e.target.src = ''; e.target.className = 'h-10 w-20 bg-gray-200 rounded-md'; }} />
+                        </td>
+                        <td className="px-5 py-3 font-bold text-gray-900 max-w-[160px]">
+                          <p className="line-clamp-2">{ad.name}</p>
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${positionBadgeColor(ad.position)}`}>
+                            {positionLabel(ad.position)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3">
+                          {ad.link && ad.link !== '-' ? (
+                            <a href={ad.link} target="_blank" rel="noreferrer"
+                              className="text-blue-700 hover:underline text-xs font-semibold truncate max-w-[100px] block">
+                              {ad.link}
+                            </a>
+                          ) : <span className="text-gray-400 text-xs">—</span>}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <button onClick={() => handleDelete(ad.id)}
+                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </>
           )}
         </div>
       </div>

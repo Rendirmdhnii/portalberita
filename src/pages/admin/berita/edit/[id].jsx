@@ -4,13 +4,22 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
+import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
 
 // Safely load ReactQuill client-side only
-const ReactQuill = dynamic(() => import('react-quill-new'), { 
-  ssr: false, 
-  loading: () => <p className="text-gray-500 font-bold p-4">Memuat editor teks...</p> 
-});
+const ReactQuill = dynamic(
+  async () => {
+    const { default: RQ } = await import('react-quill-new');
+    const ForwardedReactQuill = ({ forwardedRef, ...props }) => <RQ ref={forwardedRef} {...props} />;
+    ForwardedReactQuill.displayName = 'ForwardedReactQuill';
+    return ForwardedReactQuill;
+  },
+  { 
+    ssr: false, 
+    loading: () => <p className="text-gray-500 font-bold p-4">Memuat editor teks...</p> 
+  }
+);
 import 'react-quill-new/dist/quill.snow.css';
 
 export default function BeritaEdit() {
@@ -22,13 +31,17 @@ export default function BeritaEdit() {
   const [post, setPost] = useState(null);
   
   const [title, setTitle] = useState('');
+  const [author, setAuthor] = useState('Redaksi PojokTV');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState('Published');
   const [existingImage, setExistingImage] = useState('');
+  const [existingImagesList, setExistingImagesList] = useState([]);
   
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [newImageFiles, setNewImageFiles] = useState([]);
+  const [newPreviewUrls, setNewPreviewUrls] = useState([]);
+  
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -69,10 +82,32 @@ export default function BeritaEdit() {
 
       setPost(data);
       setTitle(data.title || '');
+      setAuthor(data.author || 'Redaksi PojokTV');
       setCategory(data.category || '');
       setContent(data.content || '');
       setStatus(data.status || 'Published');
-      setExistingImage(data.image || '');
+      
+      // Load images (jsonb) or fallback to image (text)
+      const imgs = data.images || data.image;
+      if (imgs) {
+        if (Array.isArray(imgs)) {
+          setExistingImagesList(imgs);
+        } else if (typeof imgs === 'string') {
+          try {
+            if (imgs.startsWith('[')) {
+              setExistingImagesList(JSON.parse(imgs));
+            } else {
+              setExistingImagesList([imgs]);
+            }
+          } catch (e) {
+            setExistingImagesList([imgs]);
+          }
+        } else {
+          setExistingImagesList([]);
+        }
+      } else {
+        setExistingImagesList([]);
+      }
     } catch (err) {
       setError('Gagal memuat berita: ' + err.message);
     } finally {
@@ -81,11 +116,20 @@ export default function BeritaEdit() {
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setNewImageFiles(prev => [...prev, ...files]);
+      setNewPreviewUrls(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
     }
+  };
+
+  const handleRemoveExistingImage = (idxToRemove) => {
+    setExistingImagesList(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
+  const handleRemoveNewImage = (idxToRemove) => {
+    setNewImageFiles(prev => prev.filter((_, idx) => idx !== idxToRemove));
+    setNewPreviewUrls(prev => prev.filter((_, idx) => idx !== idxToRemove));
   };
 
   // Custom Quill Image Handler
@@ -141,27 +185,36 @@ export default function BeritaEdit() {
     setProcessing(true);
     setError('');
 
+    // Validasi minimal 1 foto
+    if (existingImagesList.length === 0 && newImageFiles.length === 0) {
+      setError('Harap pilih minimal satu gambar berita.');
+      setProcessing(false);
+      return;
+    }
+
     try {
-      let imageUrl = existingImage;
+      let finalImageUrls = [...existingImagesList];
 
-      // 1. Upload new image to Supabase Storage if file selected
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `berita/${fileName}`;
+      // 1. Upload new images to Supabase Storage if files selected
+      if (newImageFiles.length > 0) {
+        for (const file of newImageFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `berita/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(filePath, imageFile);
+          const { error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, file);
 
-        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+          if (uploadError) throw new Error('Gagal mengunggah gambar baru: ' + uploadError.message);
 
-        // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from('images')
-          .getPublicUrl(filePath);
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
 
-        imageUrl = publicUrl;
+          finalImageUrls.push(publicUrl);
+        }
       }
 
       // 2. Generate slug from title
@@ -178,7 +231,8 @@ export default function BeritaEdit() {
           slug,
           category,
           content,
-          image: imageUrl,
+          images: finalImageUrls, // Simpan sebagai array jsonb
+          author: author.trim() || 'Redaksi PojokTV',
           status
         })
         .eq('id', id);
@@ -233,7 +287,20 @@ export default function BeritaEdit() {
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-serif font-bold text-2xl md:text-3xl"
+              required
+            />
+          </div>
+
+          {/* Penulis */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Reporter <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              value={author}
+              onChange={e => setAuthor(e.target.value)}
+              placeholder="Ketik nama penulis atau reporter..."
+              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium text-base"
               required
             />
           </div>
@@ -256,35 +323,55 @@ export default function BeritaEdit() {
 
           {/* Upload Gambar */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Upload Gambar Baru</label>
-            <p className="text-sm text-gray-700 mb-2 leading-relaxed">Klik di bawah untuk mengganti gambar. Biarkan kosong jika tidak ingin mengganti gambar saat ini.</p>
+            <label className="block text-base font-bold text-gray-800 mb-1">Kelola Foto Berita (Multi-Foto)</label>
             
-            <div className="flex gap-4 flex-wrap items-end mb-3">
-              {existingImage && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1 font-bold">Gambar saat ini:</p>
-                  <img
-                    src={existingImage}
-                    alt="Thumbnail saat ini"
-                    className="h-24 w-40 object-cover rounded-lg border border-gray-300 bg-gray-100"
-                  />
+            {/* Existing Images */}
+            {existingImagesList.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2 font-bold">Foto saat ini ({existingImagesList.length}):</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {existingImagesList.map((url, idx) => (
+                    <div key={idx} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
+                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingImage(idx)}
+                        className="mt-1 bg-red-50 text-red-650 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                      >
+                        Hapus Foto
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              )}
-              {previewUrl && (
-                <div>
-                  <p className="text-xs text-slate-500 mb-1 font-bold">Pratinjau Gambar Baru:</p>
-                  <img
-                    src={previewUrl}
-                    alt="Pratinjau Gambar Baru"
-                    className="h-24 w-40 object-cover rounded-lg border border-gray-300 bg-gray-100"
-                  />
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
+            {/* New Previews */}
+            {newPreviewUrls.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Baru ({newPreviewUrls.length}):</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {newPreviewUrls.map((url, idx) => (
+                    <div key={idx} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
+                      <img src={url} alt={`Foto Baru ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveNewImage(idx)}
+                        className="mt-1 bg-red-50 text-red-650 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                      >
+                        Batal
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <p className="text-sm text-gray-700 mb-2 leading-relaxed">Pilih file di bawah ini untuk menambahkan foto-foto baru:</p>
             <input
               type="file"
               accept="image/*"
+              multiple
               onChange={handleImageChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none text-gray-950"
             />
@@ -306,9 +393,9 @@ export default function BeritaEdit() {
           {/* Isi Berita */}
           <div>
             <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita <span className="text-red-500">*</span></label>
-            <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden">
+            <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden prose prose-slate max-w-none font-sans text-base leading-relaxed">
               <ReactQuill 
-                ref={quillRef}
+                forwardedRef={quillRef}
                 value={content}
                 onChange={setContent}
                 modules={modules}
@@ -319,7 +406,7 @@ export default function BeritaEdit() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4 pt-2">
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <button
               type="submit"
               disabled={processing}
@@ -327,6 +414,15 @@ export default function BeritaEdit() {
             >
               {processing ? 'Menyimpan Perubahan...' : 'Simpan Perubahan Berita'}
             </button>
+            
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-3 rounded-md text-base transition-colors shadow-sm cursor-pointer"
+            >
+              <i className="fa-solid fa-eye mr-2"></i>Pratinjau
+            </button>
+
             <Link
               href="/admin/berita"
               className="text-gray-800 hover:text-gray-950 hover:underline font-bold text-base bg-gray-100 border border-gray-300 px-6 py-3 rounded-md transition-colors"
@@ -336,6 +432,116 @@ export default function BeritaEdit() {
           </div>
         </form>
       </div>
+
+      {/* Modal Pratinjau (Preview Modal) */}
+      {isPreviewOpen && (
+        <div className="fixed inset-0 z-[100] bg-gray-900/60 overflow-y-auto backdrop-blur-sm p-4 sm:p-6 md:p-8 flex justify-center">
+          <div className="bg-gray-50 w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto max-h-[90vh]">
+            
+            {/* Top Control Bar */}
+            <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="text-sm font-bold uppercase tracking-wider text-slate-300">Mode Pratinjau Berita (Simulasi Halaman Publik)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPreviewOpen(false)}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+              >
+                Tutup Pratinjau
+              </button>
+            </div>
+
+            {/* Simulated Public Article Content */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+              <div className="max-w-5xl mx-auto">
+                
+                {/* Branding Simulation */}
+                <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
+                  <span className="text-2xl font-black tracking-tighter text-slate-900">
+                    Pojok<span className="text-red-600">TV.com</span>
+                  </span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">SIMULASI</span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6">
+                  
+                  {/* Left Column: Article */}
+                  <div className="w-full min-w-0 lg:col-span-2">
+                    <article className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 min-w-0 overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
+                      
+                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <span className="bg-red-50 text-red-600 text-xs font-extrabold px-3 py-1 rounded border border-red-200 uppercase">
+                          {category || 'Kategori'}
+                        </span>
+                        <span className="text-gray-300 text-sm">/</span>
+                        <span className="text-gray-400 text-xs font-semibold">Detail Berita</span>
+                      </div>
+
+                      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-slate-900 leading-tight mb-4">
+                        {title || 'Judul Berita Belum Diisi'}
+                      </h1>
+
+                      {/* Render combined images from state using NewsGallery */}
+                      <NewsGallery images={[...existingImagesList, ...newPreviewUrls]} />
+
+                      {/* Metadata */}
+                      <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-xs text-slate-500 border-b border-gray-200 pb-4 mb-6">
+                        <div className="flex items-center gap-1.5">
+                          <i className="fa-regular fa-user text-red-600"></i>
+                          <span>Oleh: <strong className="text-slate-800 font-semibold">{post?.author || 'Redaksi'}</strong></span>
+                        </div>
+                        <span className="text-gray-300">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <i className="fa-regular fa-calendar text-red-600"></i>
+                          <span>{post?.created_at ? new Date(post.created_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'Senin, 13 Juli 2026'}</span>
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div 
+                        className="article-content berita-content prose prose-slate md:prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title w-full max-w-full overflow-hidden break-words whitespace-normal [&_p]:mb-6"
+                        dangerouslySetInnerHTML={{ __html: content || '<p className="text-gray-400 italic">Isi berita kosong. Silakan tulis di editor.</p>' }}
+                      />
+                    </article>
+                  </div>
+
+                  {/* Right Column: Sidebar */}
+                  <div className="w-full lg:col-span-1">
+                    <div className="flex flex-col gap-6">
+                      <div className="bg-slate-200 border border-slate-300 rounded-lg flex flex-col justify-center items-center text-center p-4 text-slate-500 font-sans select-none w-full h-[250px]">
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Advertisement</span>
+                        <span className="text-xs font-bold uppercase text-slate-500">PojokTV Ad Network</span>
+                        <span className="text-[10px] text-slate-400 mt-1">Slot Iklan (300x250)</span>
+                      </div>
+                      
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                        <h3 className="text-sm font-black uppercase text-slate-900 border-b border-gray-200 pb-2 mb-4 tracking-wide">
+                          <i className="fa-solid fa-fire text-red-500 mr-1.5"></i> Berita Populer (Simulasi)
+                        </h3>
+                        <div className="flex flex-col divide-y divide-gray-100 text-xs gap-3">
+                          <div className="py-2">
+                            <span className="font-bold text-red-600">1. </span>
+                            <span className="font-semibold text-slate-800">Contoh Berita Populer Pertama PojokTV</span>
+                          </div>
+                          <div className="py-2">
+                            <span className="font-bold text-red-600">2. </span>
+                            <span className="font-semibold text-slate-800">Sidoarjo Siaga Satu Pasca Banjir Bandang</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
+

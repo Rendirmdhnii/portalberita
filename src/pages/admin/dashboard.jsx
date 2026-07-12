@@ -58,7 +58,7 @@ export default function AdminDashboard() {
         <title>Dashboard Admin - PojokTV</title>
       </Head>
 
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Ringkasan Statistik Website Redaksi</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Dashboard Analitik Redaksi PojokTV</h1>
 
       {loading ? (
         <div className="text-center py-20 text-gray-400">
@@ -134,47 +134,86 @@ export default function AdminDashboard() {
                 <p className="font-bold text-lg">Belum ada berita terpopuler</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-base">
-                  <thead className="bg-gray-50 text-sm uppercase text-gray-800 font-bold border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4">Peringkat</th>
-                      <th className="px-6 py-4">Judul Berita</th>
-                      <th className="px-6 py-4">Kategori Rubrik</th>
-                      <th className="px-6 py-4">Status Tayang</th>
-                      <th className="px-6 py-4 text-right">Jumlah Views</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {beritaPopuler.map((post, index) => (
-                      <tr key={post.id} className="hover:bg-blue-50 transition-colors">
-                        <td className="px-6 py-4 text-gray-950 font-bold">Peringkat {index + 1}</td>
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-gray-900 line-clamp-2 max-w-sm">{post.title}</p>
-                          <p className="text-sm text-gray-700 mt-1">Penulis: {post.author}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="bg-gray-100 text-gray-900 text-xs px-3 py-1 rounded-full font-bold border border-gray-300">
+              <>
+                {/* Desktop View Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-base">
+                    <thead className="bg-gray-50 text-sm uppercase text-gray-800 font-bold border-b border-gray-200">
+                      <tr>
+                        <th className="px-6 py-4">Peringkat</th>
+                        <th className="px-6 py-4">Judul Berita</th>
+                        <th className="px-6 py-4">Kategori Rubrik</th>
+                        <th className="px-6 py-4">Status Tayang</th>
+                        <th className="px-6 py-4 text-right">Jumlah Views</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {beritaPopuler.map((post, index) => (
+                        <tr key={post.id} className="hover:bg-blue-50 transition-colors">
+                          <td className="px-6 py-4 text-gray-950 font-bold">Peringkat {index + 1}</td>
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-gray-900 line-clamp-2 max-w-sm">{post.title}</p>
+                            <p className="text-sm text-gray-700 mt-1">Penulis: {post.author}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="bg-gray-100 text-gray-900 text-xs px-3 py-1 rounded-full font-bold border border-gray-300">
+                              {post.category}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                              post.status === 'Published'
+                                ? 'bg-green-100 text-green-900 border border-green-300'
+                                : 'bg-orange-100 text-orange-900 border border-orange-300'
+                            }`}>
+                              {post.status === 'Published' ? 'DIPUBLIKASI' : 'DRAFT'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right font-black text-gray-950 text-lg">
+                            {(post.views || 0).toLocaleString('id-ID')}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile View Stacked Cards */}
+                <div className="block md:hidden divide-y divide-gray-150">
+                  {beritaPopuler.map((post, index) => (
+                    <div key={post.id} className="p-4 flex gap-4 items-start bg-white">
+                      <span className="text-gray-300 font-black text-4xl leading-none shrink-0 w-12 text-center pt-0.5 select-none">
+                        {String(index + 1).padStart(2, '0')}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-gray-950 text-sm leading-snug line-clamp-2">
+                          {post.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-1">Penulis: {post.author || 'Redaksi'}</p>
+                        
+                        <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
+                          <span className="bg-gray-100 text-gray-800 border border-gray-250 whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold">
                             {post.category}
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
-                            post.status === 'Published'
-                              ? 'bg-green-100 text-green-900 border border-green-300'
-                              : 'bg-orange-100 text-orange-900 border border-orange-300'
-                          }`}>
-                            {post.status === 'Published' ? 'DIPUBLIKASI' : 'DRAFT'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right font-black text-gray-950 text-lg">
-                          {(post.views || 0).toLocaleString('id-ID')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              post.status === 'Published'
+                                ? 'bg-green-55 text-green-800 border-green-200'
+                                : 'bg-orange-55 text-orange-800 border-orange-200'
+                            }`}>
+                              {post.status === 'Published' ? 'TAYANG' : 'DRAFT'}
+                            </span>
+                            <span className="text-xs font-black text-gray-950">
+                              {(post.views || 0).toLocaleString('id-ID')} views
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </>

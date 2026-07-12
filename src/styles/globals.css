@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -2255,3 +2255,86 @@ button, input {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ============================================================
+   VISUAL SYNC: Quill Editor Typing Area Style
+   Menyelaraskan font, ukuran, spasi, dan gambar di editor admin
+   ============================================================ */
+.ql-editor {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 1.0625rem !important;
+  line-height: 1.85 !important;
+  color: #334155 !important;
+  min-height: 300px;
+}
+
+.ql-editor p {
+  margin-bottom: 1.5rem !important;
+}
+
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3,
+.ql-editor h4 {
+  font-family: 'Inter', sans-serif !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  margin-top: 1.75rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.ql-editor h1 { font-size: 1.75rem !important; }
+.ql-editor h2 { font-size: 1.5rem !important; }
+.ql-editor h3 { font-size: 1.25rem !important; }
+
+.ql-editor img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0.75rem !important;
+  margin: 1.5rem auto !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+  display: block !important;
+}
+
+.ql-editor blockquote {
+  border-left: 4px solid var(--primary-crimson) !important;
+  padding: 0.75rem 1.25rem !important;
+  margin: 1.5rem 0 !important;
+  background-color: #fff5f5 !important;
+  color: #4b5563 !important;
+  font-style: italic !important;
+  border-radius: 0 0.5rem 0.5rem 0 !important;
+}
+
+/* ============================================================
+   MISI 1: BRANDING LOGO BRANDING (HEADER & FOOTER)
+   Penyatuan ukuran Pojok & TV.com (100% lurus, extrabold)
+   ============================================================ */
+.logo {
+  font-family: var(--font-title);
+  font-size: 2.5rem !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.05em !important;
+  color: var(--secondary-dark);
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.logo span {
+  color: var(--primary-crimson) !important;
+  font-size: 100% !important;
+  font-weight: 900 !important;
+  margin-left: 0;
+}
+
+.footer-about-logo {
+  font-family: var(--font-title);
+  font-weight: 900 !important;
+  letter-spacing: -0.05em !important;
+}
+
+.footer-about-logo span {
+  font-size: 100% !important;
+  font-weight: 900 !important;
+}
+

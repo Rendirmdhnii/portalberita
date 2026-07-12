@@ -1,7 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+
+const ITEMS_PER_PAGE = 15;
+
+function GuideBox({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left text-blue-800 font-semibold text-sm hover:bg-blue-100 transition-colors"
+      >
+        <span>{title}</span>
+        <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'} text-xs`}></i>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 text-sm text-blue-700 leading-relaxed border-t border-blue-200">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <p className="text-sm text-gray-500">Hal. <strong>{currentPage}</strong> / <strong>{totalPages}</strong></p>
+      <div className="flex gap-2">
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">
+          ← Prev
+        </button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function CategoryIndex() {
   const [categories, setCategories] = useState([]);
@@ -9,15 +50,14 @@ export default function CategoryIndex() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      
+      const { data, error } = await supabase.from('categories').select('*').order('name');
       if (error) throw error;
       setCategories(data || []);
     } catch (err) {
@@ -27,29 +67,19 @@ export default function CategoryIndex() {
     }
   };
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  useEffect(() => { fetchCategories(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (name.trim() === '') return;
     setProcessing(true);
-
     try {
-      const slug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '');
-
-      const { error } = await supabase
-        .from('categories')
-        .insert([{ name, slug, status: 'Aktif' }]);
-
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif' }]);
       if (error) throw error;
-
       setName('');
       setMessage('Rubrik baru berhasil ditambahkan.');
+      setShowModal(false);
       fetchCategories();
       setTimeout(() => setMessage(''), 4000);
     } catch (err) {
@@ -60,15 +90,10 @@ export default function CategoryIndex() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus rubrik berita ini? Semua berita di rubrik ini mungkin akan terpengaruh.')) {
+    if (confirm('Apakah Anda yakin ingin menghapus rubrik ini? Semua berita di rubrik ini mungkin terpengaruh.')) {
       try {
-        const { error } = await supabase
-          .from('categories')
-          .delete()
-          .eq('id', id);
-
+        const { error } = await supabase.from('categories').delete().eq('id', id);
         if (error) throw error;
-
         setMessage('Rubrik berhasil dihapus.');
         fetchCategories();
         setTimeout(() => setMessage(''), 4000);
@@ -78,88 +103,167 @@ export default function CategoryIndex() {
     }
   };
 
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return categories;
+    return categories.filter(c => c.name?.toLowerCase().includes(q));
+  }, [categories, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery]);
+
+  const AddForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label className="block text-sm font-bold text-gray-800 mb-1">Nama Rubrik Baru</label>
+        <input
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Cth: Politik, Sidoarjo, Ekonomi"
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950"
+          required
+          autoFocus
+        />
+        <p className="text-xs text-gray-500 mt-1">Slug akan digenerate otomatis dari nama rubrik.</p>
+      </div>
+      <button
+        type="submit"
+        disabled={processing}
+        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg text-sm transition-colors shadow-sm disabled:opacity-50"
+      >
+        {processing ? 'Menyimpan...' : 'Simpan Rubrik Baru'}
+      </button>
+    </form>
+  );
+
   return (
     <AdminLayout>
-      <Head>
-        <title>Kelola Rubrik Kategori Berita - PojokTV</title>
-      </Head>
+      <Head><title>Kelola Rubrik Kategori Berita - PojokTV</title></Head>
 
-      {message && (
-        <div className="mb-6 p-4 bg-green-100 border-2 border-green-300 rounded-lg text-green-900 text-base font-bold">
-          {message}
+      {/* Modal Tambah Rubrik (Mobile) */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-2xl rounded-b-none sm:rounded-2xl w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-gray-900">Tambah Rubrik Baru</h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <AddForm />
+          </div>
         </div>
       )}
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Kelola Rubrik Kategori Berita</h1>
+      {message && (
+        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold">
+          <i className="fa-solid fa-check mr-2"></i>{message}
+        </div>
+      )}
+
+      {/* Page Header */}
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Kelola Rubrik Kategori</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{categories.length} rubrik aktif</p>
+        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors"
+        >
+          <i className="fa-solid fa-plus"></i>
+          <span className="hidden sm:inline">Tambah Rubrik</span>
+          <span className="sm:hidden">Tambah</span>
+        </button>
+      </div>
+
+      {/* Panduan */}
+      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
+        <p>Klik tombol <strong>+ Tambah Rubrik</strong> untuk membuat kategori baru. Rubrik yang sudah ada bisa dihapus dengan tombol merah di kanan setiap item. <strong>Hati-hati:</strong> menghapus rubrik bisa memengaruhi berita yang terkategori di rubrik tersebut.</p>
+      </GuideBox>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form Tambah Rubrik */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-lg text-gray-900 mb-4 border-b pb-2">Tambah Rubrik Baru</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Nama Rubrik Berita</label>
-              <input 
-                type="text" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                placeholder="Cth: Politik, Sidoarjo, Ekonomi" 
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium" 
-                required 
-              />
-              <p className="text-sm text-gray-700 mt-1 leading-relaxed">Ketik nama rubrik di atas, kemudian klik tombol Simpan Rubrik.</p>
-            </div>
-            <button 
-              type="submit" 
-              disabled={processing} 
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md text-base transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-            >
-              {processing ? 'Menyimpan...' : 'Simpan Rubrik Baru'}
-            </button>
-          </form>
+        {/* Form (Desktop only — di mobile pakai modal) */}
+        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Rubrik Baru</h3>
+          <AddForm />
         </div>
 
-        {/* Tabel Data Rubrik */}
+        {/* Daftar Rubrik */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-950 text-lg">Daftar Rubrik Aktif</h3>
-            <p className="text-sm text-gray-700 mt-0.5">Terdapat {categories.length} rubrik aktif</p>
+          {/* Search */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input
+                type="text"
+                placeholder="Cari nama rubrik..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
           </div>
 
           {loading ? (
             <div className="text-center py-12 text-gray-400 font-bold">
               <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat rubrik...
             </div>
+          ) : paginated.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 font-bold text-sm">
+              {searchQuery ? `Tidak ada rubrik "${searchQuery}"` : 'Belum ada rubrik terdaftar.'}
+            </div>
           ) : (
-            <table className="w-full text-left text-base">
-              <thead className="bg-gray-50 border-b border-gray-200 text-sm uppercase text-gray-800 font-bold">
-                <tr>
-                  <th className="px-6 py-4">Nama Rubrik</th>
-                  <th className="px-6 py-4 text-right">Tindakan Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {categories.length > 0 ? categories.map(cat => (
-                  <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-gray-900">{cat.name}</td>
-                    <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => handleDelete(cat.id)} 
-                        className="text-red-700 hover:text-red-900 font-bold text-sm bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg border border-red-300 transition-colors cursor-pointer"
-                      >
-                        Hapus Rubrik
-                      </button>
-                    </td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="2" className="px-6 py-12 text-center text-gray-500 font-bold">
-                      Belum ada rubrik terdaftar
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+            <>
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-100">
+                {paginated.map(cat => (
+                  <div key={cat.id} className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm">{cat.name}</p>
+                      <p className="text-xs text-gray-500 font-mono">/kategori/{cat.slug}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(cat.id)}
+                      className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors shrink-0"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
+                    <tr>
+                      <th className="px-6 py-3">Nama Rubrik</th>
+                      <th className="px-6 py-3">Slug URL</th>
+                      <th className="px-6 py-3 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginated.map(cat => (
+                      <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-6 py-3 font-bold text-gray-900">{cat.name}</td>
+                        <td className="px-6 py-3 font-mono text-xs text-gray-500">/kategori/{cat.slug}</td>
+                        <td className="px-6 py-3 text-right">
+                          <button onClick={() => handleDelete(cat.id)}
+                            className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                            Hapus Rubrik
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </>
           )}
         </div>
       </div>

@@ -1,7 +1,44 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+
+const ITEMS_PER_PAGE = 10;
+
+function GuideBox({ title, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left text-blue-800 font-semibold text-sm hover:bg-blue-100 transition-colors"
+      >
+        <span>{title}</span>
+        <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'} text-xs`}></i>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 text-sm text-blue-700 leading-relaxed border-t border-blue-200">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+      <p className="text-sm text-gray-500">Hal. <strong>{currentPage}</strong> / <strong>{totalPages}</strong></p>
+      <div className="flex gap-2">
+        <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">← Prev</button>
+        <button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}
+          className="px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 disabled:opacity-40 hover:bg-gray-50 transition-colors">Next →</button>
+      </div>
+    </div>
+  );
+}
 
 export default function VideoIndex() {
   const [videos, setVideos] = useState([]);
@@ -9,19 +46,16 @@ export default function VideoIndex() {
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  // Form states
   const [judul, setJudul] = useState('');
   const [link, setLink] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchVideos = async () => {
     try {
       setLoading(true);
-      const { data, error: fetchErr } = await supabase
-        .from('videos')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const { data, error: fetchErr } = await supabase.from('videos').select('*').order('id', { ascending: false });
       if (fetchErr) throw fetchErr;
       setVideos(data || []);
     } catch (err) {
@@ -31,83 +65,44 @@ export default function VideoIndex() {
     }
   };
 
-  useEffect(() => {
-    fetchVideos();
-  }, []);
+  useEffect(() => { fetchVideos(); }, []);
 
   const extractYoutubeId = (url) => {
     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|live\/|shorts\/)|youtu\.be\/).+$/;
     if (!youtubeRegex.test(url)) return null;
-
     try {
       const cleanedUrl = url.trim();
-
-      // Case 1: youtu.be/<id>
       if (cleanedUrl.includes('youtu.be/')) {
-        const parts = cleanedUrl.split('youtu.be/');
-        if (parts[1]) {
-          const id = parts[1].split(/[?#&]/)[0];
-          if (id.length === 11) return id;
-        }
+        const id = cleanedUrl.split('youtu.be/')[1]?.split(/[?#&]/)[0];
+        if (id?.length === 11) return id;
       }
-
-      // Case 2: youtube.com/live/<id>
       if (cleanedUrl.includes('/live/')) {
-        const parts = cleanedUrl.split('/live/');
-        if (parts[1]) {
-          const id = parts[1].split(/[?#&]/)[0];
-          if (id.length === 11) return id;
-        }
+        const id = cleanedUrl.split('/live/')[1]?.split(/[?#&]/)[0];
+        if (id?.length === 11) return id;
       }
-
-      // Case 3: youtube.com/shorts/<id>
       if (cleanedUrl.includes('/shorts/')) {
-        const parts = cleanedUrl.split('/shorts/');
-        if (parts[1]) {
-          const id = parts[1].split(/[?#&]/)[0];
-          if (id.length === 11) return id;
-        }
+        const id = cleanedUrl.split('/shorts/')[1]?.split(/[?#&]/)[0];
+        if (id?.length === 11) return id;
       }
-
-      // Case 4: watch?v=<id> or embed/<id>
-      const regExp = /^.*(v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = cleanedUrl.match(regExp);
-      if (match && match[2] && match[2].length === 11) {
-        return match[2];
-      }
-
+      const match = cleanedUrl.match(/^.*(v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+      if (match?.[2]?.length === 11) return match[2];
       return null;
-    } catch (e) {
-      return null;
-    }
+    } catch { return null; }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setProcessing(true);
     setError('');
-
     try {
       const ytId = extractYoutubeId(link);
-      if (!ytId) {
-        throw new Error('Format link YouTube tidak valid. Harap masukkan tautan video YouTube yang benar.');
-      }
-
-      const { error: insertError } = await supabase
-        .from('videos')
-        .insert([
-          {
-            judul,
-            link,
-            youtube_id: ytId
-          }
-        ]);
-
+      if (!ytId) throw new Error('Format link YouTube tidak valid. Harap masukkan tautan yang benar.');
+      const { error: insertError } = await supabase.from('videos').insert([{ judul, link, youtube_id: ytId }]);
       if (insertError) throw insertError;
-
       setJudul('');
       setLink('');
-      setMessage('Video YouTube berhasil ditambahkan dan ditayangkan.');
+      setMessage('Video YouTube berhasil ditambahkan.');
+      setShowModal(false);
       fetchVideos();
       setTimeout(() => setMessage(''), 4000);
     } catch (err) {
@@ -118,15 +113,10 @@ export default function VideoIndex() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus video ini dari Pojok Video?')) {
+    if (confirm('Apakah Anda yakin ingin menghapus video ini?')) {
       try {
-        const { error: deleteErr } = await supabase
-          .from('videos')
-          .delete()
-          .eq('id', id);
-
+        const { error: deleteErr } = await supabase.from('videos').delete().eq('id', id);
         if (deleteErr) throw deleteErr;
-
         setMessage('Video berhasil dihapus.');
         fetchVideos();
         setTimeout(() => setMessage(''), 4000);
@@ -136,119 +126,159 @@ export default function VideoIndex() {
     }
   };
 
+  const filtered = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return videos;
+    return videos.filter(v => v.judul?.toLowerCase().includes(q) || v.youtube_id?.toLowerCase().includes(q));
+  }, [videos, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery]);
+
+  const AddForm = () => (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
+      <div>
+        <label className="block text-sm font-bold text-gray-800 mb-1">Judul Video</label>
+        <input type="text" value={judul} onChange={e => setJudul(e.target.value)}
+          placeholder="Cth: Detik-detik Pengesahan Pengurus DPC PKB"
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required autoFocus />
+      </div>
+      <div>
+        <label className="block text-sm font-bold text-gray-800 mb-1">Link URL YouTube</label>
+        <input type="text" value={link} onChange={e => setLink(e.target.value)}
+          placeholder="https://www.youtube.com/watch?v=..."
+          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required />
+        <p className="text-xs text-gray-500 mt-1">Tempel link video YouTube dari browser Anda.</p>
+      </div>
+      <button type="submit" disabled={processing}
+        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50">
+        {processing ? 'Menyimpan...' : 'Simpan & Tayangkan Video'}
+      </button>
+    </form>
+  );
+
   return (
     <AdminLayout>
-      <Head>
-        <title>Kelola Pojok Video - PojokTV</title>
-      </Head>
+      <Head><title>Kelola Pojok Video - PojokTV</title></Head>
 
-      {message && (
-        <div className="mb-6 p-4 bg-green-100 border-2 border-green-300 rounded-lg text-green-900 text-base font-bold">
-          {message}
+      {/* Modal (Mobile) */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-4" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-2xl rounded-b-none sm:rounded-2xl w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg text-gray-900">Tambah Video Baru</h3>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <AddForm />
+          </div>
         </div>
       )}
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 border-2 border-red-300 rounded-lg text-red-900 text-base font-bold">
-          {error}
-        </div>
-      )}
+      {message && <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold"><i className="fa-solid fa-check mr-2"></i>{message}</div>}
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Kelola Pojok Video</h1>
+      {/* Page Header */}
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Kelola Pojok Video</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{videos.length} video tayang</p>
+        </div>
+        <button onClick={() => setShowModal(true)}
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors">
+          <i className="fa-solid fa-plus"></i>
+          <span className="hidden sm:inline">Tambah Video</span>
+          <span className="sm:hidden">Tambah</span>
+        </button>
+      </div>
+
+      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
+        <p>Klik <strong>+ Tambah Video</strong> lalu tempel link YouTube (format: youtube.com/watch?v=... atau youtu.be/...). Sistem akan otomatis mengekstrak ID video. Video yang salah bisa dihapus dengan tombol Hapus di setiap baris.</p>
+      </GuideBox>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form Tambah Video */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-gray-900 mb-4 text-lg border-b pb-2">Tambah Video Baru</h3>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Judul Video</label>
-              <input
-                type="text"
-                value={judul}
-                onChange={e => setJudul(e.target.value)}
-                placeholder="Cth: Detik-detik Pengesahan Pengurus DPC PKB"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-base font-bold text-gray-800 mb-1">Link URL YouTube</label>
-              <input
-                type="text"
-                value={link}
-                onChange={e => setLink(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
-                required
-              />
-              <p className="text-xs text-gray-700 mt-1 leading-relaxed">Klik di atas untuk menempelkan link video YouTube dari browser Anda.</p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={processing}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md text-base transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
-            >
-              {processing ? 'Menyimpan...' : 'Simpan & Tayangkan Video'}
-            </button>
-          </form>
+        {/* Desktop Form */}
+        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Video Baru</h3>
+          <AddForm />
         </div>
 
-        {/* Tabel Daftar Video */}
+        {/* Daftar Video */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="font-bold text-gray-950 text-lg">Daftar Video Tayang</h3>
-            <p className="text-sm text-gray-700 mt-0.5">Terdapat {videos.length} video tayang di Pojok Video</p>
+          {/* Search */}
+          <div className="p-4 border-b border-gray-200">
+            <div className="relative">
+              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input type="text" placeholder="Cari judul video..." value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+            </div>
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-gray-400 font-bold">
-              <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat video...
-            </div>
-          ) : videos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-              <p className="font-bold text-lg">Belum ada video tayang</p>
-              <p className="text-base mt-1">Tambahkan video YouTube pertama Anda di form sebelah kiri.</p>
+            <div className="text-center py-12 text-gray-400 font-bold"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat video...</div>
+          ) : paginated.length === 0 ? (
+            <div className="text-center py-12 text-gray-500 font-bold text-sm">
+              {searchQuery ? `Tidak ada video "${searchQuery}"` : 'Belum ada video tayang.'}
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-base">
-                <thead className="bg-gray-50 text-sm uppercase text-gray-800 font-bold border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4">Preview</th>
-                    <th className="px-6 py-4">Judul Video</th>
-                    <th className="px-6 py-4">YouTube ID</th>
-                    <th className="px-6 py-4 text-right">Tindakan</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {videos.map(video => (
-                    <tr key={video.id} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <img
-                          src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                          alt={video.judul}
-                          className="h-12 w-24 object-cover rounded-md border border-gray-300 bg-gray-100"
-                        />
-                      </td>
-                      <td className="px-6 py-4 font-bold text-gray-900">{video.judul}</td>
-                      <td className="px-6 py-4 font-mono text-sm text-gray-700">{video.youtube_id}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => handleDelete(video.id)}
-                          className="text-red-700 hover:text-red-900 font-bold text-sm bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg border border-red-300 transition-colors cursor-pointer"
-                        >
-                          Hapus
-                        </button>
-                      </td>
+            <>
+              {/* Mobile Cards */}
+              <div className="md:hidden divide-y divide-gray-100">
+                {paginated.map(video => (
+                  <div key={video.id} className="p-4 flex gap-3 items-start">
+                    <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                      alt={video.judul} className="w-20 h-14 object-cover rounded-lg border border-gray-200 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 text-sm line-clamp-2">{video.judul}</p>
+                      <p className="text-xs text-gray-500 font-mono mt-0.5">{video.youtube_id}</p>
+                      <button onClick={() => handleDelete(video.id)}
+                        className="mt-2 text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                        <i className="fa-solid fa-trash mr-1"></i>Hapus
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3">Preview</th>
+                      <th className="px-6 py-3">Judul Video</th>
+                      <th className="px-6 py-3">YouTube ID</th>
+                      <th className="px-6 py-3 text-right">Aksi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {paginated.map(video => (
+                      <tr key={video.id} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-6 py-3">
+                          <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                            alt={video.judul} className="h-10 w-20 object-cover rounded-md border border-gray-200" />
+                        </td>
+                        <td className="px-6 py-3 font-bold text-gray-900 max-w-xs">
+                          <p className="line-clamp-2">{video.judul}</p>
+                        </td>
+                        <td className="px-6 py-3 font-mono text-xs text-gray-500">{video.youtube_id}</td>
+                        <td className="px-6 py-3 text-right">
+                          <button onClick={() => handleDelete(video.id)}
+                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                            Hapus
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </>
           )}
         </div>
       </div>

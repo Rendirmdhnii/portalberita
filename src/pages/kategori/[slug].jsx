@@ -3,6 +3,9 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import AdSlot from '@/components/AdSlot';
+import EmptyState from '@/components/EmptyState';
+import BreakingNews from '@/components/BreakingNews';
+import Footer from '@/components/Footer';
 import { supabase } from '@/lib/supabase';
 
 export default function KategoriPage() {
@@ -117,6 +120,27 @@ export default function KategoriPage() {
     return `${diffDays} Hari Lalu`;
   };
 
+  const getThumbnail = (post) => {
+    if (!post) return '';
+    const imagesData = post.images || post.image;
+    if (!imagesData) return '';
+    if (Array.isArray(imagesData)) {
+      return imagesData[0] || '';
+    }
+    if (typeof imagesData === 'string') {
+      try {
+        if (imagesData.startsWith('[')) {
+          const parsed = JSON.parse(imagesData);
+          return parsed[0] || '';
+        }
+      } catch (e) {
+        // ignore
+      }
+      return imagesData;
+    }
+    return '';
+  };
+
   const handleLiveTv = () => {
     alert("🔴 Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
   };
@@ -135,7 +159,7 @@ export default function KategoriPage() {
   const footerAd = ads?.find(a => a.position === 'Footer');
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans">
+    <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans overflow-x-hidden">
       <Head>
         <title>{activeCategory ? `Rubrik ${activeCategory.name} - PojokTV.com` : 'Rubrik Kategori - PojokTV.com'}</title>
         <meta name="description" content={activeCategory ? `Kumpulan berita terkini seputar rubrik ${activeCategory.name} hanya di PojokTV.com.` : 'PojokTV.com'} />
@@ -255,46 +279,35 @@ export default function KategoriPage() {
           </div>
         )}
       </div>
-
-      {/* Breaking News Ticker */}
-      <div className="ticker-bar bg-red-50 border-b border-red-150">
-        <div className="container mx-auto px-4 flex items-center h-9">
-          <div className="ticker-label bg-red-600 text-white text-xs font-extrabold px-3 py-1 flex items-center h-full">
-            ⚠️ BREAKING NEWS
-          </div>
-          <div className="ticker-content flex-1 overflow-hidden relative h-full flex items-center ml-3">
-            <div className="ticker-track flex items-center" id="breaking-ticker">
-              {latestBerita.length > 0 ? (
-                latestBerita.map((post) => (
-                  <div key={post.id} className="ticker-item text-xs font-bold text-slate-800 whitespace-nowrap">
-                    <span className="ticker-bullet text-red-600 font-extrabold mx-2">•</span> {post.title}
-                  </div>
-                ))
-              ) : (
-                <div className="ticker-item text-xs text-slate-600">Belum ada berita</div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <BreakingNews />
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Kategori) */}
-      <div className="w-full max-w-5xl mx-auto my-6 px-4 flex justify-center">
-        <AdSlot 
-          size="970x90" 
-          className="w-full h-auto" 
-          imgClassName="w-full h-auto max-h-[120px] md:max-h-[200px] object-contain rounded-lg shadow-sm block mx-auto"
-          ad={headerAd} 
-        />
-      </div>
+      {headerAd && headerAd.image && (
+        <div className="w-full max-w-7xl mx-auto my-4 px-2 md:px-4 flex justify-center">
+          <AdSlot 
+            size="970x90" 
+            className="w-full" 
+            ad={headerAd} 
+          />
+        </div>
+      )}
 
       {/* Content Wrapper */}
       <main className="main-wrapper my-8 pt-0">
         <div className="container">
-          <div className="section-header border-b border-gray-250 pb-2 mb-6">
-            <h1 className="text-2xl font-black text-slate-900 uppercase">
-              Rubrik: <span className="text-red-600">{activeCategory ? activeCategory.name : 'Memuat...'}</span>
+          {/* Breadcrumb + Kategori Header */}
+          <div className="mb-6">
+            <nav className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
+              <Link href="/" className="hover:text-red-600 transition-colors">Beranda</Link>
+              <i className="fa-solid fa-chevron-right text-[9px]"></i>
+              <span className="text-slate-500">Kategori</span>
+              <i className="fa-solid fa-chevron-right text-[9px]"></i>
+              <span className="text-red-600 font-semibold">{activeCategory ? activeCategory.name : '...'}</span>
+            </nav>
+            <h1 className="text-3xl font-extrabold text-gray-900 uppercase tracking-tight leading-none">
+              {activeCategory ? activeCategory.name : 'Memuat...'}
             </h1>
+            <div className="border-b-4 border-red-600 w-16 mt-2 mb-0"></div>
           </div>
 
           <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -305,25 +318,27 @@ export default function KategoriPage() {
                   <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat artikel rubrik...
                 </div>
               ) : berita.length === 0 ? (
-                <div className="text-center py-20 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-500 font-bold text-lg">
-                  Belum ada berita di rubrik ini
-                </div>
+                <EmptyState
+                  icon="fa-solid fa-folder-open"
+                  title="Belum ada berita di rubrik ini"
+                  message="Redaksi belum mempublikasikan artikel di kategori ini."
+                />
               ) : (
                 <div className="ekonomi-grid flex flex-col gap-4">
                   {berita.map((post) => (
-                    <article key={post.id} className="ekonomi-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex gap-4 hover:shadow-md transition">
-                      <div className="ekonomi-img-wrapper w-36 h-24 shrink-0 relative rounded-lg overflow-hidden">
-                        {post.image ? (
-                          <img src={post.image} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
+                    <article key={post.id} className="ekonomi-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition">
+                      <div className="ekonomi-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
+                        {getThumbnail(post) ? (
+                          <img src={getThumbnail(post)} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
                         ) : (
                           <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 font-bold text-sm w-full h-full">
                             No Image
                           </div>
                         )}
                       </div>
-                      <div className="ekonomi-content flex-1 flex flex-col justify-between overflow-hidden">
+                      <div className="ekonomi-content flex-1 flex flex-col justify-between overflow-hidden p-1 sm:p-0">
                         <div>
-                          <h3 className="ekonomi-title text-base font-bold text-slate-900 hover:text-red-655 line-clamp-1">
+                          <h3 className="ekonomi-title text-base font-bold text-slate-900 hover:text-red-655 line-clamp-2">
                             <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                           </h3>
                           <p className="ekonomi-snippet text-slate-500 text-xs line-clamp-2 mt-1 leading-relaxed">
@@ -344,13 +359,13 @@ export default function KategoriPage() {
             <aside className="sidebar-wrapper">
               <div className="sidebar-sticky gap-6 flex flex-col">
                 {/* Slot Iklan 2 */}
-                <div className="w-full h-[250px]">
-                  <AdSlot size="300x250" className="w-full h-full" ad={sidebarTopAd} />
+                <div className="w-full">
+                  <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
                 </div>
 
                 {/* Slot Iklan 3 */}
-                <div className="w-full h-[500px]">
-                  <AdSlot size="300x600" className="w-full h-full" ad={sidebarBottomAd} />
+                <div className="w-full">
+                  <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
                 </div>
               </div>
             </aside>
@@ -360,78 +375,10 @@ export default function KategoriPage() {
 
       {/* Footer Ad */}
       <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
-        <AdSlot size="970x250" className="w-full max-w-[970px] h-[200px]" ad={footerAd} />
+        <AdSlot size="970x250" className="w-full" ad={footerAd} />
       </div>
 
-      {/* Footer */}
-      <footer className="footer bg-slate-950 text-slate-355 border-t-4 border-red-600 pt-12 pb-6">
-        <div className="container">
-          <div className="footer-grid grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div className="footer-col md:col-span-2">
-              <div className="footer-about-logo text-3xl font-black tracking-tighter text-white mb-3">
-                Pojok<span className="text-red-600">TV.com</span>
-              </div>
-              <p className="footer-about-text text-sm text-slate-400 leading-relaxed">
-                PojokTV.com adalah bagian dari jaringan televisi berita digital nasional terkemuka yang berdedikasi menghadirkan jurnalisme berwibawa, independen, tajam, dan tercepat dari seluruh penjuru nusantara.
-              </p>
-              <div className="social-icons flex gap-3 text-slate-400 mt-4">
-                <a href="#" className="hover:text-white transition" aria-label="Facebook"><i className="fa-brands fa-facebook-f text-lg"></i></a>
-                <a href="#" className="hover:text-white transition" aria-label="Instagram"><i className="fa-brands fa-instagram text-lg"></i></a>
-                <a href="#" className="hover:text-white transition" aria-label="Youtube"><i className="fa-brands fa-youtube text-lg"></i></a>
-                <a href="#" className="hover:text-white transition" aria-label="TikTok"><i className="fa-brands fa-tiktok text-lg"></i></a>
-              </div>
-            </div>
-
-            <div className="footer-col">
-              <h4 className="footer-col-title text-white font-bold text-sm uppercase mb-3 tracking-wider">Kategori</h4>
-              <div className="footer-links flex flex-col gap-2 text-sm text-slate-400">
-                <Link href="/" className="hover:text-white transition">Berita Utama</Link>
-                {categories.map((cat) => (
-                  <Link key={cat.id} href={`/kategori/${cat.slug}`} className="hover:text-white transition">
-                    {cat.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="footer-col">
-              <h4 className="footer-col-title text-white font-bold text-sm uppercase mb-3 tracking-wider">Hubungi Kami</h4>
-              <div className="footer-links text-slate-400 space-y-2 text-sm">
-                <div className="footer-contact-item flex gap-2">
-                  <i className="fa-solid fa-user text-red-600 mt-1 shrink-0"></i>
-                  <span>Mujianto Primadi</span>
-                </div>
-                <div className="footer-contact-item flex gap-2">
-                  <i className="fa-solid fa-location-dot text-red-600 mt-1 shrink-0"></i>
-                  <span>Perum Citra Oma Pesona Blok E3/25 RT 37 RW 07, Desa Sidokepung, Kecamatan Buduran, Sidoarjo, Jatim</span>
-                </div>
-                <div className="footer-contact-item flex gap-2">
-                  <i className="fa-brands fa-whatsapp text-red-600 mt-1 shrink-0"></i>
-                  <span>WhatsApp: <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="hover:text-white underline">+62 813-3116-0799</a></span>
-                </div>
-                <div className="footer-contact-item flex gap-2">
-                  <i className="fa-solid fa-envelope text-red-600 mt-1 shrink-0"></i>
-                  <span>Email: <a href="mailto:redaksi@pojoktv.com" className="hover:text-white underline">redaksi@pojoktv.com</a></span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer Paling Bawah */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 py-6 mt-8 border-t border-gray-800 text-sm text-gray-400">
-            <div className="footer-copyright text-center md:text-left text-xs text-slate-500">
-              &copy; 2026 pojoktv.com. Jaringan Berita Nasional Terpercaya. Hak Cipta Dilindungi Undang-Undang.
-            </div>
-            <div className="flex flex-wrap justify-center md:justify-end items-center gap-4 md:gap-6">
-              <Link href="/tentang-kami" className="hover:text-white transition-colors duration-200">Tentang Kami</Link>
-              <Link href="/pedoman-media" className="hover:text-white transition-colors duration-200">Pedoman Media Siber</Link>
-              <Link href="/kebijakan-privasi" className="hover:text-white transition-colors duration-200">Kebijakan Privasi</Link>
-              <Link href="/ketentuan-layanan" className="hover:text-white transition-colors duration-200">Ketentuan Layanan</Link>
-              <Link href="/admin/login" className="hover:text-white transition-colors duration-200">Login</Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer categories={categories} />
     </div>
   );
 }
