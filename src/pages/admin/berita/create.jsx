@@ -216,37 +216,41 @@ export default function BeritaCreate() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Judul Utama */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Judul Artikel Berita</label>
+            <label className="block text-lg font-bold text-gray-800 mb-1.5">Judul Utama Berita <span className="text-red-500">*</span></label>
             <input 
               type="text" 
               value={title} 
               onChange={e => setTitle(e.target.value)} 
-              placeholder="Ketik judul berita di sini..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-serif font-bold text-2xl md:text-3xl" 
+              placeholder="Tulis judul berita di sini..."
+              className="w-full text-2xl font-bold p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-serif" 
               required 
             />
+            <p className="text-xs text-gray-500 mt-1">Link Tautan Berita: <span className="font-mono text-gray-400">otomatis dibuat setelah disimpan</span></p>
           </div>
 
+          {/* Penulis / Jurnalis */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Reporter</label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Jurnalis <span className="text-red-500">*</span></label>
             <input 
               type="text" 
               value={author} 
               onChange={e => setAuthor(e.target.value)} 
-              placeholder="Ketik nama penulis atau reporter..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium text-base" 
+              placeholder="Ketik nama jurnalis atau reporter..."
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium text-base" 
               required 
             />
           </div>
 
+          {/* Kategori Rubrik */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Pilih Kategori Rubrik</label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Rubrik / Kategori Berita <span className="text-red-500">*</span></label>
             <select 
               value={category} 
               onChange={e => setCategory(e.target.value)} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium" 
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium bg-white" 
               required
             >
               <option value="">-- Silakan Pilih Rubrik --</option>
@@ -260,21 +264,26 @@ export default function BeritaCreate() {
             </select>
           </div>
 
+          {/* Foto Berita */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Gambar / Foto Berita (Bisa pilih lebih dari satu)</label>
-             <input 
-              type="file" 
-              accept="image/*"
-              multiple
-              onChange={handleImageChange} 
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none text-gray-950" 
-            />
-            <p className="text-xs text-gray-700 mt-1 leading-relaxed">Klik untuk memilih satu atau beberapa foto dari komputer Anda (format JPG/PNG/WebP, maksimal ukuran 2MB per file).</p>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama Berita <span className="text-red-500">*</span></label>
+            <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
+              <input 
+                type="file" 
+                accept="image/*"
+                multiple
+                onChange={handleImageChange} 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+              />
+              <i className="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+              <p className="text-sm font-bold text-gray-700">Klik di sini untuk masukkan foto dari laptop</p>
+              <p className="text-xs text-gray-500 mt-1">Bisa pilih satu atau beberapa foto sekaligus (format JPG/PNG/WebP)</p>
+            </div>
             
             {/* Image Previews */}
             {previewUrls.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs font-bold text-slate-500 mb-2">Pratinjau Gambar Terpilih ({previewUrls.length}):</p>
+              <div className="mt-4">
+                <p className="text-xs font-bold text-slate-500 mb-2">Foto Terpilih ({previewUrls.length}):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {previewUrls.map((url, index) => (
                     <div key={index} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
@@ -282,9 +291,9 @@ export default function BeritaCreate() {
                       <button
                         type="button"
                         onClick={() => handleRemovePreview(index)}
-                        className="mt-1 bg-red-50 text-red-700 hover:bg-red-100 text-[10px] py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                        className="mt-1.5 bg-red-50 text-red-700 hover:bg-red-100 text-[10px] py-1 rounded border border-red-200 transition font-bold cursor-pointer"
                       >
-                        Batal
+                        Hapus
                       </button>
                     </div>
                   ))}
@@ -293,8 +302,9 @@ export default function BeritaCreate() {
             )}
           </div>
 
+          {/* Isi Berita */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita</label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita (Tulis seperti di Word)</label>
             {/* Rich Text Editor React Quill */}
             <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden prose prose-slate max-w-none font-sans text-base leading-relaxed">
               <ReactQuill 
@@ -304,30 +314,32 @@ export default function BeritaCreate() {
                 modules={modules}
                 placeholder="Ketik isi berita lengkap di sini..."
                 theme="snow"
-                className="min-h-[300px] text-base"
+                style={{ minHeight: '400px' }}
+                className="text-base"
               />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 mt-6">
+          {/* Tombol Aksi Lalu Lintas */}
+          <div className="flex flex-wrap items-center gap-4 mt-8 pt-4 border-t border-gray-100">
             <button 
               type="submit" 
               disabled={processing} 
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-md text-base transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-lg shadow-lg disabled:opacity-50 cursor-pointer transition-colors"
             >
               {processing ? (
                 <>
                   <i className="fa-solid fa-circle-notch animate-spin mr-2"></i>Menyimpan...
                 </>
-              ) : 'Simpan dan Publikasikan Berita'}
+              ) : 'Simpan & Tayangkan'}
             </button>
 
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-md text-base transition-colors shadow-sm cursor-pointer"
+              className="w-full md:w-auto px-8 py-4 bg-gray-650 hover:bg-gray-750 text-white font-bold rounded-xl text-lg shadow-lg transition-colors cursor-pointer"
             >
-              <i className="fa-solid fa-eye mr-2"></i>Pratinjau
+              <i className="fa-solid fa-eye mr-2"></i>Cek Pratinjau Tampilan
             </button>
           </div>
         </form>

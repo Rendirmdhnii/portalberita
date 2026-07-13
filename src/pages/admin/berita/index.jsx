@@ -81,11 +81,11 @@ export default function BeritaIndex() {
   useEffect(() => { fetchPosts(); }, []);
 
   const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus berita ini secara permanen dari database?')) {
+    if (confirm('Yakin mau hapus berita ini? Tidak bisa dikembalikan lho!')) {
       try {
         const { error } = await supabase.from('berita').delete().eq('id', id);
         if (error) throw error;
-        setMessage('Berita berhasil dihapus secara permanen.');
+        setMessage('✅ Mantap! Berita berhasil dihapus secara permanen.');
         fetchPosts();
         setTimeout(() => setMessage(''), 4000);
       } catch (err) {
@@ -114,8 +114,8 @@ export default function BeritaIndex() {
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   const statusBadge = (status) => status === 'Published'
-    ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300">TAYANG</span>
-    : <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-800 border border-orange-300">DRAFT</span>;
+    ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-150 text-green-800 border border-green-300">TAYANG</span>
+    : <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-850 border border-orange-350">DRAFT (BELUM TAYANG)</span>;
 
   return (
     <AdminLayout>
@@ -123,8 +123,8 @@ export default function BeritaIndex() {
 
       {/* Flash Message */}
       {message && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold">
-          <i className="fa-solid fa-check mr-2"></i>{message}
+        <div className="mb-4 p-4 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold shadow-sm">
+          <i className="fa-solid fa-circle-check mr-2 text-green-600 text-base"></i>{message}
         </div>
       )}
 
@@ -136,7 +136,7 @@ export default function BeritaIndex() {
         </div>
         <Link
           href="/admin/berita/create"
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-sm shadow-md transition-colors"
         >
           <i className="fa-solid fa-plus"></i>
           <span>Tulis Berita Baru</span>
@@ -188,16 +188,16 @@ export default function BeritaIndex() {
                     <span className="bg-gray-100 px-2 py-0.5 rounded-full font-semibold">{post.category}</span>
                     <span>· {post.author}</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-4">
                     <Link
                       href={`/admin/berita/edit/${post.id}`}
-                      className="flex-1 text-center bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-2 rounded-lg border border-blue-200 font-bold text-xs transition-colors"
+                      className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-sm transition-colors"
                     >
                       <i className="fa-solid fa-pen mr-1"></i>Edit
                     </Link>
                     <button
                       onClick={() => handleDelete(post.id)}
-                      className="flex-1 bg-red-50 hover:bg-red-100 text-red-800 px-3 py-2 rounded-lg border border-red-200 font-bold text-xs transition-colors"
+                      className="flex-1 bg-red-650 hover:bg-red-750 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-md transition-colors text-center"
                     >
                       <i className="fa-solid fa-trash mr-1"></i>Hapus
                     </button>
@@ -220,25 +220,25 @@ export default function BeritaIndex() {
                 <tbody className="divide-y divide-gray-100">
                   {paginatedPosts.map(post => (
                     <tr key={post.id} className="hover:bg-blue-50 transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <p className="font-bold text-gray-900 line-clamp-2 max-w-md">{post.title}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{post.author}</p>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-5">
                         <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-gray-200">
                           {post.category}
                         </span>
                       </td>
-                      <td className="px-6 py-4">{statusBadge(post.status)}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
+                      <td className="px-6 py-5">{statusBadge(post.status)}</td>
+                      <td className="px-6 py-5 text-right">
+                        <div className="flex justify-end gap-3.5">
                           <Link
                             href={`/admin/berita/edit/${post.id}`}
-                            className="bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold text-xs transition-colors"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-sm transition-colors"
                           >Edit</Link>
                           <button
                             onClick={() => handleDelete(post.id)}
-                            className="bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold text-xs transition-colors"
+                            className="bg-red-650 hover:bg-red-750 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
                           >Hapus</button>
                         </div>
                       </td>

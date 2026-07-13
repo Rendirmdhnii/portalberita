@@ -280,51 +280,53 @@ export default function BeritaEdit() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Judul */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Judul Utama */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Judul Berita <span className="text-red-500">*</span></label>
+            <label className="block text-lg font-bold text-gray-800 mb-1.5">Judul Utama Berita <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-serif font-bold text-2xl md:text-3xl"
+              placeholder="Tulis judul berita di sini..."
+              className="w-full text-2xl font-bold p-4 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-serif"
               required
             />
+            <p className="text-xs text-gray-500 mt-1">Link Tautan Berita: <span className="font-mono text-gray-400">otomatis dibuat setelah disimpan</span></p>
           </div>
 
-          {/* Penulis */}
+          {/* Penulis / Jurnalis */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Reporter <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Jurnalis <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={author}
               onChange={e => setAuthor(e.target.value)}
-              placeholder="Ketik nama penulis atau reporter..."
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium text-base"
+              placeholder="Ketik nama jurnalis atau reporter..."
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium text-base"
               required
             />
           </div>
 
-          {/* Rubrik */}
+          {/* Kategori Rubrik */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Rubrik / Kategori <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Rubrik / Kategori Berita <span className="text-red-500">*</span></label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium bg-white"
               required
             >
-              <option value="">-- Pilih Rubrik --</option>
+              <option value="">-- Silakan Pilih Rubrik --</option>
               {categories.map(cat => (
                 <option key={cat.id} value={cat.name}>{cat.name}</option>
               ))}
             </select>
           </div>
 
-          {/* Upload Gambar */}
+          {/* Foto Berita */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Kelola Foto Berita (Multi-Foto)</label>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama Berita</label>
             
             {/* Existing Images */}
             {existingImagesList.length > 0 && (
@@ -337,7 +339,7 @@ export default function BeritaEdit() {
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(idx)}
-                        className="mt-1 bg-red-50 text-red-650 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                        className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
                       >
                         Hapus Foto
                       </button>
@@ -358,9 +360,9 @@ export default function BeritaEdit() {
                       <button
                         type="button"
                         onClick={() => handleRemoveNewImage(idx)}
-                        className="mt-1 bg-red-50 text-red-650 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                        className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
                       >
-                        Batal
+                        Hapus
                       </button>
                     </div>
                   ))}
@@ -368,14 +370,18 @@ export default function BeritaEdit() {
               </div>
             )}
 
-            <p className="text-sm text-gray-700 mb-2 leading-relaxed">Pilih file di bawah ini untuk menambahkan foto-foto baru:</p>
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none text-gray-950"
-            />
+            <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <i className="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+              <p className="text-sm font-bold text-gray-700">Klik di sini untuk masukkan foto dari laptop</p>
+              <p className="text-xs text-gray-500 mt-1">Bisa pilih satu atau beberapa foto sekaligus (format JPG/PNG/WebP)</p>
+            </div>
           </div>
 
           {/* Status */}
@@ -384,7 +390,7 @@ export default function BeritaEdit() {
             <select
               value={status}
               onChange={e => setStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-red-400 text-gray-950 font-medium"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium bg-white"
             >
               <option value="Published">DIPUBLIKASI (TAYANG)</option>
               <option value="Draft">DRAFT (BELUM TAYANG)</option>
@@ -393,7 +399,7 @@ export default function BeritaEdit() {
 
           {/* Isi Berita */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita (Tulis seperti di Word)</label>
             <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden prose prose-slate max-w-none font-sans text-base leading-relaxed">
               <ReactQuill 
                 forwardedRef={quillRef}
@@ -402,31 +408,33 @@ export default function BeritaEdit() {
                 modules={modules}
                 placeholder="Ketik isi berita lengkap di sini..."
                 theme="snow"
-                className="min-h-[300px] text-base"
+                style={{ minHeight: '400px' }}
+                className="text-base"
               />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 pt-2">
+          {/* Tombol Aksi Lalu Lintas */}
+          <div className="flex flex-wrap items-center gap-4 mt-8 pt-4 border-t border-gray-100">
             <button
               type="submit"
               disabled={processing}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-md text-base transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
+              className="w-full md:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-lg shadow-lg disabled:opacity-50 cursor-pointer transition-colors"
             >
-              {processing ? 'Menyimpan Perubahan...' : 'Simpan Perubahan Berita'}
+              {processing ? 'Menyimpan Perubahan...' : 'Simpan & Tayangkan'}
             </button>
             
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 py-3 rounded-md text-base transition-colors shadow-sm cursor-pointer"
+              className="w-full md:w-auto px-8 py-4 bg-gray-650 hover:bg-gray-750 text-white font-bold rounded-xl text-lg shadow-lg transition-colors cursor-pointer"
             >
-              <i className="fa-solid fa-eye mr-2"></i>Pratinjau
+              <i className="fa-solid fa-eye mr-2"></i>Cek Pratinjau Tampilan
             </button>
 
             <Link
               href="/admin/berita"
-              className="text-gray-800 hover:text-gray-950 hover:underline font-bold text-base bg-gray-100 border border-gray-300 px-6 py-3 rounded-md transition-colors"
+              className="w-full md:w-auto px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-lg shadow-sm transition-colors text-center inline-block"
             >
               Batal
             </Link>
