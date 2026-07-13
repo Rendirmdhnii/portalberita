@@ -1,32 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function NewsGallery({ images }) {
   if (!images || !Array.isArray(images) || images.length === 0) {
     return null;
   }
 
-  // Pisahkan Gambar Utama dan Sisanya
-  const mainImage = images[0];
-  const extraImages = images.slice(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   return (
     <div className="w-full mb-6">
-      {/* Gambar Utama */}
-      <img
-        src={mainImage}
-        alt="Foto Utama Berita"
-        className="w-full h-auto aspect-video object-cover rounded-xl shadow-sm"
-      />
+      {/* Wrapper */}
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm mb-4 group">
+        <img
+          src={images[currentImageIndex]}
+          alt="Foto Utama Berita"
+          className="w-full h-full object-cover transition-all duration-500"
+        />
 
-      {/* Galeri Tambahan (Grid Rapi) */}
-      {extraImages.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
-          {extraImages.map((img, index) => (
-            <img 
-              key={index} 
-              src={img} 
-              alt={`Foto tambahan ${index + 1}`}
-              className="w-full h-full aspect-video object-cover rounded-lg shadow-sm border border-gray-100"
+        {/* Tombol Navigasi Kiri & Kanan (Muncul otomatis jika gambar > 1) */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
+              className="absolute top-1/2 left-2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white w-9 h-9 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              &#10094; {/* Panah Kiri */}
+            </button>
+            <button
+              onClick={() => setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
+              className="absolute top-1/2 right-2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white w-9 h-9 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              &#10095; {/* Panah Kanan */}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Indikator Titik (Dots) Minimalis */}
+      {images.length > 1 && (
+        <div className="flex justify-center gap-2 mb-4 mt-[-8px]">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`h-2 rounded-full transition-all cursor-pointer ${
+                currentImageIndex === index ? 'w-4 bg-blue-600' : 'w-2 bg-gray-300'
+              }`}
             />
           ))}
         </div>
