@@ -84,6 +84,8 @@ export default function AdIndex() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
 
   // Form states
   const [name, setName] = useState('');
@@ -92,6 +94,14 @@ export default function AdIndex() {
   const [tanggalBerakhir, setTanggalBerakhir] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+
+  const handleOpenPreview = () => {
+    if (!previewUrl) {
+      alert('Pilih berkas gambar iklan terlebih dahulu!');
+      return;
+    }
+    setShowPreview(true);
+  };
 
   // Cropper states
   const [cropImageSrc, setCropImageSrc] = useState(null);
@@ -324,11 +334,210 @@ export default function AdIndex() {
                   </div>
                 )}
               </div>
-              <button type="submit" disabled={processing}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm">
-                {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
-              </button>
+              <div className="flex flex-col gap-2.5 mt-4">
+                <button type="button" onClick={handleOpenPreview}
+                  className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
+                  👀 Lihat Pratinjau
+                </button>
+                <button type="submit" disabled={processing}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">
+                  {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
+                </button>
+              </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pratinjau Iklan */}
+      {showPreview && (
+        <div className="fixed inset-0 z-[120] flex flex-col bg-black/80 backdrop-blur-sm overflow-hidden">
+          {/* Header Modal */}
+          <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-white font-bold text-base">Pratinjau Letak Iklan</span>
+              <div className="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                <button
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
+                    previewDevice === 'desktop' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  💻 Tampilan PC
+                </button>
+                <button
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
+                    previewDevice === 'mobile' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📱 Tampilan HP
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="bg-red-655 hover:bg-red-755 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
+            >
+              ❌ Tutup Pratinjau
+            </button>
+          </div>
+
+          {/* Main Preview Container */}
+          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+            {previewDevice === 'desktop' ? (
+              /* Desktop Mockup Layout */
+              <div className="w-full max-w-5xl mx-auto p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 text-white overflow-y-auto max-h-[85vh] flex flex-col gap-6">
+                <div className="max-w-4xl mx-auto w-full bg-white text-slate-950 p-6 rounded-xl shadow">
+                  {/* Logo / Header Row */}
+                  <div className="flex items-center justify-between border-b pb-4 mb-4">
+                    <div className="text-2xl font-black tracking-tighter text-slate-900">
+                      Pojok<span className="text-red-600">TV.com</span>
+                    </div>
+                    <div className="text-xs text-gray-500 font-mono">DUMMY WEBSITE PREVIEW</div>
+                  </div>
+
+                  {/* Slot Header Atas (728x90) */}
+                  {position === 'Header' && (
+                    <div className="w-full flex flex-col items-center justify-center mb-6 bg-gray-100 p-2 border rounded-lg">
+                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN HEADER ATAS (728x90) ]</span>
+                      <img src={previewUrl} alt="Ad Header" className="max-w-full h-auto max-h-20 object-contain shadow-sm" />
+                    </div>
+                  )}
+
+                  {/* Core Layout Grid */}
+                  <div className="grid grid-cols-3 gap-6">
+                    {/* Content Area */}
+                    <div className="col-span-2 space-y-6">
+                      {/* Article Title */}
+                      <div className="p-4 bg-slate-50 border rounded-lg">
+                        <div className="w-20 h-4 bg-slate-200 rounded mb-2"></div>
+                        <div className="h-6 bg-slate-300 rounded mb-2 w-3/4"></div>
+                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                      </div>
+
+                      {/* Slot Tengah Konten (728x90) */}
+                      {position === 'Tengah Konten' && (
+                        <div className="w-full flex flex-col items-center justify-center my-6 bg-gray-100 p-2 border rounded-lg">
+                          <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN TENGAH KONTEN (728x90) ]</span>
+                          <img src={previewUrl} alt="Ad Content" className="max-w-full h-auto max-h-20 object-contain shadow-sm" />
+                        </div>
+                      )}
+
+                      {/* Article Paragraphs */}
+                      <div className="space-y-3">
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
+                        <div className="h-4 bg-slate-200 rounded w-full"></div>
+                        <div className="h-4 bg-slate-200 rounded w-5/6"></div>
+                      </div>
+                    </div>
+
+                    {/* Sidebar Area */}
+                    <div className="space-y-6">
+                      {/* Slot Sidebar Atas (300x250) */}
+                      <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[150px]">
+                        {position === 'Sidebar Atas' ? (
+                          <>
+                            <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR ATAS (300x250) ]</span>
+                            <img src={previewUrl} alt="Ad Sidebar Top" className="w-full max-h-44 object-contain shadow-sm rounded" />
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">Slot Sidebar Atas (Kosong)</span>
+                        )}
+                      </div>
+
+                      {/* Slot Sidebar Bawah (300x600) */}
+                      <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[250px]">
+                        {position === 'Sidebar Bawah' ? (
+                          <>
+                            <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR BAWAH (300x600) ]</span>
+                            <img src={previewUrl} alt="Ad Sidebar Bottom" className="w-full max-h-72 object-contain shadow-sm rounded" />
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-gray-400">Slot Sidebar Bawah (Kosong)</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Slot Footer (970x250) */}
+                  {position === 'Footer' && (
+                    <div className="w-full flex flex-col items-center justify-center mt-6 bg-gray-100 p-2 border rounded-lg">
+                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN FOOTER (970x250) ]</span>
+                      <img src={previewUrl} alt="Ad Footer" className="max-w-full h-auto max-h-36 object-contain shadow-sm" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Mobile Mockup Layout */
+              <div className="w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-white mt-4 text-slate-955 flex flex-col">
+                <div className="overflow-y-auto h-full p-4 flex flex-col gap-4">
+                  {/* Logo / Header Row */}
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <div className="text-lg font-black tracking-tighter text-slate-900">
+                      Pojok<span className="text-red-600">TV</span>
+                    </div>
+                    <div className="text-[9px] text-gray-400 font-mono">MOBILE PREVIEW</div>
+                  </div>
+
+                  {/* Slot Header Atas (728x90) on Mobile */}
+                  {position === 'Header' && (
+                    <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
+                      <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ HEADER SLIDER (Mobile Fit) ]</span>
+                      <img src={previewUrl} alt="Ad Header Mobile" className="max-w-full h-auto max-h-12 object-contain shadow-sm" />
+                    </div>
+                  )}
+
+                  {/* Article Content Area */}
+                  <div className="space-y-4">
+                    <div className="p-3 bg-slate-50 border rounded-lg">
+                      <div className="w-12 h-3 bg-slate-200 rounded mb-1"></div>
+                      <div className="h-4 bg-slate-300 rounded mb-1 w-5/6"></div>
+                      <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                    </div>
+
+                    {/* Slot Tengah Konten (728x90) on Mobile */}
+                    {position === 'Tengah Konten' && (
+                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
+                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ IN-FEED SLIDER (Mobile Fit) ]</span>
+                        <img src={previewUrl} alt="Ad Content Mobile" className="max-w-full h-auto max-h-12 object-contain shadow-sm" />
+                      </div>
+                    )}
+
+                    {/* Text Mockup */}
+                    <div className="space-y-2">
+                      <div className="h-3 bg-slate-200 rounded w-full"></div>
+                      <div className="h-3 bg-slate-200 rounded w-full"></div>
+                    </div>
+
+                    {/* Slot Sidebar Atas (300x250) on Mobile */}
+                    {position === 'Sidebar Atas' && (
+                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
+                        <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR ATAS (300x250) ]</span>
+                        <img src={previewUrl} alt="Ad Sidebar Top Mobile" className="w-full max-h-40 object-contain shadow-sm rounded" />
+                      </div>
+                    )}
+
+                    {/* Slot Sidebar Bawah (300x600) on Mobile */}
+                    {position === 'Sidebar Bawah' && (
+                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
+                        <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR BAWAH (300x600) ]</span>
+                        <img src={previewUrl} alt="Ad Sidebar Bottom Mobile" className="w-full max-h-60 object-contain shadow-sm rounded" />
+                      </div>
+                    )}
+
+                    {/* Slot Footer (970x250) on Mobile */}
+                    {position === 'Footer' && (
+                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
+                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ FOOTER SLIDER (Mobile Fit) ]</span>
+                        <img src={previewUrl} alt="Ad Footer Mobile" className="max-w-full h-auto max-h-16 object-contain shadow-sm" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -403,10 +612,16 @@ export default function AdIndex() {
                 </div>
               )}
             </div>
-            <button type="submit" disabled={processing}
-              className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm">
-              {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
-            </button>
+            <div className="flex flex-col gap-2.5 mt-4">
+              <button type="button" onClick={handleOpenPreview}
+                className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
+                👀 Lihat Pratinjau
+              </button>
+              <button type="submit" disabled={processing}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">
+                {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
+              </button>
+            </div>
           </form>
         </div>
 

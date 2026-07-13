@@ -51,6 +51,8 @@ export default function VideoIndex() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
 
   const fetchVideos = async () => {
     try {
@@ -88,6 +90,15 @@ export default function VideoIndex() {
       if (match?.[2]?.length === 11) return match[2];
       return null;
     } catch { return null; }
+  };
+
+  const handleOpenPreview = () => {
+    const ytId = extractYoutubeId(link);
+    if (!ytId) {
+      alert('Tolong masukkan Link URL YouTube yang valid dulu ya, pak/bu!');
+      return;
+    }
+    setShowPreview(true);
   };
 
   const handleSubmit = async (e) => {
@@ -152,10 +163,16 @@ export default function VideoIndex() {
           className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required />
         <p className="text-xs text-gray-500 mt-1">Tempel link video YouTube dari browser Anda.</p>
       </div>
-      <button type="submit" disabled={processing}
-        className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50">
-        {processing ? 'Menyimpan...' : 'Simpan & Tayangkan Video'}
-      </button>
+      <div className="flex flex-col gap-2.5 mt-4">
+        <button type="button" onClick={handleOpenPreview}
+          className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
+          👀 Lihat Pratinjau
+        </button>
+        <button type="submit" disabled={processing}
+          className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer">
+          {processing ? 'Menyimpan...' : 'Simpan & Tayangkan Video'}
+        </button>
+      </div>
     </form>
   );
 
@@ -174,6 +191,81 @@ export default function VideoIndex() {
               </button>
             </div>
             <AddForm />
+          </div>
+        </div>
+      )}
+
+      {/* Modal Pratinjau Video */}
+      {showPreview && (
+        <div className="fixed inset-0 z-[100] flex flex-col bg-black/80 backdrop-blur-sm overflow-hidden">
+          {/* Header Modal */}
+          <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-white font-bold text-base">Pratinjau Tampilan</span>
+              <div className="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                <button
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
+                    previewDevice === 'desktop' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  💻 Tampilan PC
+                </button>
+                <button
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
+                    previewDevice === 'mobile' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📱 Tampilan HP
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPreview(false)}
+              className="bg-red-650 hover:bg-red-750 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
+            >
+              ❌ Tutup Pratinjau
+            </button>
+          </div>
+
+          {/* Main Preview Container */}
+          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+            {previewDevice === 'desktop' ? (
+              /* Desktop Wrapper */
+              <div className="w-full max-w-5xl mx-auto p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 text-white overflow-y-auto max-h-[85vh]">
+                <div className="max-w-3xl mx-auto">
+                  <h2 className="text-xl md:text-2xl font-bold mb-4 font-serif text-white">{judul || 'Judul Video Belum Ditulis'}</h2>
+                  <div className="aspect-video w-full rounded-xl overflow-hidden shadow-lg bg-black border border-slate-800">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${extractYoutubeId(link)}`}
+                      title={judul}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-3 italic">Foto/Video: Dokumentasi Redaksi PojokTV</p>
+                </div>
+              </div>
+            ) : (
+              /* Mobile Mockup Frame */
+              <div className="w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-slate-900 mt-4 text-white">
+                <div className="overflow-y-auto h-full p-4">
+                  <h2 className="text-base font-bold mb-3 font-serif leading-snug">{judul || 'Judul Video Belum Ditulis'}</h2>
+                  <div className="aspect-video w-full rounded-lg overflow-hidden shadow bg-black border border-slate-800">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${extractYoutubeId(link)}`}
+                      title={judul}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-2 italic">Foto/Video: Dokumentasi Redaksi PojokTV</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
