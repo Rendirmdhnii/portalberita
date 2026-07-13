@@ -36,6 +36,7 @@ export default function BeritaCreate() {
   const [previewUrls, setPreviewUrls] = useState([]);
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState('desktop');
   
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -338,23 +339,56 @@ export default function BeritaCreate() {
           <div className="bg-gray-50 w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-auto max-h-[90vh]">
             
             {/* Top Control Bar */}
-            <div className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shrink-0 border-b border-slate-800">
+            <div className="bg-slate-900 text-white px-6 py-4 flex flex-wrap justify-between items-center gap-4 shrink-0 border-b border-slate-800">
               <div className="flex items-center gap-3">
                 <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
                 <span className="text-sm font-bold uppercase tracking-wider text-slate-300">Mode Pratinjau Berita (Simulasi Halaman Publik)</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsPreviewOpen(false)}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
-              >
-                Tutup Pratinjau
-              </button>
+              
+              <div className="flex items-center gap-3">
+                {/* Toggle Device Preview */}
+                <div className="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('desktop')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                      previewDevice === 'desktop'
+                        ? 'bg-slate-700 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <i className="fa-solid fa-desktop mr-1.5"></i>Tampilan PC
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewDevice('mobile')}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+                      previewDevice === 'mobile'
+                        ? 'bg-slate-700 text-white shadow-sm'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <i className="fa-solid fa-mobile-screen-button mr-1.5"></i>Tampilan HP
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+                >
+                  Tutup Pratinjau
+                </button>
+              </div>
             </div>
 
             {/* Simulated Public Article Content */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-              <div className="max-w-5xl mx-auto">
+              <div className={
+                previewDevice === 'mobile'
+                  ? "w-full max-w-[375px] mx-auto border-[8px] border-gray-900 rounded-[2.5rem] overflow-y-auto shadow-2xl mt-4 bg-white"
+                  : "w-full max-w-5xl mx-auto"
+              }>
                 
                 {/* Branding Simulation */}
                 <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
