@@ -366,47 +366,48 @@ export default function Home() {
           </section>
 
           {/* Seksi 1: Kriminal Hari Ini (Grid 4 Kartu) */}
-          <section className="kriminal-section mb-8" id="kriminal-section">
-            <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
-              <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
-                <span className="border-b-4 border-red-650 pb-2">Kriminal Hari Ini</span>
-              </h2>
-              <Link href="/kategori/kriminal" className="text-xs font-bold text-red-600 hover:text-red-750 flex items-center gap-1">
-                Indeks Kriminal <i className="fa-solid fa-chevron-right"></i>
-              </Link>
-            </div>
+          {kriminalNews.length > 0 && (
+            <section className="kriminal-section mb-8" id="kriminal-section">
+              <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
+                <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
+                  <span className="border-b-4 border-red-650 pb-2">Kriminal Hari Ini</span>
+                </h2>
+                <Link href="/kategori/kriminal" className="text-xs font-bold text-red-600 hover:text-red-750 flex items-center gap-1">
+                  Indeks Kriminal <i className="fa-solid fa-chevron-right"></i>
+                </Link>
+              </div>
 
-            <div className="kriminal-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {kriminalNews.length === 0 ? (
-                <div className="col-span-full">
-                  <EmptyState icon="fa-solid fa-shield-halved" title="Belum ada berita kriminal" message="Belum ada berita dalam kategori ini." />
-                </div>
-              ) : (
-                kriminalNews.slice(0, 4).map((post) => (
-                  <article key={post.id} className="politik-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 hover:shadow-md transition-shadow">
-                    <div className="politik-img-wrapper h-40 relative">
-                      {getThumbnail(post) ? (
-                        <img src={getThumbnail(post)} alt={post.title} className="politik-img w-full h-full object-cover" />
-                      ) : (
-                        <div className="politik-img bg-slate-900 flex items-center justify-center text-slate-600 w-full h-full">
-                          No Image
-                        </div>
-                      )}
-                    </div>
-                    <div className="politik-content p-4">
-                      <span className="crimson-tag text-red-650 text-[10px] font-extrabold uppercase">KRIMINAL</span>
-                      <h3 className="politik-title text-sm font-bold text-slate-900 hover:text-red-600 line-clamp-2 mt-1 leading-snug">
-                        <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                      </h3>
-                      <div className="politik-meta text-[10px] text-slate-400 mt-2">
-                        <span>{formatTimeAgo(post.created_at)}</span>
+              <div className="kriminal-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {kriminalNews.slice(0, 4).map((post) => (
+                  <article key={post.id} className="politik-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+                    <div>
+                      <div className="politik-img-wrapper aspect-video relative rounded-lg overflow-hidden">
+                        {getThumbnail(post) ? (
+                          <img src={getThumbnail(post)} alt={post.title} className="politik-img w-full h-full object-cover" />
+                        ) : (
+                          <div className="politik-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
+                            No Image
+                          </div>
+                        )}
+                      </div>
+                      <div className="politik-content p-4">
+                        <span className="crimson-tag text-red-650 text-[10px] font-extrabold uppercase">KRIMINAL</span>
+                        <h3 className="politik-title text-sm font-bold text-slate-900 hover:text-red-600 line-clamp-2 mt-1 leading-snug">
+                          <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                        </h3>
+                        <p className="text-xs text-gray-600 line-clamp-3 mt-1.5 leading-relaxed">
+                          {post.content?.replace(/<[^>]*>/g, '')?.slice(0, 160)}...
+                        </p>
                       </div>
                     </div>
+                    <div className="politik-meta text-[10px] text-slate-400 px-4 pb-4 pt-2 border-t border-gray-50 mt-2">
+                      <span>{formatTimeAgo(post.created_at)}</span>
+                    </div>
                   </article>
-                ))
-              )}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Slot Iklan 4: Tengah-tengah daftar berita */}
           <div className="w-full my-8 flex justify-center">
@@ -473,27 +474,25 @@ export default function Home() {
         <div className="container">
           <div className="content-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Kolom Kiri: Ekonomi & Bisnis (70% / 2 columns) */}
-            <div className="content-left lg:col-span-2" id="ekonomi-section">
-              <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
-                <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
-                  <span className="border-b-4 border-red-650 pb-2">Ekonomi & Bisnis</span>
-                </h2>
-                <Link href="/kategori/ekonomi" className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
-                  Indeks Ekonomi <i className="fa-solid fa-chevron-right"></i>
-                </Link>
-              </div>
+            {ekonomiNews.length > 0 && (
+              <div className="content-left lg:col-span-2" id="ekonomi-section">
+                <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
+                  <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
+                    <span className="border-b-4 border-red-650 pb-2">Ekonomi & Bisnis</span>
+                  </h2>
+                  <Link href="/kategori/ekonomi" className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+                    Indeks Ekonomi <i className="fa-solid fa-chevron-right"></i>
+                  </Link>
+                </div>
 
-              <div className="ekonomi-grid flex flex-col gap-4">
-                {ekonomiNews.length === 0 ? (
-                  <EmptyState icon="fa-solid fa-chart-line" title="Belum ada berita ekonomi & bisnis" message="Belum ada berita dalam kategori ini." />
-                ) : (
-                  ekonomiNews.slice(0, 4).map((post) => (
+                <div className="ekonomi-grid flex flex-col gap-4">
+                  {ekonomiNews.slice(0, 4).map((post) => (
                     <article key={post.id} className="ekonomi-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition">
                       <div className="ekonomi-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
                           <img src={getThumbnail(post)} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
                         ) : (
-                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full">
+                          <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
                             No Image
                           </div>
                         )}
@@ -503,17 +502,17 @@ export default function Home() {
                           <h3 className="ekonomi-title text-base font-bold text-slate-900 hover:text-red-655 line-clamp-2">
                             <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                           </h3>
-                          <p className="ekonomi-snippet text-slate-500 text-xs line-clamp-2 mt-1 leading-relaxed">{post.content?.replace(/<[^>]*>/g, '')?.slice(0, 160)}...</p>
+                          <p className="ekonomi-snippet text-gray-600 text-sm line-clamp-3 mt-1 leading-relaxed">{post.content?.replace(/<[^>]*>/g, '')?.slice(0, 160)}...</p>
                         </div>
                         <div className="ekonomi-meta text-[10px] text-slate-400 mt-2">
                           <span>{formatTimeAgo(post.created_at)} | {post.category}</span>
                         </div>
                       </div>
                     </article>
-                  ))
-                )}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Kolom Kanan: Sidebar (30% / 1 column) */}
             <aside className="sidebar-wrapper">
