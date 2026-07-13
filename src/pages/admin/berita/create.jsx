@@ -386,87 +386,108 @@ export default function BeritaCreate() {
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
               <div className={
                 previewDevice === 'mobile'
-                  ? "w-full max-w-[375px] mx-auto border-[8px] border-gray-900 rounded-[2.5rem] overflow-y-auto shadow-2xl mt-4 bg-white"
-                  : "w-full max-w-5xl mx-auto"
+                  ? "w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-white mt-4"
+                  : "w-full max-w-6xl mx-auto p-6 bg-white rounded-2xl shadow-sm border border-gray-100"
               }>
-                
-                {/* Branding Simulation */}
-                <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
-                  <span className="text-2xl font-black tracking-tighter text-slate-900">
-                    Pojok<span className="text-red-600">TV.com</span>
-                  </span>
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">SIMULASI</span>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6">
+                {/* Scroll Isolation wrapper inside phone frame */}
+                <div className={previewDevice === 'mobile' ? "overflow-y-auto h-full p-4" : ""}>
                   
-                  {/* Left Column: Article */}
-                  <div className="w-full min-w-0 lg:col-span-2">
-                    <article className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 min-w-0 overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
-                      
-                      <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <span className="bg-red-50 text-red-600 text-xs font-extrabold px-3 py-1 rounded border border-red-200 uppercase">
-                          {category || 'Kategori'}
-                        </span>
-                        <span className="text-gray-300 text-sm">/</span>
-                        <span className="text-gray-400 text-xs font-semibold">Detail Berita</span>
-                      </div>
-
-                      <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-slate-900 leading-tight mb-4">
-                        {title || 'Judul Berita Belum Diisi'}
-                      </h1>
-
-                      {/* Render images from state using NewsGallery */}
-                      <NewsGallery images={previewUrls} />
-
-                      {/* Metadata */}
-                      <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-xs text-slate-500 border-b border-gray-200 pb-4 mb-6">
-                        <div className="flex items-center gap-1.5">
-                          <i className="fa-regular fa-user text-red-600"></i>
-                          <span>Oleh: <strong className="text-slate-800 font-semibold">Redaktur</strong></span>
-                        </div>
-                        <span className="text-gray-300">•</span>
-                        <div className="flex items-center gap-1.5">
-                          <i className="fa-regular fa-calendar text-red-600"></i>
-                          <span>Senin, 13 Juli 2026</span>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div 
-                        className="article-content berita-content prose prose-slate md:prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title w-full max-w-full overflow-hidden break-words whitespace-normal [&_p]:mb-6"
-                        dangerouslySetInnerHTML={{ __html: content || '<p className="text-gray-400 italic">Isi berita kosong. Silakan tulis di editor.</p>' }}
-                      />
-                    </article>
+                  {/* Branding Simulation */}
+                  <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
+                    <span className="text-2xl font-black tracking-tighter text-slate-900">
+                      Pojok<span className="text-red-600">TV.com</span>
+                    </span>
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">SIMULASI</span>
                   </div>
 
-                  {/* Right Column: Sidebar */}
-                  <div className="w-full lg:col-span-1">
-                    <div className="flex flex-col gap-6">
-                      <div className="bg-slate-200 border border-slate-300 rounded-lg flex flex-col justify-center items-center text-center p-4 text-slate-500 font-sans select-none w-full h-[250px]">
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Advertisement</span>
-                        <span className="text-xs font-bold uppercase text-slate-500">PojokTV Ad Network</span>
-                        <span className="text-[10px] text-slate-400 mt-1">Slot Iklan (300x250)</span>
-                      </div>
-                      
-                      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                        <h3 className="text-sm font-black uppercase text-slate-900 border-b border-gray-200 pb-2 mb-4 tracking-wide">
-                          <i className="fa-solid fa-fire text-red-500 mr-1.5"></i> Berita Populer (Simulasi)
-                        </h3>
-                        <div className="flex flex-col divide-y divide-gray-100 text-xs gap-3">
-                          <div className="py-2">
-                            <span className="font-bold text-red-600">1. </span>
-                            <span className="font-semibold text-slate-800">Contoh Berita Populer Pertama PojokTV</span>
+                  <div className={
+                    previewDevice === 'mobile'
+                      ? "flex flex-col px-2 py-4"
+                      : "grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mt-6"
+                  }>
+                    
+                    {/* Left Column: Article */}
+                    <div className={previewDevice === 'mobile' ? "w-full" : "w-full min-w-0 lg:col-span-2"}>
+                      <article className={
+                        previewDevice === 'mobile'
+                          ? "w-full bg-white min-w-0 overflow-hidden py-4 px-2"
+                          : "max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 min-w-0 overflow-hidden py-8 px-4 sm:px-6 lg:px-8"
+                      }>
+                        
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <span className="bg-red-50 text-red-600 text-xs font-extrabold px-3 py-1 rounded border border-red-200 uppercase">
+                            {category || 'Kategori'}
+                          </span>
+                          <span className="text-gray-300 text-sm">/</span>
+                          <span className="text-gray-400 text-xs font-semibold">Detail Berita</span>
+                        </div>
+
+                        <h1 className={
+                          previewDevice === 'mobile'
+                            ? "text-lg font-serif font-black text-slate-900 leading-tight mb-3 break-words"
+                            : "text-2xl sm:text-3xl md:text-4xl font-serif font-black text-slate-900 leading-tight mb-4"
+                        }>
+                          {title || 'Judul Berita Belum Diisi'}
+                        </h1>
+
+                        {/* Render images from state using NewsGallery */}
+                        <NewsGallery images={previewUrls} />
+
+                        {/* Metadata */}
+                        <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-xs text-slate-500 border-b border-gray-200 pb-4 mb-6">
+                          <div className="flex items-center gap-1.5">
+                            <i className="fa-regular fa-user text-red-600"></i>
+                            <span>Oleh: <strong className="text-slate-800 font-semibold">Redaktur</strong></span>
                           </div>
-                          <div className="py-2">
-                            <span className="font-bold text-red-600">2. </span>
-                            <span className="font-semibold text-slate-800">Sidoarjo Siaga Satu Pasca Banjir Bandang</span>
+                          <span className="text-gray-300">•</span>
+                          <div className="flex items-center gap-1.5">
+                            <i className="fa-regular fa-calendar text-red-600"></i>
+                            <span>Senin, 13 Juli 2026</span>
                           </div>
                         </div>
-                      </div>
+
+                        {/* Content */}
+                        <div 
+                          className={
+                            previewDevice === 'mobile'
+                              ? "article-content berita-content prose prose-sm max-w-none font-sans text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full overflow-hidden [&_p]:mb-4"
+                              : "article-content berita-content prose prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title w-full max-w-full overflow-hidden break-words whitespace-pre-wrap [&_p]:mb-6"
+                          }
+                          dangerouslySetInnerHTML={{ __html: content ? content.replace(/&nbsp;/g, ' ') : '<p class="text-gray-400 italic">Isi berita kosong. Silakan tulis di editor.</p>' }}
+                        />
+                      </article>
                     </div>
-                  </div>
 
+                    {/* Right Column: Sidebar (desktop only) */}
+                    {previewDevice === 'desktop' && (
+                      <div className="w-full lg:col-span-1">
+                        <div className="flex flex-col gap-6">
+                          <div className="bg-slate-200 border border-slate-300 rounded-lg flex flex-col justify-center items-center text-center p-4 text-slate-500 font-sans select-none w-full h-[250px]">
+                            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-1">Advertisement</span>
+                            <span className="text-xs font-bold uppercase text-slate-500">PojokTV Ad Network</span>
+                            <span className="text-[10px] text-slate-400 mt-1">Slot Iklan (300x250)</span>
+                          </div>
+                          
+                          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                            <h3 className="text-sm font-black uppercase text-slate-900 border-b border-gray-200 pb-2 mb-4 tracking-wide">
+                              <i className="fa-solid fa-fire text-red-500 mr-1.5"></i> Berita Populer (Simulasi)
+                            </h3>
+                            <div className="flex flex-col divide-y divide-gray-100 text-xs gap-3">
+                              <div className="py-2">
+                                <span className="font-bold text-red-600">1. </span>
+                                <span className="font-semibold text-slate-800">Contoh Berita Populer Pertama PojokTV</span>
+                              </div>
+                              <div className="py-2">
+                                <span className="font-bold text-red-600">2. </span>
+                                <span className="font-semibold text-slate-800">Sidoarjo Siaga Satu Pasca Banjir Bandang</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
                 </div>
               </div>
             </div>
