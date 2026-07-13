@@ -25,7 +25,7 @@ export default function BreakingNews() {
   if (news.length === 0) {
     return (
       <div className="ticker-bar bg-slate-900 border-b border-slate-800 h-10 w-full flex items-center">
-        <div className="ticker-label bg-red-650 text-white text-xs font-black px-4 flex items-center h-full shrink-0 uppercase tracking-wider select-none">
+        <div className="ticker-label bg-red-600 text-white text-xs font-black px-4 flex items-center h-full shrink-0 uppercase tracking-wider select-none">
           ⚠️ BREAKING NEWS
         </div>
         <div className="flex-1 bg-slate-900 h-full flex items-center pl-4 text-xs text-slate-400">
@@ -41,7 +41,7 @@ export default function BreakingNews() {
   return (
     <div className="ticker-bar bg-slate-900 border-b border-slate-800 h-10 w-full flex items-center overflow-hidden">
       {/* Label */}
-      <div className="ticker-label bg-red-650 text-white text-xs font-black px-4 flex items-center h-full shrink-0 uppercase tracking-wider relative z-10 select-none">
+      <div className="ticker-label bg-red-600 text-white text-xs font-black px-4 flex items-center h-full shrink-0 uppercase tracking-wider relative z-10 select-none">
         ⚠️ BREAKING NEWS
       </div>
       

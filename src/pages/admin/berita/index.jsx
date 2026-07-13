@@ -197,7 +197,7 @@ export default function BeritaIndex() {
                     </Link>
                     <button
                       onClick={() => handleDelete(post.id)}
-                      className="flex-1 bg-red-650 hover:bg-red-750 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-md transition-colors text-center"
+                      className="flex-1 text-center bg-red-600 hover:bg-red-700 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-md transition-colors"
                     >
                       <i className="fa-solid fa-trash mr-1"></i>Hapus
                     </button>
@@ -231,14 +231,14 @@ export default function BeritaIndex() {
                       </td>
                       <td className="px-6 py-5">{statusBadge(post.status)}</td>
                       <td className="px-6 py-5 text-right">
-                        <div className="flex justify-end gap-3.5">
+                        <div className="flex justify-end items-center">
                           <Link
                             href={`/admin/berita/edit/${post.id}`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-sm transition-colors"
+                            className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-colors mr-2"
                           >Edit</Link>
                           <button
                             onClick={() => handleDelete(post.id)}
-                            className="bg-red-650 hover:bg-red-750 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
+                            className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow-sm transition-colors"
                           >Hapus</button>
                         </div>
                       </td>
