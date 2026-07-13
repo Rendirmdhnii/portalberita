@@ -37,7 +37,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <Head>
-        <title>Admin Login - PojokTV.com</title>
+        <title>Masuk - PojokTV.com</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </Head>
 
@@ -48,14 +48,11 @@ export default function AdminLogin() {
             <span className="text-white">Pojok</span>
             <span className="text-red-600 ml-0.5">TV</span>
           </div>
-          <p className="text-xs font-bold tracking-[0.2em] text-slate-400 uppercase">
-            Panel Administrator Redaksi
-          </p>
         </div>
 
         {/* LOGIN CARD */}
         <div className="bg-slate-800 py-8 px-6 shadow-2xl rounded-2xl border border-slate-700 sm:px-10">
-          <h2 className="text-xl font-bold text-white text-center mb-6">Masuk ke Dashboard</h2>
+          <h2 className="text-xl font-bold text-white text-center mb-6">Masuk</h2>
 
           {error && (
             <div className="mb-4 p-3 bg-red-900/50 border border-red-500 rounded-xl text-red-200 text-sm font-medium flex items-center gap-2">
