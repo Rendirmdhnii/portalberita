@@ -374,7 +374,7 @@ export default function DetailBerita() {
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-slate-900 leading-tight mb-4">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-slate-900 leading-tight mb-4 break-words">
                     {berita.title || berita.judul}
                   </h1>
 
@@ -396,13 +396,13 @@ export default function DetailBerita() {
                   <div
                     className="
                       article-content berita-content
-                      prose prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title
+                      prose prose-sm md:prose-base max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title
                       w-full max-w-full overflow-hidden
-                      break-words whitespace-pre-wrap
+                      break-words whitespace-pre-line
                       [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:text-slate-900 [&_h2]:leading-tight [&_h2]:break-words
                       [&_h3]:text-lg [&_h3]:sm:text-xl [&_h3]:font-bold [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-slate-900 [&_h3]:break-words
                       [&_h4]:text-base [&_h4]:font-bold [&_h4]:mt-4 [&_h4]:mb-2 [&_h4]:text-slate-900
-                      [&_p]:mb-6 [&_p]:leading-[1.85] [&_p]:break-words [&_p]:whitespace-pre-wrap [&_p]:max-w-full
+                      [&_p]:mb-6 [&_p]:leading-[1.85] [&_p]:break-words [&_p]:whitespace-pre-line [&_p]:max-w-full
                       [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-5 [&_ul]:space-y-1
                       [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-5 [&_ol]:space-y-1
                       [&_li]:leading-relaxed [&_li]:break-words
