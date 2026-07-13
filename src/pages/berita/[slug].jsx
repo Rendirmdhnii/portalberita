@@ -395,10 +395,8 @@ export default function DetailBerita() {
                   </div>
 
                   {/* ===== ISI ARTIKEL ===== */}
-                  {/* Catatan: prose class dari @tailwindcss/typography bisa diaktifkan jika plugin sudah di-install */}
-                  {/* Saat ini menggunakan arbitrary selectors yang sudah dioptimasi untuk mobile */}
                   <div 
-                    className="prose prose-lg max-w-none text-left break-words whitespace-normal"
+                    className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
                     dangerouslySetInnerHTML={{ __html: cleanHTML }} 
                   />
 
