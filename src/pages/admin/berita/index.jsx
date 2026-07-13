@@ -207,8 +207,8 @@ export default function BeritaIndex() {
             </div>
 
             {/* === DESKTOP TABLE VIEW (sembunyikan di HP) === */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-sm">
+            <div className="overflow-x-auto w-full">
+              <table className="hidden md:table w-full text-left border-collapse text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200 text-gray-700 text-xs uppercase tracking-wide font-bold">
                   <tr>
                     <th className="px-6 py-4 font-bold">Judul Berita</th>

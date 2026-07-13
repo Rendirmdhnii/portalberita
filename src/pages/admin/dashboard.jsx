@@ -136,8 +136,8 @@ export default function AdminDashboard() {
             ) : (
               <>
                 {/* Desktop View Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-base">
+                <div className="overflow-x-auto w-full">
+                  <table className="hidden md:table w-full text-left text-base">
                     <thead className="bg-gray-50 text-sm uppercase text-gray-800 font-bold border-b border-gray-200">
                       <tr>
                         <th className="px-6 py-4">Peringkat</th>

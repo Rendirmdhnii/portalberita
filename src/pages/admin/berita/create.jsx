@@ -86,7 +86,7 @@ export default function BeritaCreate() {
         ['clean']
       ],
       handlers: {
-        image: () => {
+        image: function() {
           const input = document.createElement('input');
           input.setAttribute('type', 'file');
           input.setAttribute('accept', 'image/*');
@@ -110,7 +110,7 @@ export default function BeritaCreate() {
                   .from('images')
                   .getPublicUrl(filePath);
 
-                const quill = quillRef.current.getEditor();
+                const quill = this.quill;
                 const range = quill.getSelection(true);
                 quill.insertEmbed(range.index, 'image', publicUrl);
               } catch (err) {

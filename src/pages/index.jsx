@@ -153,6 +153,9 @@ export default function Home() {
       <Head>
         <title>PojokTV - Jaringan Berita Nasional Terpercaya</title>
         <meta name="description" content="Portal berita terkini, tajam, dan independen. Menghadirkan informasi dan jurnalisme terpercaya dari seluruh penjuru nusantara setiap hari." />
+        <meta name="keywords" content="berita terkini, pojoktv, berita nasional, politik, ekonomi, olahraga, indonesia" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </Head>
 
       {/* Baris 1: Top Bar */}

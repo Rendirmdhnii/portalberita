@@ -205,6 +205,9 @@ export default function DetailBerita() {
       <Head>
         <title>{berita ? `${berita.title || berita.judul} - PojokTV.com` : 'Memuat Berita... - PojokTV.com'}</title>
         <meta name="description" content={berita ? (berita.content || berita.isi || '').replace(/<[^>]*>/g, '').slice(0, 160) : 'Portal Berita Terpercaya'} />
+        <meta name="keywords" content={berita ? `${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV` : 'berita terkini, berita hari ini, pojoktv'} />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </Head>
 
       {/* Baris 1: Top Bar */}
@@ -393,20 +396,20 @@ export default function DetailBerita() {
                   <div
                     className="
                       article-content berita-content
-                      prose prose-slate md:prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title
+                      prose prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title
                       w-full max-w-full overflow-hidden
-                      break-words whitespace-normal
+                      break-words whitespace-pre-wrap
                       [&_h2]:text-xl [&_h2]:sm:text-2xl [&_h2]:font-black [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:text-slate-900 [&_h2]:leading-tight [&_h2]:break-words
                       [&_h3]:text-lg [&_h3]:sm:text-xl [&_h3]:font-bold [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-slate-900 [&_h3]:break-words
                       [&_h4]:text-base [&_h4]:font-bold [&_h4]:mt-4 [&_h4]:mb-2 [&_h4]:text-slate-900
-                      [&_p]:mb-6 [&_p]:leading-[1.85] [&_p]:break-words [&_p]:whitespace-normal [&_p]:max-w-full
+                      [&_p]:mb-6 [&_p]:leading-[1.85] [&_p]:break-words [&_p]:whitespace-pre-wrap [&_p]:max-w-full
                       [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-5 [&_ul]:space-y-1
                       [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-5 [&_ol]:space-y-1
                       [&_li]:leading-relaxed [&_li]:break-words
                       [&_blockquote]:border-l-4 [&_blockquote]:border-red-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:my-6 [&_blockquote]:text-slate-600 [&_blockquote]:bg-red-50 [&_blockquote]:py-3 [&_blockquote]:pr-4 [&_blockquote]:rounded-r-lg
                       [&_img]:w-full [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl [&_img]:my-6 [&_img]:shadow-md [&_img]:object-contain [&_img]:block [&_img]:mx-auto
                       [&_strong]:font-bold [&_strong]:text-slate-900
-                      [&_a]:text-red-600 [&_a]:underline [&_a]:underline-offset-2 [&_a]:break-all
+                      [&_a]:text-red-600 [&_a]:underline [&_a]:underline-offset-2 [&_a]:break-words
                       [&_table]:w-full [&_table]:border-collapse [&_table]:my-4 [&_table]:overflow-x-auto [&_table]:block
                       [&_td]:border [&_td]:border-gray-200 [&_td]:px-3 [&_td]:py-2 [&_td]:text-sm
                       [&_th]:border [&_th]:border-gray-200 [&_th]:px-3 [&_th]:py-2 [&_th]:bg-gray-50 [&_th]:font-bold [&_th]:text-sm
