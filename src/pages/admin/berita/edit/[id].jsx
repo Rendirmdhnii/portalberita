@@ -178,6 +178,9 @@ export default function BeritaEdit() {
           };
         }
       }
+    },
+    clipboard: {
+      matchVisual: false, // Mencegah Quill menambahkan spasi kosong ekstra dari Word
     }
   }), []);
 
@@ -297,12 +300,12 @@ export default function BeritaEdit() {
 
           {/* Penulis / Jurnalis */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Nama Penulis / Jurnalis <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Siapa Penulis Berita ini? <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={author}
               onChange={e => setAuthor(e.target.value)}
-              placeholder="Ketik nama jurnalis atau reporter..."
+              placeholder="Tulis nama Anda di sini..."
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium text-base"
               required
             />
@@ -310,7 +313,7 @@ export default function BeritaEdit() {
 
           {/* Kategori Rubrik */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Rubrik / Kategori Berita <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Berita ini masuk kategori apa? <span className="text-red-500">*</span></label>
             <select
               value={category}
               onChange={e => setCategory(e.target.value)}
@@ -379,27 +382,27 @@ export default function BeritaEdit() {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <i className="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
-              <p className="text-sm font-bold text-gray-700">Klik di sini untuk masukkan foto dari laptop</p>
-              <p className="text-xs text-gray-500 mt-1">Bisa pilih satu atau beberapa foto sekaligus (format JPG/PNG/WebP)</p>
+              <p className="text-sm font-bold text-gray-700">Klik atau Ketuk di sini untuk memilih Foto</p>
+              <p className="text-xs text-gray-500 mt-1">Bisa pilih foto dari galeri HP atau komputer. Pastikan gambarnya jelas.</p>
             </div>
           </div>
 
           {/* Status */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Status Publikasi</label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Pilih Status Berita</label>
             <select
               value={status}
               onChange={e => setStatus(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium bg-white"
             >
-              <option value="Published">DIPUBLIKASI (TAYANG)</option>
-              <option value="Draft">DRAFT (BELUM TAYANG)</option>
+              <option value="Published">🟢 LANGSUNG TAYANG (Publikasikan)</option>
+              <option value="Draft">🟡 SIMPAN DULU (Draft)</option>
             </select>
           </div>
 
           {/* Isi Berita */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1">Isi Lengkap Berita (Tulis seperti di Word)</label>
+            <label className="block text-base font-bold text-gray-800 mb-1">Ketik atau Tempel (Paste) Isi Berita di Sini 👇</label>
             <div className="bg-white text-gray-950 rounded-lg border border-gray-300 overflow-hidden prose prose-slate max-w-none font-sans text-base leading-relaxed">
               <ReactQuill 
                 forwardedRef={quillRef}
@@ -412,6 +415,10 @@ export default function BeritaEdit() {
                 className="text-base"
               />
             </div>
+            <p className="text-xs text-red-650 mt-2 font-bold flex items-center gap-1.5 bg-red-50 border border-red-200 p-2.5 rounded-lg">
+              <i className="fa-solid fa-circle-info text-red-600 text-sm"></i>
+              <span>Tips: Tekan Ctrl + Shift + V (di Windows) atau Cmd + Shift + V (di Mac) saat menempelkan teks agar spasi dan paragraf rapi sesuai bawaan Word/WhatsApp.</span>
+            </p>
           </div>
 
           {/* Tombol Aksi Lalu Lintas */}
