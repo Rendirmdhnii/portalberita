@@ -344,9 +344,9 @@ export default function BeritaCreate() {
             <button
               type="button"
               onClick={() => setIsPreviewOpen(true)}
-              className="w-full md:w-auto px-8 py-4 bg-gray-650 hover:bg-gray-750 text-white font-bold rounded-xl text-lg shadow-lg transition-colors cursor-pointer"
+              className="w-full md:w-auto px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer"
             >
-              <i className="fa-solid fa-eye mr-2"></i>Cek Pratinjau Tampilan
+              👀 Lihat Pratinjau
             </button>
           </div>
         </form>
