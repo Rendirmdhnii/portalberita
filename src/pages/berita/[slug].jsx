@@ -5,11 +5,15 @@ import Link from 'next/link';
 import AdSlot from '@/components/AdSlot';
 import EmptyState from '@/components/EmptyState';
 import NewsGallery from '@/components/NewsGallery';
-import BreakingNews from '@/components/BreakingNews';
-import Footer from '@/components/Footer';
+import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
+const stripHtmlAndEntities = (htmlString) => {
+  if (!htmlString) return '';
+  // Hapus tag HTML dan ubah &nbsp; menjadi spasi
+  return htmlString.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+};
 
-export default function DetailBerita() {
+export default function DetailBerita({ berita, categories = [], ads = [], latestBerita = [], popularBerita = [] }) {
   const router = useRouter();
   const { slug } = router.query;
 
@@ -18,41 +22,23 @@ export default function DetailBerita() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Dynamic States from Supabase
-  const [categories, setCategories] = useState([]);
-  const [berita, setBerita] = useState(null);
-  const [latestBerita, setLatestBerita] = useState([]);
-  const [popularBerita, setPopularBerita] = useState([]);
-  const [ads, setAds] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [images, setImages] = useState([]);
-
-  useEffect(() => {
-    if (berita) {
-      const imgs = berita.images || berita.image;
-      if (imgs) {
-        if (Array.isArray(imgs)) {
-          setImages(imgs);
-        } else if (typeof imgs === 'string') {
-          try {
-            if (imgs.startsWith('[')) {
-              setImages(JSON.parse(imgs));
-            } else {
-              setImages([imgs]);
-            }
-          } catch (e) {
-            setImages([imgs]);
-          }
-        } else {
-          setImages([imgs]);
+  const images = (() => {
+    if (!berita) return [];
+    const imgs = berita.images || berita.image;
+    if (!imgs) return [];
+    if (Array.isArray(imgs)) return imgs;
+    if (typeof imgs === 'string') {
+      try {
+        if (imgs.startsWith('[')) {
+          return JSON.parse(imgs);
         }
-      } else {
-        setImages([]);
+        return [imgs];
+      } catch (e) {
+        return [imgs];
       }
-    } else {
-      setImages([]);
     }
-  }, [berita]);
+    return [imgs];
+  })();
 
   useEffect(() => {
     // Realtime Clock
@@ -71,91 +57,6 @@ export default function DetailBerita() {
     updateDateTime();
     return () => clearInterval(timer);
   }, []);
-
-  const fetchData = async () => {
-    if (!slug) return;
-    try {
-      setLoading(true);
-
-      // 1. Fetch categories
-      const { data: catData } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('status', 'Aktif')
-        .order('name');
-      setCategories(catData || []);
-
-      // 2. Fetch ads
-      const { data: adsData } = await supabase
-        .from('ads')
-        .select('*')
-        .eq('is_active', true);
-      setAds(adsData || []);
-
-      // 3. Fetch latest news for ticker
-      const { data: latestNews } = await supabase
-        .from('berita')
-        .select('*')
-        .eq('status', 'Published')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      setLatestBerita(latestNews || []);
-
-      // 4. Fetch popular news for sidebar
-      const { data: popularNews } = await supabase
-        .from('berita')
-        .select('*')
-        .eq('status', 'Published')
-        .order('views', { ascending: false })
-        .limit(5);
-      setPopularBerita(popularNews || []);
-
-      // 5. Fetch main article by slug (with fallback to ID)
-      const { data: mainBerita } = await supabase
-        .from('berita')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-
-      if (mainBerita) {
-        setBerita(mainBerita);
-        // Increment views
-        await supabase
-          .from('berita')
-          .update({ views: (mainBerita.views || 0) + 1 })
-          .eq('id', mainBerita.id);
-      } else {
-        // Fallback: try parsing ID from slug end
-        const idVal = parseInt(slug.split('-').pop());
-        if (!isNaN(idVal)) {
-          const { data: idBerita } = await supabase
-            .from('berita')
-            .select('*')
-            .eq('id', idVal)
-            .single();
-
-          if (idBerita) {
-            setBerita(idBerita);
-            // Increment views
-            await supabase
-              .from('berita')
-              .update({ views: (idBerita.views || 0) + 1 })
-              .eq('id', idBerita.id);
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Error fetching berita details:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (slug) {
-      fetchData();
-    }
-  }, [slug]);
 
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
@@ -190,8 +91,7 @@ export default function DetailBerita() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim() !== '') {
-      alert(`Pencarian untuk: "${searchQuery}" (Simulasi Halaman Hasil Pencarian)`);
-      setSearchQuery('');
+      router.push({ pathname: '/search', query: { q: searchQuery } });
     }
   };
 
@@ -204,131 +104,53 @@ export default function DetailBerita() {
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
     : '';
 
-  return (
-    <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans overflow-x-hidden">
-      <Head>
-        <title>{berita ? `${berita.title || berita.judul} - PojokTV.com` : 'Memuat Berita... - PojokTV.com'}</title>
-        <meta name="description" content={berita ? (berita.content || berita.isi || '').replace(/<[^>]*>/g, '').slice(0, 160) : 'Portal Berita Terpercaya'} />
-        <meta name="keywords" content={berita ? `${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV` : 'berita terkini, berita hari ini, pojoktv'} />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-      </Head>
-
-      {/* Baris 1: Top Bar */}
-      <div className="top-bar bg-slate-950 text-slate-300 py-2 border-b border-slate-800">
-        <div className="container mx-auto px-4 flex flex-wrap justify-between items-center gap-2">
-          {/* Left: Clock & Date */}
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <i className="fa-regular fa-clock text-red-500"></i>
-            <span>{currentDate} | {currentTime}</span>
+  if (!berita) {
+    return (
+      <Layout>
+        <Head>
+          <title>Berita Tidak Ditemukan - PojokTV</title>
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="shortcut icon" href="/favicon.ico" />
+        </Head>
+        
+        {/* Empty State Tampilan Utama */}
+        <div className="flex flex-col items-center justify-center min-h-[50vh] px-4 text-center my-12 bg-white max-w-4xl mx-auto p-8 rounded-xl border border-gray-150 shadow-sm">
+          <div className="text-gray-400 mb-4">
+            <svg className="w-20 h-20 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           </div>
-
-          {/* Right: Trending & Socials */}
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            {categories.length > 0 && (
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="font-bold text-red-500 uppercase tracking-wider text-[10px]">🔴 Trending:</span>
-                <div className="flex items-center gap-2.5 text-slate-400">
-                  {categories.slice(0, 4).map(cat => (
-                    <Link key={cat.id} href={`/kategori/${cat.slug}`} className="hover:text-red-500 transition-colors">
-                      #{cat.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-3 text-slate-400">
-              <a href="#" className="hover:text-white transition-colors" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Baris 2: Main Branding */}
-      <div className="bg-white py-5 border-b border-gray-100">
-        <div className="container mx-auto px-4 flex justify-center md:justify-start">
-          <Link href="/" className="logo text-4xl font-black tracking-tighter leading-none shrink-0">
-            Pojok<span className="text-red-600">TV.com</span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-2">Berita Tidak Ditemukan</h1>
+          <p className="text-slate-500 mb-6 max-w-md mx-auto">Tautan berita ini mungkin telah dipindahkan, dihapus, atau sedang dalam peninjauan redaksi.</p>
+          <Link href="/" className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors font-medium">
+            Kembali ke Beranda
           </Link>
         </div>
-      </div>
+      </Layout>
+    );
+  }
 
-      {/* Baris 3: Navigation, Search, & Live TV */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 flex items-center justify-between gap-4 py-2">
-          {/* Left: Scrollable Rubrik Menu */}
-          <nav className="overflow-x-auto whitespace-nowrap scrollbar-none flex-1 max-w-full">
-            <ul className="flex items-center gap-6 text-sm font-bold text-slate-700 uppercase py-1">
-              <li>
-                <Link href="/" className="hover:text-red-650 transition-colors pb-1">
-                  Berita Utama
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id}>
-                  <Link href={`/kategori/${cat.slug}`} className="hover:text-red-650 transition-colors pb-1">
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+  return (
+    <Layout activeCategoryName={berita?.category}>
+      <Head>
+        <title>{(berita.title || berita.judul)} - PojokTV</title>
+        <meta name="description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
+        <meta name="keywords" content={`${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV`} />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        
+        {/* Open Graph / Facebook / WhatsApp */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://pojoktv.com/berita/${berita.slug}`} />
+        <meta property="og:title" content={berita.title || berita.judul} />
+        <meta property="og:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
+        <meta property="og:image" content={berita.gambar_utama_url || (images && images[0]) || '/logo-pojoktv.png'} />
+        <meta property="og:site_name" content="PojokTV" />
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3 shrink-0">
-            <form onSubmit={handleSearch} className="search-box relative hidden sm:flex items-center bg-gray-50 border border-gray-300 rounded-lg overflow-hidden px-2.5 py-1">
-              <input
-                type="text"
-                className="bg-transparent text-xs text-slate-800 outline-none w-36 focus:w-48 transition-all"
-                placeholder="Cari berita..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1 text-xs">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-            </form>
-
-            <button 
-              className="flex items-center gap-2 px-4 py-1.5 bg-red-600 text-white text-xs font-black rounded-full hover:bg-red-750 transition shadow-sm cursor-pointer" 
-              onClick={handleLiveTv}
-            >
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              <span>LIVE TV</span>
-            </button>
-
-            {/* Mobile search toggle */}
-            <button 
-              className="block sm:hidden text-slate-700 hover:text-red-600 p-1 text-lg"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <i className="fa-solid fa-magnifying-glass"></i>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Search input bar */}
-        {isMobileMenuOpen && (
-          <div className="bg-slate-50 border-t border-gray-200 px-4 py-2 block sm:hidden">
-            <form onSubmit={handleSearch} className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden px-3 py-1.5">
-              <input
-                type="text"
-                className="bg-transparent text-sm text-slate-800 outline-none w-full"
-                placeholder="Ketik kata kunci pencarian..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
-      <BreakingNews />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={berita.title || berita.judul} />
+        <meta name="twitter:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
+        <meta name="twitter:image" content={berita.gambar_utama_url || (images && images[0]) || '/logo-pojoktv.png'} />
+      </Head>
 
       {/* Header Ad Slot */}
       {headerAd && headerAd.image && (
@@ -349,21 +171,7 @@ export default function DetailBerita() {
 
             {/* === KONTEN UTAMA (Full width di HP, 8/12 di desktop) === */}
             <div className="w-full min-w-0 md:col-span-8">
-              {loading ? (
-                <div className="text-center py-20 text-gray-400 font-bold">
-                  <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat detail berita...
-                </div>
-              ) : !berita ? (
-                <div className="text-center py-20 bg-white border border-gray-200 rounded-xl shadow-sm">
-                  <div className="flex flex-col items-center gap-4">
-                    <i className="fa-solid fa-newspaper text-4xl text-gray-300"></i>
-                    <p className="text-gray-500 font-bold text-lg">Berita tidak ditemukan</p>
-                    <Link href="/" className="bg-red-600 text-white text-sm px-6 py-2.5 rounded-lg hover:bg-red-700 transition font-bold">
-                      Kembali ke Beranda
-                    </Link>
-                  </div>
-                </div>
-              ) : (
+              {berita && (
                 <article className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 min-w-0 overflow-hidden py-8 px-4 sm:px-6 lg:px-8">
 
                   {/* Category Badge & Breadcrumbs */}
@@ -401,43 +209,62 @@ export default function DetailBerita() {
                   />
 
                   {/* Share / Tags section */}
-                  <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <Link href="/" className="text-xs font-bold uppercase text-slate-500 hover:text-red-600 transition duration-200 flex items-center gap-1">
+                  <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
+                    <Link href="/" className="text-xs font-bold uppercase text-slate-500 hover:text-red-600 transition duration-200 flex items-center gap-1 flex-shrink-0">
                       &larr; Kembali ke Beranda
                     </Link>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-400 uppercase mr-1">Bagikan:</span>
+                    <div className="flex items-center justify-center gap-2 sm:gap-3 w-full my-2 flex-nowrap">
+                      <span className="text-xs font-bold text-slate-400 uppercase mr-1 flex-shrink-0 hidden lg:inline">Bagikan:</span>
                       
                       {/* Facebook */}
                       <a
                         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
                         target="_blank" rel="noreferrer"
-                        className="w-8 h-8 rounded-full border border-gray-300 text-gray-500 flex items-center justify-center hover:border-blue-600 hover:bg-blue-50 hover:text-blue-600 transition duration-200"
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#3b5998] text-white"
                         aria-label="Share Facebook"
                       >
-                        <i className="fa-brands fa-facebook-f text-xs"></i>
-                      </a>
-
-                      {/* WhatsApp */}
-                      <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent((berita.title || berita.judul) + ' ' + (typeof window !== 'undefined' ? window.location.href : ''))}`}
-                        target="_blank" rel="noreferrer"
-                        className="w-8 h-8 rounded-full border border-gray-300 text-gray-500 flex items-center justify-center hover:border-green-600 hover:bg-green-50 hover:text-green-600 transition duration-200"
-                        aria-label="Share WhatsApp"
-                      >
-                        <i className="fa-brands fa-whatsapp text-xs"></i>
+                        <i className="fa-brands fa-facebook-f w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
                       </a>
 
                       {/* Twitter / X */}
                       <a
                         href={`https://twitter.com/intent/tweet?text=${encodeURIComponent((berita.title || berita.judul))}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
                         target="_blank" rel="noreferrer"
-                        className="w-8 h-8 rounded-full border border-gray-300 text-gray-500 flex items-center justify-center hover:border-slate-800 hover:bg-slate-100 hover:text-slate-900 transition duration-200"
-                        aria-label="Share Twitter/X"
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#1da1f2] text-white"
+                        aria-label="Share Twitter"
                       >
-                        <svg viewBox="0 0 24 24" className="w-3 h-3 fill-current" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden="true">
                           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                         </svg>
+                      </a>
+
+                      {/* LinkedIn */}
+                      <a
+                        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&title=${encodeURIComponent(berita.title || berita.judul)}`}
+                        target="_blank" rel="noreferrer"
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#0077b5] text-white"
+                        aria-label="Share LinkedIn"
+                      >
+                        <i className="fa-brands fa-linkedin-in w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
+                      </a>
+
+                      {/* WhatsApp */}
+                      <a
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent((berita.title || berita.judul) + " | Baca selengkapnya di: " + (typeof window !== 'undefined' ? window.location.href : ''))}`}
+                        target="_blank" rel="noreferrer"
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white"
+                        aria-label="Share WhatsApp"
+                      >
+                        <i className="fa-brands fa-whatsapp w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
+                      </a>
+
+                      {/* Email */}
+                      <a
+                        href={`mailto:?subject=${encodeURIComponent(berita.title || berita.judul)}&body=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#f26522] text-white"
+                        aria-label="Share Email"
+                      >
+                        <i className="fa-regular fa-envelope w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
                       </a>
 
                       {/* Copy Link */}
@@ -448,10 +275,10 @@ export default function DetailBerita() {
                             alert('Tautan berita berhasil disalin ke clipboard!');
                           }
                         }}
-                        className="w-8 h-8 rounded-full border border-gray-300 text-gray-500 flex items-center justify-center hover:border-red-650 hover:bg-red-50 hover:text-red-650 transition duration-200 cursor-pointer"
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-slate-600 text-white cursor-pointer"
                         aria-label="Salin Tautan"
                       >
-                        <i className="fa-regular fa-copy text-xs"></i>
+                        <i className="fa-regular fa-copy w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
                       </button>
                     </div>
                   </div>
@@ -511,8 +338,119 @@ export default function DetailBerita() {
       <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
         <AdSlot size="970x250" className="w-full" ad={footerAd} />
       </div>
-
-      <Footer categories={categories} />
-    </div>
+    </Layout>
   );
+}
+
+export async function getServerSideProps(context) {
+  const { params } = context;
+  console.log("Mencari parameter:", params.slug);
+  const slugParam = String(params.slug || '');
+
+  try {
+    // 1. Coba ambil data berdasarkan kolom 'slug' murni
+    let { data: mainBerita, error } = await supabase
+      .from('berita')
+      .select('*')
+      .eq('slug', slugParam)
+      .single();
+
+    // FALLBACK 1: Jika tidak ketemu, coba cari partial match (ilike) untuk mencocokkan slug tanpa timestamp
+    if (!mainBerita || error) {
+      try {
+        const { data: partialBerita } = await supabase
+          .from('berita')
+          .select('*')
+          .ilike('slug', `${slugParam}%`)
+          .limit(1)
+          .maybeSingle();
+        if (partialBerita) {
+          mainBerita = partialBerita;
+          error = null;
+        }
+      } catch (e) {
+        console.warn("Partial slug matching failed:", e.message);
+      }
+    }
+
+    // FALLBACK 2: Jika tidak ketemu, coba ekstrak ID di akhir string slug (jika formatnya judul-berita-12345)
+    if (!mainBerita || error) {
+      const slugParts = slugParam.split('-');
+      const possibleId = slugParts[slugParts.length - 1];
+      
+      if (possibleId && !isNaN(possibleId) && parseInt(possibleId) < 2147483647) {
+        try {
+          const { data: fallbackBerita } = await supabase
+            .from('berita')
+            .select('*')
+            .eq('id', parseInt(possibleId))
+            .single();
+            
+          if (fallbackBerita) {
+            mainBerita = fallbackBerita;
+          }
+        } catch (e) {
+          console.warn("Fallback ID query failed:", e.message);
+        }
+      }
+    }
+
+    if (mainBerita) {
+      // Increment views
+      await supabase
+        .from('berita')
+        .update({ views: (mainBerita.views || 0) + 1 })
+        .eq('id', mainBerita.id);
+    }
+
+    // 2. Fetch categories
+    const { data: categories } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('status', 'Aktif')
+      .order('name');
+
+    // 3. Fetch ads
+    const { data: ads } = await supabase
+      .from('ads')
+      .select('*')
+      .eq('is_active', true);
+
+    // 4. Fetch latest news for ticker
+    const { data: latestBerita } = await supabase
+      .from('berita')
+      .select('*')
+      .eq('status', 'Published')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    // 5. Fetch popular news for sidebar
+    const { data: popularBerita } = await supabase
+      .from('berita')
+      .select('*')
+      .eq('status', 'Published')
+      .order('views', { ascending: false })
+      .limit(5);
+
+    return {
+      props: {
+        berita: mainBerita || null,
+        categories: categories || [],
+        ads: ads || [],
+        latestBerita: latestBerita || [],
+        popularBerita: popularBerita || [],
+      },
+    };
+  } catch (err) {
+    console.error('Error in getServerSideProps:', err);
+    return {
+      props: {
+        berita: null,
+        categories: [],
+        ads: [],
+        latestBerita: [],
+        popularBerita: [],
+      },
+    };
+  }
 }
