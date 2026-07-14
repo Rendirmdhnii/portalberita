@@ -4,9 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import AdSlot from '@/components/AdSlot';
 import EmptyState from '@/components/EmptyState';
-import BreakingNews from '@/components/BreakingNews';
-import Footer from '@/components/Footer';
+import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
+const stripHtmlAndEntities = (htmlString) => {
+  if (!htmlString) return '';
+  // Hapus tag HTML dan ubah &nbsp; menjadi spasi
+  return htmlString.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+};
 
 export default function KategoriPage() {
   const router = useRouter();
@@ -148,8 +152,7 @@ export default function KategoriPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim() !== '') {
-      alert(`Pencarian untuk: "${searchQuery}" (Simulasi Halaman Hasil Pencarian)`);
-      setSearchQuery('');
+      router.push({ pathname: '/search', query: { q: searchQuery } });
     }
   };
 
@@ -159,7 +162,7 @@ export default function KategoriPage() {
   const footerAd = ads?.find(a => a.position === 'Footer');
 
   return (
-    <div className="w-full bg-gray-50 min-h-screen text-slate-800 font-sans overflow-x-hidden">
+    <Layout activeCategoryName={activeCategory?.name}>
       <Head>
         <title>{activeCategory ? `Rubrik ${activeCategory.name} - PojokTV.com` : 'Rubrik Kategori - PojokTV.com'}</title>
         <meta name="description" content={activeCategory ? `Kumpulan berita terkini seputar rubrik ${activeCategory.name} hanya di PojokTV.com.` : 'PojokTV.com'} />
@@ -167,122 +170,6 @@ export default function KategoriPage() {
         <link rel="icon" href="/favicon.ico" />
         <link rel="shortcut icon" href="/favicon.ico" />
       </Head>
-
-      {/* Baris 1: Top Bar */}
-      <div className="top-bar bg-slate-950 text-slate-300 py-2 border-b border-slate-800">
-        <div className="container mx-auto px-4 flex flex-wrap justify-between items-center gap-2">
-          {/* Left: Clock & Date */}
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <i className="fa-regular fa-clock text-red-500"></i>
-            <span>{currentDate} | {currentTime}</span>
-          </div>
-
-          {/* Right: Trending & Socials (Hapus Tombol Login) */}
-          <div className="flex flex-wrap items-center gap-4 text-xs">
-            {categories.length > 0 && (
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="font-bold text-red-500 uppercase tracking-wider text-[10px]">🔴 Trending:</span>
-                <div className="flex items-center gap-2.5 text-slate-400">
-                  {categories.slice(0, 4).map(cat => (
-                    <Link key={cat.id} href={`/kategori/${cat.slug}`} className="hover:text-red-500 transition-colors">
-                      #{cat.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex items-center gap-3 text-slate-400">
-              <a href="#" className="hover:text-white transition-colors" aria-label="Facebook"><i className="fa-brands fa-facebook-f"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="Instagram"><i className="fa-brands fa-instagram"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="Youtube"><i className="fa-brands fa-youtube"></i></a>
-              <a href="#" className="hover:text-white transition-colors" aria-label="TikTok"><i className="fa-brands fa-tiktok"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Baris 2: Main Branding (Logo di kiri Desktop, tengah HP. Hapus iklan di sini) */}
-      <div className="bg-white py-5 border-b border-gray-100">
-        <div className="container mx-auto px-4 flex justify-center md:justify-start">
-          <Link href="/" className="logo text-4xl font-black tracking-tighter leading-none shrink-0">
-            Pojok<span className="text-red-600">TV.com</span>
-          </Link>
-        </div>
-      </div>
-
-      {/* Baris 3: Navigation, Search, & Live TV */}
-      <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 flex items-center justify-between gap-4 py-2">
-          {/* Left: Scrollable Rubrik Menu */}
-          <nav className="overflow-x-auto whitespace-nowrap scrollbar-none flex-1 max-w-full">
-            <ul className="flex items-center gap-6 text-sm font-bold text-slate-700 uppercase py-1">
-              <li>
-                <Link href="/" className="hover:text-red-600 transition-colors pb-1">
-                  Berita Utama
-                </Link>
-              </li>
-              {categories.map((cat) => (
-                <li key={cat.id}>
-                  <Link href={`/kategori/${cat.slug}`} className={`hover:text-red-600 transition-colors pb-1 ${cat.slug === slug ? 'border-b-2 border-red-600 text-red-650' : ''}`}>
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-3 shrink-0">
-            <form onSubmit={handleSearch} className="search-box relative hidden sm:flex items-center bg-gray-50 border border-gray-300 rounded-lg overflow-hidden px-2.5 py-1">
-              <input
-                type="text"
-                className="bg-transparent text-xs text-slate-800 outline-none w-36 focus:w-48 transition-all"
-                placeholder="Cari berita..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1 text-xs">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-            </form>
-
-            <button 
-              className="flex items-center gap-2 px-4 py-1.5 bg-red-600 text-white text-xs font-black rounded-full hover:bg-red-750 transition shadow-sm cursor-pointer" 
-              onClick={handleLiveTv}
-            >
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              <span>LIVE TV</span>
-            </button>
-
-            {/* Mobile search toggle */}
-            <button 
-              className="block sm:hidden text-slate-700 hover:text-red-600 p-1 text-lg"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <i className="fa-solid fa-magnifying-glass"></i>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Search input bar */}
-        {isMobileMenuOpen && (
-          <div className="bg-slate-50 border-t border-gray-200 px-4 py-2 block sm:hidden">
-            <form onSubmit={handleSearch} className="flex items-center bg-white border border-gray-300 rounded-lg overflow-hidden px-3 py-1.5">
-              <input
-                type="text"
-                className="bg-transparent text-sm text-slate-800 outline-none w-full"
-                placeholder="Ketik kata kunci pencarian..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button type="submit" className="text-slate-400 hover:text-red-600 ml-1">
-                <i className="fa-solid fa-magnifying-glass"></i>
-              </button>
-            </form>
-          </div>
-        )}
-      </div>
-      <BreakingNews />
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Kategori) */}
       {headerAd && headerAd.image && (
@@ -345,7 +232,7 @@ export default function KategoriPage() {
                             <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                           </h3>
                           <p className="ekonomi-snippet text-slate-500 text-xs line-clamp-2 mt-1 leading-relaxed">
-                            {post.content?.replace(/<[^>]*>/g, '')?.slice(0, 180)}...
+                            {stripHtmlAndEntities(post.content).slice(0, 120)}...
                           </p>
                         </div>
                         <div className="ekonomi-meta text-[10px] text-slate-400 mt-2">
@@ -380,8 +267,6 @@ export default function KategoriPage() {
       <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
         <AdSlot size="970x250" className="w-full" ad={footerAd} />
       </div>
-
-      <Footer categories={categories} />
-    </div>
+    </Layout>
   );
 }
