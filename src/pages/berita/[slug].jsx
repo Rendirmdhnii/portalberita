@@ -24,7 +24,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
   const images = (() => {
     if (!berita) return [];
-    const imgs = berita.images || berita.image;
+    const imgs = berita.images || berita.image || berita.gambar || berita.gambar_utama_url;
     if (!imgs) return [];
     if (Array.isArray(imgs)) return imgs;
     if (typeof imgs === 'string') {
@@ -104,9 +104,12 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
     : '';
 
-  const absoluteImageUrl = (images && images[0])
-    ? (images[0].startsWith('http') ? images[0] : `https://pojoktv.com${images[0].startsWith('/') ? '' : '/'}${images[0]}`)
-    : 'https://pojoktv.com/logo-pojoktv.png';
+  const ogImgUrl = (() => {
+    const rawImg = berita?.gambar || berita?.image || (images && images[0]) || berita?.gambar_utama_url;
+    if (!rawImg) return 'https://pojoktv.com/logo-pojoktv.png';
+    if (rawImg.startsWith('http')) return rawImg;
+    return `https://pojoktv.com${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+  })();
 
   if (!berita) {
     return (
@@ -136,24 +139,22 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     <Layout activeCategoryName={berita?.category}>
       <Head>
         <title>{(berita.title || berita.judul)} - PojokTV</title>
-        <meta name="description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
+        <meta name="description" content={berita.ringkasan || stripHtmlAndEntities(berita.isi || berita.content || berita.title || berita.judul).slice(0, 160) || "Berita terbaru dari PojokTV"} />
         <meta name="keywords" content={`${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV`} />
         <link rel="icon" href="/logo-pojoktv.png" />
         <link rel="shortcut icon" href="/logo-pojoktv.png" />
         
-        {/* Open Graph / Facebook / WhatsApp */}
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://pojoktv.com/berita/${berita.slug}`} />
+        {/* OPEN GRAPH WAJIB UNTUK WHATSAPP */}
         <meta property="og:title" content={berita.title || berita.judul} />
-        <meta property="og:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
-        <meta property="og:image" content={absoluteImageUrl} />
-        <meta property="og:site_name" content="PojokTV" />
-
-        {/* Twitter */}
+        <meta property="og:description" content={berita.ringkasan || stripHtmlAndEntities(berita.isi || berita.content || berita.title || berita.judul).slice(0, 160) || "Baca selengkapnya di PojokTV"} />
+        <meta property="og:image" content={ogImgUrl} />
+        <meta property="og:url" content={`https://pojoktv.com/berita/${berita.slug}`} />
+        
+        {/* TAG ESENSIAL WHATSAPP */}
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={berita.title || berita.judul} />
-        <meta name="twitter:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
-        <meta name="twitter:image" content={absoluteImageUrl} />
       </Head>
 
       {/* Header Ad Slot */}
