@@ -104,13 +104,17 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
     : '';
 
+  const absoluteImageUrl = (images && images[0])
+    ? (images[0].startsWith('http') ? images[0] : `https://pojoktv.com${images[0].startsWith('/') ? '' : '/'}${images[0]}`)
+    : 'https://pojoktv.com/logo-pojoktv.png';
+
   if (!berita) {
     return (
       <Layout>
         <Head>
           <title>Berita Tidak Ditemukan - PojokTV</title>
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="shortcut icon" href="/favicon.ico" />
+          <link rel="icon" href="/logo-pojoktv.png" />
+          <link rel="shortcut icon" href="/logo-pojoktv.png" />
         </Head>
         
         {/* Empty State Tampilan Utama */}
@@ -134,22 +138,22 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <title>{(berita.title || berita.judul)} - PojokTV</title>
         <meta name="description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
         <meta name="keywords" content={`${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV`} />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo-pojoktv.png" />
+        <link rel="shortcut icon" href="/logo-pojoktv.png" />
         
         {/* Open Graph / Facebook / WhatsApp */}
         <meta property="og:type" content="article" />
         <meta property="og:url" content={`https://pojoktv.com/berita/${berita.slug}`} />
         <meta property="og:title" content={berita.title || berita.judul} />
         <meta property="og:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
-        <meta property="og:image" content={berita.gambar_utama_url || (images && images[0]) || '/logo-pojoktv.png'} />
+        <meta property="og:image" content={absoluteImageUrl} />
         <meta property="og:site_name" content="PojokTV" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={berita.title || berita.judul} />
         <meta name="twitter:description" content={stripHtmlAndEntities(berita.ringkasan || berita.isi || berita.content || berita.title || berita.judul).slice(0, 160)} />
-        <meta name="twitter:image" content={berita.gambar_utama_url || (images && images[0]) || '/logo-pojoktv.png'} />
+        <meta name="twitter:image" content={absoluteImageUrl} />
       </Head>
 
       {/* Header Ad Slot */}
