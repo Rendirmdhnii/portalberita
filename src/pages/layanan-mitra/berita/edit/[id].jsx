@@ -330,7 +330,7 @@ export default function BeritaEdit() {
 
       if (updateError) throw updateError;
 
-      router.push('/redaksi-portal/berita');
+      router.push('/layanan-mitra/berita');
     } catch (err) {
       setError(err.message || 'Gagal mengubah berita.');
     } finally {
@@ -355,7 +355,7 @@ export default function BeritaEdit() {
       </Head>
 
       <div className="mb-6">
-        <Link href="/redaksi-portal/berita" className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg border border-gray-300 font-bold text-base transition-colors shadow-sm">
+        <Link href="/layanan-mitra/berita" className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg border border-gray-300 font-bold text-base transition-colors shadow-sm">
           &larr; Kembali ke Daftar Berita
         </Link>
       </div>
@@ -615,7 +615,7 @@ export default function BeritaEdit() {
             </button>
 
             <Link
-              href="/redaksi-portal/berita"
+              href="/layanan-mitra/berita"
               className="w-full md:w-auto px-8 py-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-lg shadow-sm transition-colors text-center inline-block"
             >
               Batal

@@ -12,14 +12,14 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        router.replace('/redaksi-portal/login');
+        router.replace('/layanan-mitra/login');
       } else {
         setUser(session.user);
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.replace('/redaksi-portal/login');
+      if (!session) router.replace('/layanan-mitra/login');
       else setUser(session.user);
     });
 
@@ -28,7 +28,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/redaksi-portal/login');
+    router.push('/layanan-mitra/login');
   };
 
   const getBreadcrumbs = () => {
@@ -77,19 +77,19 @@ export default function AdminLayout({ children }) {
           </button>
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <Link href="/redaksi-portal/dashboard" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/layanan-mitra/dashboard" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-gauge w-5"></i> Dashboard
           </Link>
-          <Link href="/redaksi-portal/berita" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/layanan-mitra/berita" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-newspaper w-5"></i> Kelola Berita
           </Link>
-          <Link href="/redaksi-portal/rubrik" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/layanan-mitra/rubrik" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-folder w-5"></i> Kelola Rubrik
           </Link>
-          <Link href="/redaksi-portal/iklan" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/layanan-mitra/iklan" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-bullhorn w-5"></i> Kelola Iklan
           </Link>
-          <Link href="/redaksi-portal/videos" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
+          <Link href="/layanan-mitra/videos" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-brands fa-youtube w-5"></i> Kelola Video
           </Link>
         </nav>

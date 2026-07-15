@@ -66,7 +66,7 @@ export default function Footer({ categories = [] }) {
             <Link href="/pedoman-media" className="hover:text-red-600 transition-colors">Pedoman Media Siber</Link>
             <Link href="/kebijakan-privasi" className="hover:text-red-600 transition-colors">Kebijakan Privasi</Link>
             <Link href="/ketentuan-layanan" className="hover:text-red-600 transition-colors">Ketentuan Layanan</Link>
-            <Link href="/redaksi-portal/login" className="hover:text-red-600 transition-colors">Login</Link>
+            <Link href="/layanan-mitra/login" className="hover:text-red-600 transition-colors">Login</Link>
           </div>
         </div>
       </div>

@@ -103,16 +103,16 @@ export default function AdminDashboard() {
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
             <h3 className="text-gray-900 text-base font-bold uppercase tracking-wide mb-4">Aksi Menu Cepat Redaksi</h3>
             <div className="flex flex-wrap gap-4">
-              <Link href="/redaksi-portal/berita/create" className="text-base bg-blue-100 hover:bg-blue-200 text-blue-900 px-6 py-3 rounded-md font-bold transition-colors border border-blue-300 shadow-sm">
+              <Link href="/layanan-mitra/berita/create" className="text-base bg-blue-100 hover:bg-blue-200 text-blue-900 px-6 py-3 rounded-md font-bold transition-colors border border-blue-300 shadow-sm">
                 Tulis Berita Baru
               </Link>
-              <Link href="/redaksi-portal/rubrik" className="text-base bg-green-100 hover:bg-green-200 text-green-900 px-6 py-3 rounded-md font-bold transition-colors border border-green-300 shadow-sm">
+              <Link href="/layanan-mitra/rubrik" className="text-base bg-green-100 hover:bg-green-200 text-green-900 px-6 py-3 rounded-md font-bold transition-colors border border-green-300 shadow-sm">
                 Kelola Rubrik
               </Link>
-              <Link href="/redaksi-portal/iklan" className="text-base bg-orange-100 hover:bg-orange-200 text-orange-900 px-6 py-3 rounded-md font-bold transition-colors border border-orange-300 shadow-sm">
+              <Link href="/layanan-mitra/iklan" className="text-base bg-orange-100 hover:bg-orange-200 text-orange-900 px-6 py-3 rounded-md font-bold transition-colors border border-orange-300 shadow-sm">
                 Kelola Iklan
               </Link>
-              <Link href="/redaksi-portal/videos" className="text-base bg-red-100 hover:bg-red-200 text-red-900 px-6 py-3 rounded-md font-bold transition-colors border border-red-300 shadow-sm">
+              <Link href="/layanan-mitra/videos" className="text-base bg-red-100 hover:bg-red-200 text-red-900 px-6 py-3 rounded-md font-bold transition-colors border border-red-300 shadow-sm">
                 Kelola Video
               </Link>
             </div>
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
                 <h2 className="text-xl font-bold text-gray-950">Daftar Berita Terpopuler</h2>
                 <p className="text-sm text-gray-700 mt-1">Daftar berita dengan pembaca (views) tertinggi di website publik.</p>
               </div>
-              <Link href="/redaksi-portal/berita" className="text-base text-blue-700 hover:text-blue-900 font-bold hover:underline">
+              <Link href="/layanan-mitra/berita" className="text-base text-blue-700 hover:text-blue-900 font-bold hover:underline">
                 Lihat Semua Berita →
               </Link>
             </div>

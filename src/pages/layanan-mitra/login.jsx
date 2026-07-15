@@ -25,7 +25,7 @@ export default function AdminLogin() {
       if (authError) throw authError;
 
       if (data.session) {
-        router.push('/redaksi-portal/dashboard');
+        router.push('/layanan-mitra/dashboard');
       }
     } catch (err) {
       setError(err.message || 'Login gagal. Silakan periksa kembali email dan password Anda.');

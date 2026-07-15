@@ -135,7 +135,7 @@ export default function BeritaIndex() {
           <p className="text-sm text-gray-500 mt-0.5">{posts.length} artikel tersimpan</p>
         </div>
         <Link
-          href="/redaksi-portal/berita/create"
+          href="/layanan-mitra/berita/create"
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold text-sm shadow-md transition-colors"
         >
           <i className="fa-solid fa-plus"></i>
@@ -197,7 +197,7 @@ export default function BeritaIndex() {
                   </div>
                   <div className="flex gap-4">
                     <Link
-                      href={`/redaksi-portal/berita/edit/${post.id}`}
+                      href={`/layanan-mitra/berita/edit/${post.id}`}
                       className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-sm transition-colors"
                     >
                       <i className="fa-solid fa-pen mr-1"></i>Edit
@@ -245,7 +245,7 @@ export default function BeritaIndex() {
                       <td className="px-6 py-5 text-right">
                         <div className="flex justify-end items-center">
                           <Link
-                            href={`/redaksi-portal/berita/edit/${post.id}`}
+                            href={`/layanan-mitra/berita/edit/${post.id}`}
                             className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-colors mr-2"
                           >Edit</Link>
                           <button

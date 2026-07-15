@@ -260,7 +260,7 @@ export default function BeritaCreate() {
 
       if (insertError) throw insertError;
 
-      router.push('/redaksi-portal/berita');
+      router.push('/layanan-mitra/berita');
     } catch (err) {
       setError(err.message || 'Gagal menyimpan berita.');
     } finally {
@@ -275,7 +275,7 @@ export default function BeritaCreate() {
       </Head>
 
       <div className="mb-6">
-        <Link href="/redaksi-portal/berita" className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg border border-gray-300 font-bold text-base transition-colors shadow-sm inline-block">
+        <Link href="/layanan-mitra/berita" className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-5 py-2.5 rounded-lg border border-gray-300 font-bold text-base transition-colors shadow-sm inline-block">
           &larr; Kembali ke Daftar Berita
         </Link>
       </div>
