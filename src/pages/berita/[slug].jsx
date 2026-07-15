@@ -105,8 +105,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     : '';
 
   const ogImgUrl = (() => {
-    // Ambil gambar utama secara eksklusif dari indeks 0 array gambar
-    const rawImg = images[0];
+    // Prioritaskan kolom string gambar_utama, baru fallback ke images[0]
+    const rawImg = berita?.gambar_utama || images[0];
     if (!rawImg) return 'https://pojoktv.com/logo-pojoktv.png';
     if (rawImg.startsWith('http')) return rawImg;
     

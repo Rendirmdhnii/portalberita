@@ -110,7 +110,10 @@ export default function BeritaEdit() {
         }
       }
       
-      if (allImgs.length > 0) {
+      if (data.gambar_utama) {
+        setExistingThumbnail(data.gambar_utama);
+        setExistingGallery(allImgs.filter(img => img !== data.gambar_utama));
+      } else if (allImgs.length > 0) {
         setExistingThumbnail(allImgs[0] || '');
         setExistingGallery(allImgs.slice(1) || []);
       } else {
@@ -295,6 +298,7 @@ export default function BeritaEdit() {
           category,
           content,
           images: combinedImages, // Simpan sebagai array jsonb
+          gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
           author: author.trim() || 'Redaksi PojokTV',
           status
         })

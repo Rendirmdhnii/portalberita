@@ -223,6 +223,7 @@ export default function BeritaCreate() {
             category,
             content,
             images: imageUrls, // Simpan sebagai array jsonb (indeks 0 adalah foto utama)
+            gambar_utama: imageUrls[0] || null, // Simpan URL publik Foto Utama secara spesifik
             author: finalAuthor,
             status: 'Published',
             views: 0
