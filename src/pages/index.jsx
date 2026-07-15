@@ -220,44 +220,66 @@ export default function Home({
               </div>
             ) : (
               mainHeadline && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                  {/* KIRI: KOTAK BESAR (Mengambil 2 kolom dari 3 kolom yang tersedia) */}
-                  <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
+                  {/* KIRI: KOTAK BESAR */}
+                  <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div className="relative w-full h-64 md:h-[400px] bg-gray-200">
                       <img src={mainHeadline.gambar_utama || getThumbnail(mainHeadline)} alt={mainHeadline.title} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
-                    <div className="p-5">
-                      <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">
-                        {mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}
-                      </span>
-                      <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-3 hover:text-[#E30A17] transition-colors">
+                    <div className="p-5 md:p-6">
+                      <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">{mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}</span>
+                      <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight mb-4 hover:text-[#E30A17] transition-colors">
                         <Link href={`/berita/${mainHeadline.slug}`}>{mainHeadline.title}</Link>
                       </h2>
-                      <div className="text-sm text-gray-500 flex items-center gap-2">
-                        <span>Oleh: {mainHeadline.author || mainHeadline.penulis || 'Redaksi'}</span>
+                      
+                      {/* META INFO ICON MERAH */}
+                      <div className="flex items-center text-sm text-gray-500 gap-2 flex-wrap font-medium">
+                        <div className="flex items-center gap-1.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          <span>{mainHeadline.author || mainHeadline.penulis || 'Redaksi PojokTV'}</span>
+                        </div>
+                        <span className="text-gray-400">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>{formatTimeAgo(mainHeadline.created_at) || 'Beberapa saat lalu'} | {mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* KANAN: 2 KOTAK KECIL BERSUSUN BAWAH */}
+                  {/* KANAN: 2 KOTAK KECIL BERSUSUN */}
                   {sideHeadlines.length > 0 && (
                     <div className="flex flex-col gap-6">
                       {sideHeadlines.map((berita) => (
-                        <div key={berita.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex-1 flex flex-col">
-                          <div className="relative w-full h-40 md:h-48 bg-gray-200">
+                        <div key={berita.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                          <div className="relative w-full h-40 md:h-44 bg-gray-200">
                             <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="absolute inset-0 w-full h-full object-cover" />
                           </div>
-                          <div className="p-4 flex-1 flex flex-col justify-between">
-                            <div>
-                              <span className="inline-block px-2 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded mb-2">
-                                {berita.category || berita.kategori || berita.rubrik}
-                              </span>
-                              <h3 className="text-base md:text-lg font-bold text-slate-900 leading-snug line-clamp-3 hover:text-[#E30A17] transition-colors">
-                                <Link href={`/berita/${berita.slug}`}>{berita.title}</Link>
-                              </h3>
-                            </div>
-                            <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
-                              <span>Oleh: {berita.author || berita.penulis || 'Redaksi'}</span>
+                          <div className="p-4">
+                            <span className="inline-block px-2 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded mb-2">{berita.category || berita.kategori || berita.rubrik}</span>
+                            <h3 className="text-base md:text-lg font-bold text-gray-900 leading-snug line-clamp-3 mb-3 hover:text-[#E30A17] transition-colors">
+                              <Link href={`/berita/${berita.slug}`}>{berita.title}</Link>
+                            </h3>
+                            
+                            {/* META INFO ICON MERAH KECIL */}
+                            <div className="flex items-center text-xs text-gray-500 gap-1.5 flex-wrap font-medium">
+                              <div className="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span className="truncate max-w-[90px]">{berita.author || berita.penulis || 'Redaksi'}</span>
+                              </div>
+                              <span className="text-gray-400">•</span>
+                              <div className="flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{formatTimeAgo(berita.created_at) || 'Baru saja'}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
