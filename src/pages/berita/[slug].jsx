@@ -108,8 +108,19 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     const rawImg = berita?.gambar || berita?.image || (images && images[0]) || berita?.gambar_utama_url;
     if (!rawImg) return 'https://pojoktv.com/logo-pojoktv.png';
     if (rawImg.startsWith('http')) return rawImg;
+    
+    // Pastikan path relatif memiliki /storage/v1/object/public/
+    let path = rawImg;
+    if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
+      const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+      path = `/storage/v1/object/public/${cleanPath}`;
+    }
+    
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
-    return `${supabaseUrl}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+    const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    
+    return `${cleanSupabaseUrl}${cleanPath}`;
   })();
 
   if (!berita) {
