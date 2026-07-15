@@ -433,20 +433,42 @@ export async function getServerSideProps(context) {
     // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp
     let fixImageUrl = 'https://pojoktv.com/logo-pojoktv.png'; // Fallback aman
     if (mainBerita) {
-      const rawImg = mainBerita.gambar_utama || (mainBerita.images && Array.isArray(mainBerita.images) && mainBerita.images[0]) || mainBerita.image || mainBerita.gambar;
-      if (rawImg && rawImg.trim() !== '') {
-        if (rawImg.startsWith('http')) {
-          fixImageUrl = rawImg;
-        } else {
-          let path = rawImg;
-          if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
-            const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+      const checkAndFormat = (rawImg) => {
+        if (!rawImg || typeof rawImg !== 'string' || rawImg.trim() === '') return null;
+        if (rawImg.startsWith('http')) return rawImg;
+        
+        let path = rawImg;
+        if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
+          const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+          if (!cleanPath.startsWith('images/')) {
+            path = `/storage/v1/object/public/images/${cleanPath}`;
+          } else {
             path = `/storage/v1/object/public/${cleanPath}`;
           }
-          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
-          const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
-          const cleanPath = path.startsWith('/') ? path : `/${path}`;
-          fixImageUrl = `${cleanSupabaseUrl}${cleanPath}`;
+        } else {
+          path = path.startsWith('/') ? path : `/${path}`;
+        }
+        
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
+        const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+        return `${cleanSupabaseUrl}${path}`;
+      };
+
+      if (mainBerita.gambar_utama && typeof mainBerita.gambar_utama === 'string' && mainBerita.gambar_utama.trim() !== '') {
+        const formatted = checkAndFormat(mainBerita.gambar_utama);
+        if (formatted) fixImageUrl = formatted;
+      } else if (mainBerita.images) {
+        try {
+          const parsedImages = typeof mainBerita.images === 'string' ? JSON.parse(mainBerita.images) : mainBerita.images;
+          if (Array.isArray(parsedImages) && parsedImages.length > 0) {
+            const formatted = checkAndFormat(parsedImages[0]);
+            if (formatted) fixImageUrl = formatted;
+          }
+        } catch (error) {
+          if (typeof mainBerita.images === 'string' && mainBerita.images.trim() !== '') {
+            const formatted = checkAndFormat(mainBerita.images);
+            if (formatted) fixImageUrl = formatted;
+          }
         }
       }
     }
