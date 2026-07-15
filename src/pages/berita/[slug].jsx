@@ -364,8 +364,12 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   );
 }
 
-export async function getServerSideProps(context) {
-  const { params } = context;
+export async function getServerSideProps({ params, res }) {
+  // Tambahkan baris ini untuk caching di Vercel Edge Network
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=60, stale-while-revalidate=300'
+  );
   console.log("Mencari parameter:", params.slug);
   const slugParam = String(params.slug || '');
 
