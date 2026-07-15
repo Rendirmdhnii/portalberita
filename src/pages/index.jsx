@@ -159,9 +159,18 @@ export default function Home({
     ? berita?.filter(post => post.id !== headlineBerita.id) || []
     : berita?.slice(1) || [];
 
+  // Kumpulkan ID berita yang sudah ditampilkan di bagian atas (Hero Section)
+  const displayedNewsIds = [
+    ...(headlineBerita ? [headlineBerita.id] : []),
+    ...feedBerita.slice(0, 2).map(n => n.id)
+  ];
+
   // Filter Categories
-  const kriminalNews = berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [];
-  const ekonomiNews = berita?.filter(b => b.category?.toLowerCase() === 'ekonomi' || b.category?.toLowerCase() === 'ekonomi & bisnis') || [];
+  const allKriminalNews = berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [];
+  const kriminalNews = allKriminalNews.filter(post => !displayedNewsIds.includes(post.id));
+
+  const allEkonomiNews = berita?.filter(b => b.category?.toLowerCase() === 'ekonomi' || b.category?.toLowerCase() === 'ekonomi & bisnis') || [];
+  const ekonomiNews = allEkonomiNews.filter(post => !displayedNewsIds.includes(post.id));
   
   // Sorted by views
   const popularNews = berita ? [...berita].sort((a, b) => (b.views || 0) - (a.views || 0)) : [];
