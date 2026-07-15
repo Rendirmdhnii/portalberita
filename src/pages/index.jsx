@@ -217,7 +217,7 @@ export default function Home({
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {headlineSlides.map((post) => (
                   <article
                     key={post.id}
@@ -485,38 +485,21 @@ export default function Home({
             </div>
 
             <div
-              className="flex overflow-x-auto snap-x snap-mandatory gap-5 pb-6"
+              className="flex overflow-x-auto gap-5 pb-6 hide-scrollbar snap-x"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {sorotanNews.map((post) => (
-                <article
-                  key={post.id}
-                  className="min-w-[85%] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-start bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 flex flex-col hover:shadow-md transition"
-                >
-                  <div className="relative w-full aspect-[16/9] overflow-hidden group bg-slate-900">
-                    {(post.gambar_utama || getThumbnail(post)) ? (
-                      <img src={post.gambar_utama || getThumbnail(post)} alt={post.title} className="sorotan-img w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <div className="bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
-                        No Image
-                      </div>
-                    )}
-                    <span className="absolute top-3 left-3 bg-[#E30A17] text-white text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
-                      {post.category}
-                    </span>
+              {sorotanNews.map((berita) => (
+                <div key={berita.id} className="flex-none w-[280px] md:w-[320px] snap-start bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="relative w-full h-48 bg-gray-200">
+                     <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="absolute inset-0 w-full h-full object-cover" />
                   </div>
-                  <div className="p-4 flex flex-col gap-2 flex-grow">
-                    <h3 className="sorotan-title text-sm font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2">
-                      <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                    </h3>
-                    <p className="sorotan-snippet text-gray-600 text-xs line-clamp-2 leading-relaxed">{cleanExcerpt(post.content)}</p>
-                    <div className="sorotan-meta text-xs text-gray-400 mt-auto flex items-center gap-2">
-                      <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i>{post.author || post.penulis || 'Redaksi'}</span>
-                      <span>•</span>
-                      <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i>{formatTimeAgo(post.created_at)}</span>
-                    </div>
+                  <div className="p-4">
+                     <span className="text-xs font-bold text-red-600 uppercase">{berita.category}</span>
+                     <h3 className="text-sm font-bold mt-2 text-gray-900 line-clamp-3 hover:text-[#E30A17] transition-colors">
+                       <Link href={`/berita/${berita.slug}`}>{berita.title}</Link>
+                     </h3>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
           </div>

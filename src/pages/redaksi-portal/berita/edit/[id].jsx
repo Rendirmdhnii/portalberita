@@ -561,36 +561,36 @@ export default function BeritaEdit() {
             </p>
           </div>
 
-          {/* Status Berita */}
+          {/* Posisi Tampilan Berita */}
           <div className="mb-6 p-5 border rounded bg-white shadow-sm">
-            <label className="block text-black font-extrabold text-lg mb-2">STATUS BERITA (PILIH SALAH SATU) *</label>
-            <p className="text-sm text-gray-600 mb-5">Sistem akan otomatis mengatur letaknya di halaman depan sesuai pilihan Anda.</p>
+            <label className="block text-gray-800 font-bold text-lg mb-2">POSISI TAMPILAN BERITA *</label>
+            <p className="text-sm text-gray-600 mb-5">Pilih lokasi penempatan berita pada halaman utama website.</p>
             
-            <div className="flex flex-col gap-4">
-              {/* Opsi 1: Headline */}
-              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'headline' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'headline'} onChange={() => setPosisiLayout('headline')} />
+            <div className="flex flex-col gap-3">
+              {/* Opsi Headline */}
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'headline' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'headline'} onChange={() => setPosisiLayout('headline')} />
                 <div>
-                  <span className="block font-bold text-lg text-black">🌟 JADIKAN BERITA UTAMA (HEADLINE)</span>
-                  <span className="block text-sm text-gray-700">Berita akan masuk ke deretan paling atas (bisa digeser ke samping/slider). Bisa pilih lebih dari satu berita!</span>
+                  <span className="block font-bold text-base text-gray-900">BERITA UTAMA (HEADLINE ATAS)</span>
+                  <span className="block text-sm text-gray-600">Berita akan ditampilkan di baris paling atas halaman depan.</span>
                 </div>
               </label>
 
-              {/* Opsi 2: Sorotan */}
-              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'sorotan' ? 'border-red-600 bg-red-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'sorotan'} onChange={() => setPosisiLayout('sorotan')} />
+              {/* Opsi Sorotan */}
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'sorotan' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'sorotan'} onChange={() => setPosisiLayout('sorotan')} />
                 <div>
-                  <span className="block font-bold text-lg text-black">🔥 MASUKKAN KE &#39;SOROTAN HARI INI&#39;</span>
-                  <span className="block text-sm text-gray-700">Khusus untuk berita yang sedang VIRAL, hangat, atau isu terkini yang menarik perhatian.</span>
+                  <span className="block font-bold text-base text-gray-900">SOROTAN HARI INI (SLIDER TENGAH)</span>
+                  <span className="block text-sm text-gray-600">Berita masuk ke deretan isu terkini yang dapat digeser (slider).</span>
                 </div>
               </label>
 
-              {/* Opsi 3: Biasa */}
-              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'biasa' ? 'border-gray-800 bg-gray-100' : 'border-gray-200 hover:bg-white'}`}>
-                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'biasa'} onChange={() => setPosisiLayout('biasa')} />
+              {/* Opsi Biasa */}
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'biasa' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'biasa'} onChange={() => setPosisiLayout('biasa')} />
                 <div>
-                  <span className="block font-bold text-lg text-black">📰 BERITA REGULER (BIASA)</span>
-                  <span className="block text-sm text-gray-700">Berita akan masuk ke daftar reguler sesuai kategorinya di bagian bawah.</span>
+                  <span className="block font-bold text-base text-gray-900">BERITA REGULER (DAFTAR BAWAH)</span>
+                  <span className="block text-sm text-gray-600">Berita akan masuk ke daftar standar sesuai kategori rubriknya.</span>
                 </div>
               </label>
             </div>
