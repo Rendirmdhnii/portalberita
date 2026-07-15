@@ -83,7 +83,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
       <nav className="flex md:hidden overflow-x-auto whitespace-nowrap scrollbar-none border-b border-gray-200 py-2 px-4 gap-4 text-sm font-semibold uppercase bg-white">
         <Link 
           href="/" 
-          className={`pb-1 border-b-2 hover:text-[#E30A17] transition-colors ${isHomeActive ? 'text-[#E30A17] border-[#E30A17]' : 'text-[#001746] border-transparent'}`}
+          className={`text-[15px] font-bold px-4 py-2 border-b-2 hover:text-[#E30A17] transition-colors ${isHomeActive ? 'text-[#E30A17] border-[#E30A17]' : 'text-[#001746] border-transparent'}`}
         >
           Berita Utama
         </Link>
@@ -93,7 +93,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
             <Link 
               key={cat.id || Math.random()} 
               href={`/kategori/${cat.slug || ''}`} 
-              className={`pb-1 border-b-2 hover:text-[#E30A17] transition-colors ${isActive ? 'text-[#E30A17] border-[#E30A17]' : 'text-[#001746] border-transparent'}`}
+              className={`text-[15px] font-bold px-4 py-2 border-b-2 hover:text-[#E30A17] transition-colors ${isActive ? 'text-[#E30A17] border-[#E30A17]' : 'text-[#001746] border-transparent'}`}
             >
               {cat.name || 'Kategori'}
             </Link>
@@ -180,12 +180,12 @@ export default function Header({ activeSlug, activeCategoryName }) {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           {/* Drawer Content */}
-          <div className="relative flex w-full max-w-xs flex-col bg-white p-6 shadow-xl ring-1 ring-black/5 transition-transform duration-300">
+          <div className="relative flex w-full max-w-xs flex-col h-screen bg-white p-6 shadow-xl ring-1 ring-black/5 transition-transform duration-300">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
               <img 
                 src="/logo-pojoktv.png" 
                 alt="PojokTV" 
-                className="h-10 w-auto object-contain" 
+                className="h-12 w-auto object-contain" 
                 onError={(e) => {
                   e.target.src = "/logo.png";
                 }}
@@ -214,7 +214,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
             </form>
 
             {/* Navigation Links */}
-            <nav className="flex flex-col gap-4 text-sm font-bold text-[#001746] uppercase">
+            <nav className="flex flex-col gap-4 text-sm font-bold text-[#001746] uppercase overflow-y-auto flex-1 pb-32 overscroll-contain">
               <Link 
                 href="/" 
                 className={`py-2 border-b border-slate-50 ${isHomeActive ? 'text-[#E30A17]' : 'hover:text-[#E30A17] transition-colors'}`}
