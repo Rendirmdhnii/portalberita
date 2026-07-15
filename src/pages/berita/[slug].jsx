@@ -21,14 +21,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [shareUrl, setShareUrl] = useState(`https://pojoktv.com/berita/${berita?.slug || ''}`);
 
-  useEffect(() => {
-    if (berita?.slug) {
-      const cacheBuster = new Date().getTime();
-      setShareUrl(`https://pojoktv.com/berita/${berita.slug}?v=${cacheBuster}`);
-    }
-  }, [berita?.slug]);
 
   const images = (() => {
     if (!berita) return [];
@@ -222,9 +215,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                       
                       {/* Facebook */}
                       <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-                        target="_blank" rel="noreferrer"
-                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#3b5998] text-white"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(uniqueUrl)}`, '_blank');
+                        }}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#3b5998] text-white cursor-pointer"
                         aria-label="Share Facebook"
                       >
                         <i className="fa-brands fa-facebook-f w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
@@ -232,9 +229,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* Twitter / X */}
                       <a
-                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(berita?.title || berita?.judul || '')}&url=${encodeURIComponent(shareUrl)}`}
-                        target="_blank" rel="noreferrer"
-                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#1da1f2] text-white"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(berita?.title || '')}&url=${encodeURIComponent(uniqueUrl)}`, '_blank');
+                        }}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#1da1f2] text-white cursor-pointer"
                         aria-label="Share Twitter"
                       >
                         <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden="true">
@@ -244,9 +245,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* LinkedIn */}
                       <a
-                        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(berita?.title || berita?.judul || '')}`}
-                        target="_blank" rel="noreferrer"
-                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#0077b5] text-white"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                          window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(uniqueUrl)}&title=${encodeURIComponent(berita?.title || '')}`, '_blank');
+                        }}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#0077b5] text-white cursor-pointer"
                         aria-label="Share LinkedIn"
                       >
                         <i className="fa-brands fa-linkedin-in w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
@@ -254,9 +259,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* WhatsApp */}
                       <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || berita?.judul || '') + " | Baca selengkapnya di: " + shareUrl)}`}
-                        target="_blank" rel="noreferrer"
-                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || '') + " | Baca selengkapnya di: " + uniqueUrl)}`, '_blank');
+                        }}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white cursor-pointer"
                         aria-label="Share WhatsApp"
                       >
                         <i className="fa-brands fa-whatsapp w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
@@ -264,8 +273,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* Email */}
                       <a
-                        href={`mailto:?subject=${encodeURIComponent(berita?.title || berita?.judul || '')}&body=${encodeURIComponent(shareUrl)}`}
-                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#f26522] text-white"
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                          window.location.href = `mailto:?subject=${encodeURIComponent(berita?.title || '')}&body=${encodeURIComponent(uniqueUrl)}`;
+                        }}
+                        className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#f26522] text-white cursor-pointer"
                         aria-label="Share Email"
                       >
                         <i className="fa-regular fa-envelope w-5 h-5 flex items-center justify-center text-sm sm:text-base"></i>
@@ -275,7 +289,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                       <button
                         onClick={() => {
                           if (typeof window !== 'undefined') {
-                            navigator.clipboard.writeText(shareUrl);
+                            const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
+                            navigator.clipboard.writeText(uniqueUrl);
                             alert('Tautan berita berhasil disalin ke clipboard!');
                           }
                         }}
