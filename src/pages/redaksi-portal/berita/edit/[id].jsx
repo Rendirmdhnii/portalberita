@@ -47,7 +47,7 @@ export default function BeritaEdit() {
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
-  const [isHeadline, setIsHeadline] = useState(false);
+  const [posisiLayout, setPosisiLayout] = useState('biasa');
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -93,6 +93,7 @@ export default function BeritaEdit() {
       setContent(data.content || '');
       setStatus(data.status || 'Published');
       setIsHeadline(data.is_headline || false);
+      setPosisiLayout(data.is_headline ? 'headline' : 'biasa');
       
       // Load images (jsonb) or fallback to image (text)
       const imgs = data.images || data.image;
@@ -321,7 +322,7 @@ export default function BeritaEdit() {
           content,
           images: combinedImages, // Simpan sebagai array jsonb
           gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
-          is_headline: isHeadline,
+          is_headline: posisiLayout === 'headline',
           author: author.trim() || 'Redaksi PojokTV',
           status
         })
@@ -560,43 +561,36 @@ export default function BeritaEdit() {
             </p>
           </div>
 
-          {/* Penempatan Berita di Halaman Depan */}
+          {/* Status Berita */}
           <div className="mb-6 p-5 border rounded bg-white shadow-sm">
-            <label className="block text-black font-extrabold text-lg mb-2">PILIH LOKASI TAMPIL BERITA *</label>
-            <p className="text-sm text-gray-600 mb-5">Tentukan di bagian mana berita ini akan muncul pada halaman depan website.</p>
+            <label className="block text-black font-extrabold text-lg mb-2">STATUS BERITA (PILIH SALAH SATU) *</label>
+            <p className="text-sm text-gray-600 mb-5">Sistem akan otomatis mengatur letaknya di halaman depan sesuai pilihan Anda.</p>
             
             <div className="flex flex-col gap-4">
               {/* Opsi 1: Headline */}
-              <label className={`flex items-start p-4 border-2 rounded cursor-pointer transition-all ${isHeadline ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                <input type="radio" name="posisi" className="w-6 h-6 mt-1 mr-4" checked={isHeadline === true} onChange={() => setIsHeadline(true)} />
-                <div className="flex-1">
-                  <span className="block font-bold text-lg text-black mb-1">POSISI KOTAK BESAR (UTAMA)</span>
-                  <span className="block text-sm text-gray-700 mb-3">Berita tampil paling atas dengan gambar paling besar. Teks judul berada DI BAWAH gambar (tidak menutupi gambar).</span>
-                  
-                  {/* Ilustrasi Preview Kotak Besar */}
-                  <div className="w-40 bg-white border border-gray-300 rounded p-1.5 shadow-sm">
-                     <div className="w-full h-20 bg-gray-400 rounded mb-2 flex items-center justify-center text-xs text-white">GAMBAR BESAR</div>
-                     <div className="w-full h-3 bg-gray-600 rounded mb-1"></div>
-                     <div className="w-2/3 h-3 bg-gray-600 rounded"></div>
-                  </div>
+              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'headline' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'headline'} onChange={() => setPosisiLayout('headline')} />
+                <div>
+                  <span className="block font-bold text-lg text-black">🌟 JADIKAN BERITA UTAMA (HEADLINE)</span>
+                  <span className="block text-sm text-gray-700">Berita akan masuk ke deretan paling atas (bisa digeser ke samping/slider). Bisa pilih lebih dari satu berita!</span>
                 </div>
               </label>
 
-              {/* Opsi 2: Berita Biasa */}
-              <label className={`flex items-start p-4 border-2 rounded cursor-pointer transition-all ${!isHeadline ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
-                <input type="radio" name="posisi" className="w-6 h-6 mt-1 mr-4" checked={isHeadline === false} onChange={() => setIsHeadline(false)} />
-                <div className="flex-1">
-                  <span className="block font-bold text-lg text-black mb-1">POSISI DERETAN BERITA KECIL</span>
-                  <span className="block text-sm text-gray-700 mb-3">Berita tampil di daftar berita standar. Gambar lebih kecil berada di samping atau di atas teks.</span>
-                  
-                  {/* Ilustrasi Preview Berita Kecil */}
-                  <div className="w-40 bg-white border border-gray-300 rounded p-1.5 shadow-sm flex gap-2">
-                     <div className="w-12 h-12 bg-gray-400 rounded flex items-center justify-center text-[10px] text-white">FOTO</div>
-                     <div className="flex-1 mt-1">
-                        <div className="w-full h-2 bg-gray-600 rounded mb-1"></div>
-                        <div className="w-3/4 h-2 bg-gray-600 rounded"></div>
-                     </div>
-                  </div>
+              {/* Opsi 2: Sorotan */}
+              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'sorotan' ? 'border-red-600 bg-red-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'sorotan'} onChange={() => setPosisiLayout('sorotan')} />
+                <div>
+                  <span className="block font-bold text-lg text-black">🔥 MASUKKAN KE &#39;SOROTAN HARI INI&#39;</span>
+                  <span className="block text-sm text-gray-700">Khusus untuk berita yang sedang VIRAL, hangat, atau isu terkini yang menarik perhatian.</span>
+                </div>
+              </label>
+
+              {/* Opsi 3: Biasa */}
+              <label className={`flex items-start p-4 border-2 rounded cursor-pointer ${posisiLayout === 'biasa' ? 'border-gray-800 bg-gray-100' : 'border-gray-200 hover:bg-white'}`}>
+                <input type="radio" name="layout" className="w-6 h-6 mt-1 mr-4" checked={posisiLayout === 'biasa'} onChange={() => setPosisiLayout('biasa')} />
+                <div>
+                  <span className="block font-bold text-lg text-black">📰 BERITA REGULER (BIASA)</span>
+                  <span className="block text-sm text-gray-700">Berita akan masuk ke daftar reguler sesuai kategorinya di bagian bawah.</span>
                 </div>
               </label>
             </div>
