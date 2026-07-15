@@ -108,7 +108,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     const rawImg = berita?.gambar || berita?.image || (images && images[0]) || berita?.gambar_utama_url;
     if (!rawImg) return 'https://pojoktv.com/logo-pojoktv.png';
     if (rawImg.startsWith('http')) return rawImg;
-    return `https://pojoktv.com${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
+    return `${supabaseUrl}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`;
   })();
 
   if (!berita) {

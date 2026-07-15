@@ -7,7 +7,12 @@ import EmptyState from '@/components/EmptyState';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
-export default function Home() {
+export default function Home({
+  initialCategories = [],
+  initialBerita = [],
+  initialAds = [],
+  initialVideos = []
+}) {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState('Kamis, 9 Juli 2026');
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
@@ -16,11 +21,11 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Dynamic States from Supabase
-  const [categories, setCategories] = useState([]);
-  const [berita, setBerita] = useState([]);
-  const [ads, setAds] = useState([]);
-  const [videos, setVideos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(initialCategories);
+  const [berita, setBerita] = useState(initialBerita);
+  const [ads, setAds] = useState(initialAds);
+  const [videos, setVideos] = useState(initialVideos);
+  const [loading, setLoading] = useState(initialBerita.length === 0);
 
   useEffect(() => {
     // Realtime Clock
@@ -68,7 +73,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchData();
+    if (initialBerita.length === 0) {
+      fetchData();
+    }
   }, []);
 
   const formatTimeAgo = (dateString) => {
@@ -544,4 +551,41 @@ export default function Home() {
       </div>
     </Layout>
   );
+}
+
+export async function getStaticProps() {
+  try {
+    const [
+      { data: catData },
+      { data: beritaData },
+      { data: adsData },
+      { data: videosData }
+    ] = await Promise.all([
+      supabase.from('categories').select('*').eq('status', 'Aktif').order('name'),
+      supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+      supabase.from('ads').select('*').eq('is_active', true),
+      supabase.from('videos').select('*').order('id', { ascending: false })
+    ]);
+
+    return {
+      props: {
+        initialCategories: catData || [],
+        initialBerita: beritaData || [],
+        initialAds: adsData || [],
+        initialVideos: videosData || [],
+      },
+      revalidate: 5,
+    };
+  } catch (err) {
+    console.error('Error in getStaticProps:', err);
+    return {
+      props: {
+        initialCategories: [],
+        initialBerita: [],
+        initialAds: [],
+        initialVideos: [],
+      },
+      revalidate: 5,
+    };
+  }
 }
