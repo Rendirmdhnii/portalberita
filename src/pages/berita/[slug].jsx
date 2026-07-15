@@ -21,6 +21,14 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [shareUrl, setShareUrl] = useState(`https://pojoktv.com/berita/${berita?.slug || ''}`);
+
+  useEffect(() => {
+    if (berita?.slug) {
+      const cacheBuster = new Date().getTime();
+      setShareUrl(`https://pojoktv.com/berita/${berita.slug}?v=${cacheBuster}`);
+    }
+  }, [berita?.slug]);
 
   const images = (() => {
     if (!berita) return [];
@@ -216,7 +224,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                       
                       {/* Facebook */}
                       <a
-                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
                         target="_blank" rel="noreferrer"
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#3b5998] text-white"
                         aria-label="Share Facebook"
@@ -226,7 +234,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* Twitter / X */}
                       <a
-                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent((berita.title || berita.judul))}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                        href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(berita?.title || berita?.judul || '')}&url=${encodeURIComponent(shareUrl)}`}
                         target="_blank" rel="noreferrer"
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#1da1f2] text-white"
                         aria-label="Share Twitter"
@@ -238,7 +246,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* LinkedIn */}
                       <a
-                        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&title=${encodeURIComponent(berita.title || berita.judul)}`}
+                        href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(berita?.title || berita?.judul || '')}`}
                         target="_blank" rel="noreferrer"
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#0077b5] text-white"
                         aria-label="Share LinkedIn"
@@ -248,7 +256,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* WhatsApp */}
                       <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent((berita.title || berita.judul) + " | Baca selengkapnya di: " + (typeof window !== 'undefined' ? window.location.href : ''))}`}
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || berita?.judul || '') + " | Baca selengkapnya di: " + shareUrl)}`}
                         target="_blank" rel="noreferrer"
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white"
                         aria-label="Share WhatsApp"
@@ -258,7 +266,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                       {/* Email */}
                       <a
-                        href={`mailto:?subject=${encodeURIComponent(berita.title || berita.judul)}&body=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                        href={`mailto:?subject=${encodeURIComponent(berita?.title || berita?.judul || '')}&body=${encodeURIComponent(shareUrl)}`}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#f26522] text-white"
                         aria-label="Share Email"
                       >
@@ -269,7 +277,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                       <button
                         onClick={() => {
                           if (typeof window !== 'undefined') {
-                            navigator.clipboard.writeText(window.location.href);
+                            navigator.clipboard.writeText(shareUrl);
                             alert('Tautan berita berhasil disalin ke clipboard!');
                           }
                         }}
