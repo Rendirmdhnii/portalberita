@@ -1,39 +1,36 @@
 import Head from 'next/head';
-import Link from 'next/link';
+import Layout from '@/components/Layout';
 
 export default function KetentuanLayanan() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col justify-between">
+    <Layout>
       <Head>
         <title>Ketentuan Layanan - PojokTV.com</title>
+        <meta name="description" content="Ketentuan layanan (Terms of Service) penggunaan situs PojokTV.com." />
+        <link rel="icon" type="image/png" href="/favicon.png" />
       </Head>
-      <header className="bg-white border-b-4 border-red-600 p-4 sticky top-0 shadow-sm z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="font-black text-2xl tracking-tighter">
-            Pojok<span className="text-red-600">TV</span>
-          </Link>
-          <Link href="/" className="text-xs font-bold uppercase text-slate-500 hover:text-red-600 transition-colors">
-            Kembali ke Beranda
-          </Link>
+      <div className="max-w-4xl mx-auto py-12 px-4 text-gray-800">
+        <h1 className="text-3xl font-black mb-2 uppercase border-b-4 border-red-600 pb-3 text-slate-900">KETENTUAN LAYANAN (TERMS OF SERVICE)</h1>
+        <div className="mt-8 space-y-6 text-base leading-relaxed text-gray-700">
+          <p>
+            Selamat datang di <strong>PojokTV.com</strong>. Dengan mengakses dan menggunakan situs ini, Anda secara otomatis menyetujui Ketentuan Layanan berikut:
+          </p>
+          <div className="border-l-4 border-red-500 pl-5 space-y-5">
+            <div>
+              <h2 className="font-bold text-slate-900 text-lg mb-1">Hak Cipta Konten</h2>
+              <p>Seluruh materi konten (teks, foto, video, logo, dan infografis) di PojokTV.com dilindungi oleh Undang-Undang Hak Cipta. Penggunaan, penyalinan, atau reproduksi konten untuk tujuan komersial tanpa izin tertulis dari redaksi adalah pelanggaran hukum.</p>
+            </div>
+            <div>
+              <h2 className="font-bold text-slate-900 text-lg mb-1">Kutipan Berita</h2>
+              <p>Penggunaan konten PojokTV untuk keperluan referensi atau pendidikan diperbolehkan dengan syarat mutlak mencantumkan tautan (link) aktif yang mengarah langsung ke halaman sumber di PojokTV.com.</p>
+            </div>
+            <div>
+              <h2 className="font-bold text-slate-900 text-lg mb-1">Tanggung Jawab Pengguna</h2>
+              <p>Pengguna dilarang menggunakan situs ini untuk tindakan yang melanggar hukum, menyebarkan hoaks, ujaran kebencian, atau merusak sistem keamanan server (hacking/spamming).</p>
+            </div>
+          </div>
         </div>
-      </header>
-      <main className="flex-grow max-w-3xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-black mb-6 uppercase border-b-2 border-slate-900 pb-2">Ketentuan Layanan</h1>
-        <div className="prose prose-slate max-w-none text-slate-700 leading-relaxed space-y-4">
-          <p>
-            Selamat datang di PojokTV.com. Dengan mengakses dan menggunakan situs ini, Anda dianggap menyetujui seluruh Ketentuan Layanan yang ditetapkan di bawah ini.
-          </p>
-          <p>
-            Seluruh konten yang tayang di PojokTV.com (berupa teks, gambar, video, dan infografis) dilindungi oleh hak cipta. Dilarang keras menyalin, mempublikasikan ulang, atau menyebarkan konten kami tanpa mencantumkan sumber link aktif ke PojokTV.com.
-          </p>
-          <p>
-            Penggunaan situs ini harus tunduk pada hukum negara Republik Indonesia dan tidak boleh digunakan untuk tindakan ilegal, penyebaran hoaks, atau hal-hal yang melanggar ketertiban umum.
-          </p>
-        </div>
-      </main>
-      <footer className="bg-slate-950 text-slate-400 text-xs py-8 text-center border-t-4 border-red-600">
-        &copy; 2026 PojokTV.com. Hak Cipta Dilindungi.
-      </footer>
-    </div>
+      </div>
+    </Layout>
   );
 }
