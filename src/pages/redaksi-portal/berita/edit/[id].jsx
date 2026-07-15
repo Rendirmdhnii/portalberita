@@ -92,8 +92,7 @@ export default function BeritaEdit() {
       setCategory(data.category || '');
       setContent(data.content || '');
       setStatus(data.status || 'Published');
-      setIsHeadline(data.is_headline || false);
-      setPosisiLayout(data.is_headline ? 'headline' : 'biasa');
+      setPosisiLayout(data.posisi_layout || 'biasa');
       
       // Load images (jsonb) or fallback to image (text)
       const imgs = data.images || data.image;
@@ -322,6 +321,7 @@ export default function BeritaEdit() {
           content,
           images: combinedImages, // Simpan sebagai array jsonb
           gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
+          posisi_layout: posisiLayout,
           is_headline: posisiLayout === 'headline',
           author: author.trim() || 'Redaksi PojokTV',
           status
