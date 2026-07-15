@@ -181,7 +181,14 @@ export default function BeritaIndex() {
               {paginatedPosts.map(post => (
                 <div key={post.id} className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <p className="font-bold text-gray-900 text-sm line-clamp-2 flex-1">{post.title}</p>
+                    <div className="flex-1">
+                      <p className="font-bold text-gray-900 text-sm line-clamp-2">{post.title}</p>
+                      {post.is_headline && (
+                        <span className="inline-block mt-1 bg-yellow-100 text-yellow-800 text-[10px] font-extrabold px-2 py-0.5 rounded border border-yellow-300 shadow-sm">
+                          🌟 BERITA UTAMA KOTAK BESAR
+                        </span>
+                      )}
+                    </div>
                     {statusBadge(post.status)}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
@@ -222,7 +229,12 @@ export default function BeritaIndex() {
                     <tr key={post.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-5">
                         <p className="font-bold text-gray-900 line-clamp-2 max-w-md">{post.title}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{post.author}</p>
+                        {post.is_headline && (
+                          <span className="inline-block mt-1 bg-yellow-100 text-yellow-800 text-[10px] font-extrabold px-2 py-0.5 rounded border border-yellow-300 shadow-sm">
+                            🌟 BERITA UTAMA KOTAK BESAR
+                          </span>
+                        )}
+                        <p className="text-xs text-gray-500 mt-1">{post.author}</p>
                       </td>
                       <td className="px-6 py-5">
                         <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-gray-200">
