@@ -153,25 +153,33 @@ export default function Home({
   const middleAd = ads?.find(a => a.position === 'Tengah Konten');
   const footerAd = ads?.find(a => a.position === 'Footer');
 
-  // Pisahkan Berita Headline dan Berita Biasa
-  const headlineBerita = berita?.find(post => post.is_headline === true) || berita?.[0];
-  const feedBerita = headlineBerita 
-    ? berita?.filter(post => post.id !== headlineBerita.id) || []
-    : berita?.slice(1) || [];
+  // ── News bucketing by posisi_layout ──────────────────────────────
+  // Headline slider: berita dengan posisi_layout === 'headline'
+  const headlines = berita?.filter(n => n.posisi_layout === 'headline') || [];
+  // Fallback: jika kosong, gunakan 3 berita terbaru
+  const headlineSlides = headlines.length > 0 ? headlines : berita?.slice(0, 3) || [];
 
-  // Kumpulkan ID berita yang sudah ditampilkan di bagian atas (Hero Section)
-  const displayedNewsIds = [
-    ...(headlineBerita ? [headlineBerita.id] : []),
-    ...feedBerita.slice(0, 2).map(n => n.id)
-  ];
+  // Sorotan: berita dengan posisi_layout === 'sorotan'
+  const rawSorotan = berita?.filter(n => n.posisi_layout === 'sorotan') || [];
+  // Fallback: jika kosong, gunakan 4 berita terbaru yang bukan headline
+  const headlineIds = new Set(headlineSlides.map(n => n.id));
+  const sorotanNews = rawSorotan.length > 0
+    ? rawSorotan.slice(0, 4)
+    : (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
 
-  // Filter Categories
-  const allKriminalNews = berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [];
-  const kriminalNews = allKriminalNews.filter(post => !displayedNewsIds.includes(post.id));
+  // Global deduplication: semua ID yang sudah tampil di atas
+  const displayedNewsIds = new Set([
+    ...headlineSlides.map(n => n.id),
+    ...sorotanNews.map(n => n.id)
+  ]);
 
-  const allEkonomiNews = berita?.filter(b => b.category?.toLowerCase() === 'ekonomi' || b.category?.toLowerCase() === 'ekonomi & bisnis') || [];
-  const ekonomiNews = allEkonomiNews.filter(post => !displayedNewsIds.includes(post.id));
-  
+  // Berita reguler untuk Berita Terbaru (deduplikasi)
+  const feedBerita = berita?.filter(n => !displayedNewsIds.has(n.id)) || [];
+
+  // Filter Kriminal (deduplikasi)
+  const kriminalNews = (berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [])
+    .filter(p => !displayedNewsIds.has(p.id));
+
   // Sorted by views
   const popularNews = berita ? [...berita].sort((a, b) => (b.views || 0) - (a.views || 0)) : [];
 
@@ -198,106 +206,56 @@ export default function Home({
 
       <main className="main-wrapper my-8 gap-8 flex flex-col pt-0">
         <div className="container">
-          {/* 3. Hero Section */}
-          <section className="mb-0">
+          {/* 3. Hero Section — Horizontal Headline Slider */}
+          <section className="mb-6">
             {berita.length === 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-6 mb-10">
-                {/* Kolom Kiri */}
-                <div className="lg:col-span-8">
-                  <div className="w-full aspect-[16/9] bg-slate-200 animate-pulse rounded-lg flex items-center justify-center text-slate-400 font-bold">
+              <div className="flex gap-4 overflow-hidden mt-6 mb-10">
+                {[1,2,3].map(i => (
+                  <div key={i} className="shrink-0 w-[85vw] sm:w-[60vw] lg:w-[45%] aspect-[16/9] bg-slate-200 animate-pulse rounded-xl flex items-center justify-center text-slate-400 font-bold">
                     Memuat berita...
                   </div>
-                </div>
-                {/* Kolom Kanan */}
-                <div className="lg:col-span-4 flex flex-col gap-4">
-                  <div className="w-full aspect-video bg-slate-200 animate-pulse rounded-lg flex items-center justify-center text-slate-400 font-bold">
-                    Memuat berita...
-                  </div>
-                  <div className="w-full aspect-video bg-slate-200 animate-pulse rounded-lg flex items-center justify-center text-slate-400 font-bold">
-                    Memuat berita...
-                  </div>
-                </div>
+                ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-6 mb-10">
-                {/* Kolom Kiri (Porsi 8 Kolom / ~65%) */}
-                <div className="lg:col-span-8 flex flex-col">
-                  {headlineBerita && (
-                    <div className="flex flex-col w-full rounded-xl overflow-hidden shadow-sm bg-white border border-gray-155 p-4">
-                      {/* Gambar di atas */}
-                      <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden group bg-slate-900">
-                        {getThumbnail(headlineBerita) ? (
-                          <img 
-                            src={getThumbnail(headlineBerita)} 
-                            alt={headlineBerita.title} 
-                            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
-                            Tidak ada gambar
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Judul dan teks di bawah */}
-                      <div className="mt-4 flex flex-col justify-start">
-                        <span className="bg-[#E30A17] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded w-fit mb-2 uppercase tracking-wider">
-                          {headlineBerita.category}
-                        </span>
-                        <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
-                          <Link href={`/berita/${headlineBerita.slug}`}>
-                            {headlineBerita.title}
-                          </Link>
-                        </h1>
-                        <div className="text-xs text-gray-500 mt-3 flex items-center gap-3">
-                          <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {headlineBerita.author || headlineBerita.penulis || 'Redaksi'}</span>
-                          <span>•</span>
-                          <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(headlineBerita.created_at)}</span>
+              <div
+                className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 mt-6 mb-6"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {headlineSlides.map((post) => (
+                  <article
+                    key={post.id}
+                    className="snap-start shrink-0 w-[88vw] sm:w-[70vw] lg:w-[560px] bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 flex flex-col hover:shadow-md transition-shadow"
+                  >
+                    {/* Gambar */}
+                    <div className="relative w-full aspect-[16/9] overflow-hidden group bg-slate-900">
+                      {(post.gambar_utama || getThumbnail(post)) ? (
+                        <img
+                          src={post.gambar_utama || getThumbnail(post)}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-bold">
+                          Tidak ada gambar
                         </div>
+                      )}
+                      <span className="absolute top-3 left-3 bg-[#E30A17] text-white text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
+                        {post.category}
+                      </span>
+                    </div>
+                    {/* Judul di bawah gambar */}
+                    <div className="p-4 flex flex-col gap-2 flex-grow">
+                      <h2 className="text-base md:text-lg font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
+                        <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                      </h2>
+                      <div className="text-xs text-gray-400 flex items-center gap-2 mt-auto">
+                        <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i>{post.author || post.penulis || 'Redaksi'}</span>
+                        <span>•</span>
+                        <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i>{formatTimeAgo(post.created_at)}</span>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {/* Kolom Kanan (Porsi 4 Kolom / ~35%) */}
-                <div className="lg:col-span-4 flex flex-col gap-4">
-                  {feedBerita.slice(0, 2).map((post) => (
-                    <div key={post.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 flex flex-col hover:shadow-md transition-shadow">
-                      <div className="aspect-video w-full relative overflow-hidden group">
-                        {getThumbnail(post) ? (
-                          <img 
-                            src={getThumbnail(post)} 
-                            alt={post.title} 
-                            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 text-xs">
-                            Tidak ada gambar
-                          </div>
-                        )}
-                        <span className="absolute top-3 left-3 bg-[#E30A17] text-white text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
-                          {post.category}
-                        </span>
-                      </div>
-                      <div className="p-3 flex flex-col justify-between flex-grow">
-                        <h2 className="text-sm md:text-base font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2 leading-snug">
-                          <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                        </h2>
-                        <div className="text-xs text-gray-400 mt-2 flex items-center gap-2">
-                          <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {post.author || post.penulis || 'Redaksi'}</span>
-                          <span>•</span>
-                          <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(post.created_at)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {/* Handle case when there is only 1 secondary news */}
-                  {feedBerita.slice(0, 2).length === 1 && (
-                    <div className="bg-slate-50 rounded-xl border border-dashed border-gray-200 aspect-video flex items-center justify-center text-slate-400 text-xs">
-                      Belum ada berita pendamping
-                    </div>
-                  )}
-                </div>
+                  </article>
+                ))}
               </div>
             )}
           </section>
@@ -520,41 +478,39 @@ export default function Home({
           </div>
         </section>
 
-        {/* 5. Seksi Ekonomi & Bisnis */}
-        {ekonomiNews.length > 0 && (
-          <div className="container my-8" id="ekonomi-section">
+        {/* Seksi Sorotan Hari Ini */}
+        {sorotanNews.length > 0 && (
+          <div className="container my-8" id="sorotan-section">
             <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
               <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
-                <span className="border-b-4 border-red-650 pb-2">Ekonomi & Bisnis</span>
+                <span className="border-b-4 border-red-650 pb-2">🔥 SOROTAN HARI INI</span>
               </h2>
-              <Link href="/kategori/ekonomi" className="text-xs font-bold text-red-600 hover:text-red-750 flex items-center gap-1">
-                Indeks Ekonomi <i className="fa-solid fa-chevron-right"></i>
-              </Link>
             </div>
 
-            <div className="ekonomi-grid grid grid-cols-1 md:grid-cols-2 gap-6">
-              {ekonomiNews.slice(0, 4).map((post) => (
-                <article key={post.id} className="ekonomi-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition">
-                  <div className="ekonomi-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
-                    {getThumbnail(post) ? (
-                      <img src={getThumbnail(post)} alt={post.title} className="ekonomi-img w-full h-full object-cover" />
+            <div className="sorotan-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+              {sorotanNews.map((post) => (
+                <article key={post.id} className="sorotan-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition">
+                  <div className="sorotan-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
+                    {(post.gambar_utama || getThumbnail(post)) ? (
+                      <img src={post.gambar_utama || getThumbnail(post)} alt={post.title} className="sorotan-img w-full h-full object-cover" />
                     ) : (
-                      <div className="ekonomi-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
+                      <div className="sorotan-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
                         No Image
                       </div>
                     )}
                   </div>
-                  <div className="ekonomi-content flex-1 flex flex-col justify-between overflow-hidden p-1 sm:p-0">
+                  <div className="sorotan-content flex-1 flex flex-col justify-between overflow-hidden p-1 sm:p-0">
                     <div>
-                      <h3 className="ekonomi-title text-base font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2">
+                      <span className="text-red-600 text-[10px] font-extrabold uppercase">{post.category}</span>
+                      <h3 className="sorotan-title text-base font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2 mt-0.5">
                         <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                       </h3>
-                      <p className="ekonomi-snippet text-gray-600 text-sm line-clamp-2 mt-1 leading-relaxed">{cleanExcerpt(post.content)}</p>
+                      <p className="sorotan-snippet text-gray-600 text-sm line-clamp-2 mt-1 leading-relaxed">{cleanExcerpt(post.content)}</p>
                     </div>
-                    <div className="ekonomi-meta text-xs text-gray-400 mt-2 flex items-center gap-2">
+                    <div className="sorotan-meta text-xs text-gray-400 mt-2 flex items-center gap-2">
                       <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {post.author || post.penulis || 'Redaksi'}</span>
                       <span>•</span>
-                      <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(post.created_at)} | {post.category}</span>
+                      <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(post.created_at)}</span>
                     </div>
                   </div>
                 </article>
