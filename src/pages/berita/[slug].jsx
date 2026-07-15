@@ -138,6 +138,9 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         
         {/* INI KUNCI UTAMANYA: Arahkan langsung ke gambar_utama */}
         <meta property="og:image" content={berita?.gambar_utama || 'https://pojoktv.com/logo-default.png'} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/jpeg" />
         
         <meta property="og:url" content={`https://pojoktv.com/berita/${berita?.slug}`} />
         <meta property="og:type" content="article" />
