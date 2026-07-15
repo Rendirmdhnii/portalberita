@@ -564,22 +564,42 @@ export default function BeritaEdit() {
           </div>
 
           {/* Penempatan Berita di Halaman Depan */}
-          <div className="mb-6 p-4 border rounded bg-gray-50">
-            <label className="block text-gray-700 font-bold mb-2">Penempatan Berita di Halaman Depan *</label>
-            <p className="text-sm text-gray-500 mb-4">Pilih di mana berita ini akan ditampilkan saat pembaca membuka website.</p>
-            <div className="flex flex-col gap-3">
-              <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-blue-50 bg-white">
-                <input type="radio" name="posisi" className="w-5 h-5 mr-3" checked={isHeadline === true} onChange={() => setIsHeadline(true)} />
-                <div>
-                  <span className="block font-bold text-blue-700">🌟 JADIKAN BERITA UTAMA (HEADLINE)</span>
-                  <span className="text-sm text-gray-600">Gambar ukuran besar, teks judul menimpa gambar.</span>
+          <div className="mb-6 p-5 border rounded bg-white shadow-sm">
+            <label className="block text-black font-extrabold text-lg mb-2">PILIH LOKASI TAMPIL BERITA *</label>
+            <p className="text-sm text-gray-600 mb-5">Tentukan di bagian mana berita ini akan muncul pada halaman depan website.</p>
+            
+            <div className="flex flex-col gap-4">
+              {/* Opsi 1: Headline */}
+              <label className={`flex items-start p-4 border-2 rounded cursor-pointer transition-all ${isHeadline ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <input type="radio" name="posisi" className="w-6 h-6 mt-1 mr-4" checked={isHeadline === true} onChange={() => setIsHeadline(true)} />
+                <div className="flex-1">
+                  <span className="block font-bold text-lg text-black mb-1">POSISI KOTAK BESAR (UTAMA)</span>
+                  <span className="block text-sm text-gray-700 mb-3">Berita tampil paling atas dengan gambar paling besar. Teks judul berada DI BAWAH gambar (tidak menutupi gambar).</span>
+                  
+                  {/* Ilustrasi Preview Kotak Besar */}
+                  <div className="w-40 bg-white border border-gray-300 rounded p-1.5 shadow-sm">
+                     <div className="w-full h-20 bg-gray-400 rounded mb-2 flex items-center justify-center text-xs text-white">GAMBAR BESAR</div>
+                     <div className="w-full h-3 bg-gray-600 rounded mb-1"></div>
+                     <div className="w-2/3 h-3 bg-gray-600 rounded"></div>
+                  </div>
                 </div>
               </label>
-              <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-blue-50 bg-white">
-                <input type="radio" name="posisi" className="w-5 h-5 mr-3" checked={isHeadline === false} onChange={() => setIsHeadline(false)} />
-                <div>
-                  <span className="block font-bold text-gray-700">📰 BERITA BIASA / FEED</span>
-                  <span className="text-sm text-gray-600">Gambar ukuran standar, masuk ke daftar berita terbaru di bawah/samping.</span>
+
+              {/* Opsi 2: Berita Biasa */}
+              <label className={`flex items-start p-4 border-2 rounded cursor-pointer transition-all ${!isHeadline ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                <input type="radio" name="posisi" className="w-6 h-6 mt-1 mr-4" checked={isHeadline === false} onChange={() => setIsHeadline(false)} />
+                <div className="flex-1">
+                  <span className="block font-bold text-lg text-black mb-1">POSISI DERETAN BERITA KECIL</span>
+                  <span className="block text-sm text-gray-700 mb-3">Berita tampil di daftar berita standar. Gambar lebih kecil berada di samping atau di atas teks.</span>
+                  
+                  {/* Ilustrasi Preview Berita Kecil */}
+                  <div className="w-40 bg-white border border-gray-300 rounded p-1.5 shadow-sm flex gap-2">
+                     <div className="w-12 h-12 bg-gray-400 rounded flex items-center justify-center text-[10px] text-white">FOTO</div>
+                     <div className="flex-1 mt-1">
+                        <div className="w-full h-2 bg-gray-600 rounded mb-1"></div>
+                        <div className="w-3/4 h-2 bg-gray-600 rounded"></div>
+                     </div>
+                  </div>
                 </div>
               </label>
             </div>

@@ -214,30 +214,33 @@ export default function Home({
                 {/* Kolom Kiri (Porsi 8 Kolom / ~65%) */}
                 <div className="lg:col-span-8 flex flex-col">
                   {headlineBerita && (
-                    <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden group shadow-sm bg-slate-900">
-                      {getThumbnail(headlineBerita) ? (
-                        <img 
-                          src={getThumbnail(headlineBerita)} 
-                          alt={headlineBerita.title} 
-                          className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
-                          Tidak ada gambar
-                        </div>
-                      )}
+                    <div className="flex flex-col w-full rounded-xl overflow-hidden shadow-sm bg-white border border-gray-155 p-4">
+                      {/* Gambar di atas */}
+                      <div className="relative w-full aspect-[16/9] rounded-lg overflow-hidden group bg-slate-900">
+                        {getThumbnail(headlineBerita) ? (
+                          <img 
+                            src={getThumbnail(headlineBerita)} 
+                            alt={headlineBerita.title} 
+                            className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 font-bold">
+                            Tidak ada gambar
+                          </div>
+                        )}
+                      </div>
                       
-                      {/* Text Container: Overlay with gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent flex flex-col justify-end p-4 md:p-8">
+                      {/* Judul dan teks di bawah */}
+                      <div className="mt-4 flex flex-col justify-start">
                         <span className="bg-[#E30A17] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded w-fit mb-2 uppercase tracking-wider">
                           {headlineBerita.category}
                         </span>
-                        <h1 className="text-xl md:text-3xl lg:text-4xl font-extrabold text-white hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
+                        <h1 className="text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
                           <Link href={`/berita/${headlineBerita.slug}`}>
                             {headlineBerita.title}
                           </Link>
                         </h1>
-                        <div className="text-xs text-gray-400 mt-3 flex items-center gap-3">
+                        <div className="text-xs text-gray-500 mt-3 flex items-center gap-3">
                           <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {headlineBerita.author || headlineBerita.penulis || 'Redaksi'}</span>
                           <span>•</span>
                           <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(headlineBerita.created_at)}</span>
