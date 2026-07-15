@@ -221,8 +221,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(uniqueUrl)}`, '_blank');
+                          const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(cleanUrl)}`, '_blank');
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#3b5998] text-white cursor-pointer"
                         aria-label="Share Facebook"
@@ -235,8 +235,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(berita?.title || '')}&url=${encodeURIComponent(uniqueUrl)}`, '_blank');
+                          const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(berita?.title || '')}&url=${encodeURIComponent(cleanUrl)}`, '_blank');
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#1da1f2] text-white cursor-pointer"
                         aria-label="Share Twitter"
@@ -251,8 +251,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                          window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(uniqueUrl)}&title=${encodeURIComponent(berita?.title || '')}`, '_blank');
+                          const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                          window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(cleanUrl)}&title=${encodeURIComponent(berita?.title || '')}`, '_blank');
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#0077b5] text-white cursor-pointer"
                         aria-label="Share LinkedIn"
@@ -265,8 +265,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || '') + " | Baca selengkapnya di: " + uniqueUrl)}`, '_blank');
+                          const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || '') + " | Baca selengkapnya di: " + cleanUrl)}`, '_blank');
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white cursor-pointer"
                         aria-label="Share WhatsApp"
@@ -279,8 +279,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         href="#"
                         onClick={(e) => {
                           e.preventDefault();
-                          const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                          window.location.href = `mailto:?subject=${encodeURIComponent(berita?.title || '')}&body=${encodeURIComponent(uniqueUrl)}`;
+                          const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                          window.location.href = `mailto:?subject=${encodeURIComponent(berita?.title || '')}&body=${encodeURIComponent(cleanUrl)}`;
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#f26522] text-white cursor-pointer"
                         aria-label="Share Email"
@@ -292,8 +292,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                       <button
                         onClick={() => {
                           if (typeof window !== 'undefined') {
-                            const uniqueUrl = `https://pojoktv.com/berita/${berita?.slug}?t=${new Date().getTime()}`;
-                            navigator.clipboard.writeText(uniqueUrl);
+                            const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+                            navigator.clipboard.writeText(cleanUrl);
                             alert('Tautan berita berhasil disalin ke clipboard!');
                           }
                         }}
