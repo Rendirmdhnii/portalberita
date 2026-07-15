@@ -136,15 +136,15 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <meta property="og:title" content={berita?.title} />
         <meta property="og:description" content={berita?.description || 'Baca berita selengkapnya di PojokTV.com'} />
         
-        {/* INI KUNCI UTAMANYA: Arahkan langsung ke gambar_utama */}
-        <meta property="og:image" content={berita?.gambar_utama || 'https://pojoktv.com/logo-default.png'} />
+        {/* INI KUNCI UNTUK GAMBAR BESAR WHATSAPP / FACEBOOK */}
+        <meta name="twitter:card" content="summary_large_image" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/jpeg" />
+        <meta property="og:image" content={berita?.gambar_utama} />
         
         <meta property="og:url" content={`https://pojoktv.com/berita/${berita?.slug}`} />
         <meta property="og:type" content="article" />
-        <meta name="twitter:card" content="summary_large_image" />
 
         {/* SEO Icons & Keywords */}
         <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title}, PojokTV`} />
