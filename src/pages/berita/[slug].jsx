@@ -110,8 +110,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       <Layout>
         <Head>
           <title>Berita Tidak Ditemukan - PojokTV</title>
-          <link rel="icon" href="/logo-pojoktv.png" />
-          <link rel="shortcut icon" href="/logo-pojoktv.png" />
+          <link rel="icon" type="image/png" href="/favicon.png" />
+          <link rel="shortcut icon" type="image/png" href="/favicon.png" />
         </Head>
         
         {/* Empty State Tampilan Utama */}
@@ -148,8 +148,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
         {/* SEO Icons & Keywords */}
         <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title}, PojokTV`} />
-        <link rel="icon" href="/logo-pojoktv.png" />
-        <link rel="shortcut icon" href="/logo-pojoktv.png" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
       </Head>
 
       {/* Header Ad Slot */}

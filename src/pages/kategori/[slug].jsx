@@ -167,8 +167,8 @@ export default function KategoriPage() {
         <title>{activeCategory ? `Rubrik ${activeCategory.name} - PojokTV.com` : 'Rubrik Kategori - PojokTV.com'}</title>
         <meta name="description" content={activeCategory ? `Kumpulan berita terkini seputar rubrik ${activeCategory.name} hanya di PojokTV.com.` : 'PojokTV.com'} />
         <meta name="keywords" content={activeCategory ? `rubrik ${activeCategory.name}, berita ${activeCategory.name}, ${activeCategory.name}, pojoktv` : 'rubrik berita, berita terkini, pojoktv'} />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
       </Head>
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Kategori) */}
