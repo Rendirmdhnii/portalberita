@@ -32,6 +32,8 @@ export default function BeritaCreate() {
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
   
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   
@@ -63,6 +65,19 @@ export default function BeritaCreate() {
     }
   };
 
+  const handleThumbnailChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      setThumbnailPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailPreviewUrl('');
+  };
+
   const handleImageChange = (e) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
@@ -75,6 +90,15 @@ export default function BeritaCreate() {
     setImageFiles(prev => prev.filter((_, idx) => idx !== index));
     setPreviewUrls(prev => prev.filter((_, idx) => idx !== index));
   };
+
+  const previewImages = useMemo(() => {
+    const list = [];
+    if (thumbnailPreviewUrl) {
+      list.push(thumbnailPreviewUrl);
+    }
+    list.push(...previewUrls);
+    return list;
+  }, [thumbnailPreviewUrl, previewUrls]);
 
   // Custom Quill Image Handler
   const modules = useMemo(() => ({
@@ -132,9 +156,9 @@ export default function BeritaCreate() {
     setProcessing(true);
     setError('');
 
-    // Validasi minimal 1 foto
-    if (imageFiles.length === 0) {
-      setError('Harap pilih minimal satu gambar berita.');
+    // Validasi minimal 1 foto utama
+    if (!thumbnailFile) {
+      setError('Harap pilih Foto Utama / Thumbnail (Wajib untuk Share WA).');
       setProcessing(false);
       return;
     }
@@ -142,7 +166,26 @@ export default function BeritaCreate() {
     try {
       let imageUrls = [];
 
-      // 1. Upload images to Supabase Storage
+      // 1. Upload thumbnail to Supabase Storage
+      if (thumbnailFile) {
+        const fileExt = thumbnailFile.name.split('.').pop();
+        const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `berita/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(filePath, thumbnailFile);
+
+        if (uploadError) throw new Error('Gagal mengunggah Foto Utama: ' + uploadError.message);
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl(filePath);
+
+        imageUrls.push(publicUrl);
+      }
+
+      // 2. Upload gallery images if any
       for (const file of imageFiles) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -152,9 +195,8 @@ export default function BeritaCreate() {
           .from('images')
           .upload(filePath, file);
 
-        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+        if (uploadError) throw new Error('Gagal mengunggah gambar pendukung: ' + uploadError.message);
 
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('images')
           .getPublicUrl(filePath);
@@ -162,16 +204,16 @@ export default function BeritaCreate() {
         imageUrls.push(publicUrl);
       }
 
-      // 2. Generate slug from title
+      // 3. Generate slug from title
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '') + '-' + Date.now();
 
-      // 3. Keep the user-inputted author (use fallback if empty)
+      // 4. Keep the user-inputted author (use fallback if empty)
       const finalAuthor = author.trim() || 'Redaksi PojokTV';
 
-      // 4. Insert into 'berita' table
+      // 5. Insert into 'berita' table
       const { error: insertError } = await supabase
         .from('berita')
         .insert([
@@ -180,7 +222,7 @@ export default function BeritaCreate() {
             slug,
             category,
             content,
-            images: imageUrls, // Simpan sebagai array jsonb
+            images: imageUrls, // Simpan sebagai array jsonb (indeks 0 adalah foto utama)
             author: finalAuthor,
             status: 'Published',
             views: 0
@@ -267,9 +309,42 @@ export default function BeritaCreate() {
             </select>
           </div>
 
-          {/* Foto Berita */}
+          {/* Foto Utama / Thumbnail */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama Berita <span className="text-red-500">*</span></label>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama / Thumbnail (Wajib untuk Share WA) <span className="text-red-500">*</span></label>
+            <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleThumbnailChange} 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+              />
+              <i className="fa-solid fa-image text-3xl text-gray-400 mb-2"></i>
+              <p className="text-sm font-bold text-gray-700">Pilih Foto Utama (Thumbnail)</p>
+              <p className="text-xs text-gray-500 mt-1">Gambar ini akan digunakan sebagai cover berita dan preview link WhatsApp.</p>
+            </div>
+            
+            {/* Thumbnail Preview */}
+            {thumbnailPreviewUrl && (
+              <div className="mt-4 max-w-xs">
+                <p className="text-xs font-bold text-slate-500 mb-2">Pratinjau Foto Utama:</p>
+                <div className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
+                  <img src={thumbnailPreviewUrl} alt="Thumbnail Preview" className="w-full h-40 object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveThumbnail}
+                    className="mt-1.5 bg-red-50 text-red-700 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                  >
+                    Hapus Foto Utama
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Foto Pendukung / Galeri */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Pendukung / Galeri (Opsional)</label>
             <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
               <input 
                 type="file" 
@@ -278,15 +353,15 @@ export default function BeritaCreate() {
                 onChange={handleImageChange} 
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
               />
-              <i className="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
-              <p className="text-sm font-bold text-gray-700">Klik atau Ketuk di sini untuk memilih Foto</p>
-              <p className="text-xs text-gray-500 mt-1">Bisa pilih foto dari galeri HP atau komputer. Pastikan gambarnya jelas.</p>
+              <i className="fa-solid fa-images text-3xl text-gray-400 mb-2"></i>
+              <p className="text-sm font-bold text-gray-700">Pilih Foto Pendukung</p>
+              <p className="text-xs text-gray-500 mt-1">Bisa pilih beberapa foto sekaligus untuk diletakkan di galeri slide.</p>
             </div>
             
-            {/* Image Previews */}
+            {/* Gallery Previews */}
             {previewUrls.length > 0 && (
               <div className="mt-4">
-                <p className="text-xs font-bold text-slate-500 mb-2">Foto Terpilih ({previewUrls.length}):</p>
+                <p className="text-xs font-bold text-slate-500 mb-2">Foto Pendukung Terpilih ({previewUrls.length}):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {previewUrls.map((url, index) => (
                     <div key={index} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
@@ -450,7 +525,7 @@ export default function BeritaCreate() {
                         </h1>
 
                         {/* Render images from state using NewsGallery */}
-                        <NewsGallery images={previewUrls} />
+                        <NewsGallery images={previewImages} />
 
                         {/* Metadata */}
                         <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-xs text-slate-500 border-b border-gray-200 pb-4 mb-6">

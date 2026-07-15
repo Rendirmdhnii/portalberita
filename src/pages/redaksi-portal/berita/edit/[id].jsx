@@ -35,11 +35,14 @@ export default function BeritaEdit() {
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState('Published');
-  const [existingImage, setExistingImage] = useState('');
-  const [existingImagesList, setExistingImagesList] = useState([]);
+  const [existingThumbnail, setExistingThumbnail] = useState('');
+  const [existingGallery, setExistingGallery] = useState([]);
   
-  const [newImageFiles, setNewImageFiles] = useState([]);
-  const [newPreviewUrls, setNewPreviewUrls] = useState([]);
+  const [newThumbnailFile, setNewThumbnailFile] = useState(null);
+  const [newThumbnailPreviewUrl, setNewThumbnailPreviewUrl] = useState('');
+  
+  const [newGalleryFiles, setNewGalleryFiles] = useState([]);
+  const [newGalleryPreviewUrls, setNewGalleryPreviewUrls] = useState([]);
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
@@ -90,24 +93,29 @@ export default function BeritaEdit() {
       
       // Load images (jsonb) or fallback to image (text)
       const imgs = data.images || data.image;
+      let allImgs = [];
       if (imgs) {
         if (Array.isArray(imgs)) {
-          setExistingImagesList(imgs);
+          allImgs = imgs;
         } else if (typeof imgs === 'string') {
           try {
             if (imgs.startsWith('[')) {
-              setExistingImagesList(JSON.parse(imgs));
+              allImgs = JSON.parse(imgs);
             } else {
-              setExistingImagesList([imgs]);
+              allImgs = [imgs];
             }
           } catch (e) {
-            setExistingImagesList([imgs]);
+            allImgs = [imgs];
           }
-        } else {
-          setExistingImagesList([]);
         }
+      }
+      
+      if (allImgs.length > 0) {
+        setExistingThumbnail(allImgs[0] || '');
+        setExistingGallery(allImgs.slice(1) || []);
       } else {
-        setExistingImagesList([]);
+        setExistingThumbnail('');
+        setExistingGallery([]);
       }
     } catch (err) {
       setError('Gagal memuat berita: ' + err.message);
@@ -116,22 +124,51 @@ export default function BeritaEdit() {
     }
   };
 
-  const handleImageChange = (e) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setNewImageFiles(prev => [...prev, ...files]);
-      setNewPreviewUrls(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
+  const handleThumbnailChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewThumbnailFile(file);
+      setNewThumbnailPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleRemoveExistingImage = (idxToRemove) => {
-    setExistingImagesList(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  const handleRemoveNewThumbnail = () => {
+    setNewThumbnailFile(null);
+    setNewThumbnailPreviewUrl('');
   };
 
-  const handleRemoveNewImage = (idxToRemove) => {
-    setNewImageFiles(prev => prev.filter((_, idx) => idx !== idxToRemove));
-    setNewPreviewUrls(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  const handleRemoveExistingThumbnail = () => {
+    setExistingThumbnail('');
   };
+
+  const handleGalleryChange = (e) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setNewGalleryFiles(prev => [...prev, ...files]);
+      setNewGalleryPreviewUrls(prev => [...prev, ...files.map(file => URL.createObjectURL(file))]);
+    }
+  };
+
+  const handleRemoveExistingGalleryItem = (idxToRemove) => {
+    setExistingGallery(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
+  const handleRemoveNewGalleryItem = (idxToRemove) => {
+    setNewGalleryFiles(prev => prev.filter((_, idx) => idx !== idxToRemove));
+    setNewGalleryPreviewUrls(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
+  const previewImages = useMemo(() => {
+    const list = [];
+    if (newThumbnailPreviewUrl) {
+      list.push(newThumbnailPreviewUrl);
+    } else if (existingThumbnail) {
+      list.push(existingThumbnail);
+    }
+    list.push(...existingGallery);
+    list.push(...newGalleryPreviewUrls);
+    return list;
+  }, [existingThumbnail, existingGallery, newThumbnailPreviewUrl, newGalleryPreviewUrls]);
 
   // Custom Quill Image Handler
   const modules = useMemo(() => ({
@@ -189,19 +226,40 @@ export default function BeritaEdit() {
     setProcessing(true);
     setError('');
 
-    // Validasi minimal 1 foto
-    if (existingImagesList.length === 0 && newImageFiles.length === 0) {
-      setError('Harap pilih minimal satu gambar berita.');
+    // Validasi minimal 1 foto utama
+    if (!existingThumbnail && !newThumbnailFile) {
+      setError('Harap pilih Foto Utama / Thumbnail (Wajib untuk Share WA).');
       setProcessing(false);
       return;
     }
 
     try {
-      let finalImageUrls = [...existingImagesList];
+      let finalThumbnailUrl = existingThumbnail;
 
-      // 1. Upload new images to Supabase Storage if files selected
-      if (newImageFiles.length > 0) {
-        for (const file of newImageFiles) {
+      // 1. Upload new thumbnail if selected
+      if (newThumbnailFile) {
+        const fileExt = newThumbnailFile.name.split('.').pop();
+        const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `berita/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('images')
+          .upload(filePath, newThumbnailFile);
+
+        if (uploadError) throw new Error('Gagal mengunggah Foto Utama baru: ' + uploadError.message);
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('images')
+          .getPublicUrl(filePath);
+
+        finalThumbnailUrl = publicUrl;
+      }
+
+      let finalGalleryUrls = [...existingGallery];
+
+      // 2. Upload new gallery files if any
+      if (newGalleryFiles.length > 0) {
+        for (const file of newGalleryFiles) {
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `berita/${fileName}`;
@@ -210,24 +268,25 @@ export default function BeritaEdit() {
             .from('images')
             .upload(filePath, file);
 
-          if (uploadError) throw new Error('Gagal mengunggah gambar baru: ' + uploadError.message);
+          if (uploadError) throw new Error('Gagal mengunggah gambar pendukung baru: ' + uploadError.message);
 
-          // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('images')
             .getPublicUrl(filePath);
 
-          finalImageUrls.push(publicUrl);
+          finalGalleryUrls.push(publicUrl);
         }
       }
 
-      // 2. Generate slug from title
+      const combinedImages = [finalThumbnailUrl, ...finalGalleryUrls];
+
+      // 3. Generate slug from title
       const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '') + '-' + Date.now();
 
-      // 3. Update 'berita' table
+      // 4. Update 'berita' table
       const { error: updateError } = await supabase
         .from('berita')
         .update({
@@ -235,7 +294,7 @@ export default function BeritaEdit() {
           slug,
           category,
           content,
-          images: finalImageUrls, // Simpan sebagai array jsonb
+          images: combinedImages, // Simpan sebagai array jsonb
           author: author.trim() || 'Redaksi PojokTV',
           status
         })
@@ -327,21 +386,74 @@ export default function BeritaEdit() {
             </select>
           </div>
 
-          {/* Foto Berita */}
+          {/* Foto Utama / Thumbnail */}
           <div>
-            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama Berita</label>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Utama / Thumbnail (Wajib untuk Share WA) <span className="text-red-500">*</span></label>
             
-            {/* Existing Images */}
-            {existingImagesList.length > 0 && (
+            {/* Existing Thumbnail */}
+            {existingThumbnail && (
+              <div className="mb-4 max-w-xs">
+                <p className="text-xs text-gray-500 mb-2 font-bold">Foto Utama Saat Ini:</p>
+                <div className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
+                  <img src={existingThumbnail} alt="Existing Thumbnail" className="w-full h-40 object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveExistingThumbnail}
+                    className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                  >
+                    Hapus Foto Utama
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* New Thumbnail Preview */}
+            {newThumbnailPreviewUrl && (
+              <div className="mb-4 max-w-xs">
+                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Utama Baru:</p>
+                <div className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
+                  <img src={newThumbnailPreviewUrl} alt="New Thumbnail Preview" className="w-full h-40 object-cover rounded" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveNewThumbnail}
+                    className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
+                  >
+                    Batal Pilih Baru
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!existingThumbnail && !newThumbnailPreviewUrl && (
+              <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <i className="fa-solid fa-image text-3xl text-gray-400 mb-2"></i>
+                <p className="text-sm font-bold text-gray-700">Pilih Foto Utama Baru (Thumbnail)</p>
+                <p className="text-xs text-gray-500 mt-1">Gambar ini akan digunakan sebagai cover berita dan preview link WhatsApp.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Foto Pendukung / Galeri */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-1.5">Foto Pendukung / Galeri (Opsional)</label>
+            
+            {/* Existing Gallery Images */}
+            {existingGallery.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs text-gray-500 mb-2 font-bold">Foto saat ini ({existingImagesList.length}):</p>
+                <p className="text-xs text-gray-500 mb-2 font-bold">Foto Pendukung Saat Ini ({existingGallery.length}):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {existingImagesList.map((url, idx) => (
+                  {existingGallery.map((url, idx) => (
                     <div key={idx} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
-                      <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                      <img src={url} alt={`Foto Pendukung ${idx + 1}`} className="w-full h-20 object-cover rounded" />
                       <button
                         type="button"
-                        onClick={() => handleRemoveExistingImage(idx)}
+                        onClick={() => handleRemoveExistingGalleryItem(idx)}
                         className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
                       >
                         Hapus Foto
@@ -352,17 +464,17 @@ export default function BeritaEdit() {
               </div>
             )}
 
-            {/* New Previews */}
-            {newPreviewUrls.length > 0 && (
+            {/* New Gallery Previews */}
+            {newGalleryPreviewUrls.length > 0 && (
               <div className="mb-4">
-                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Baru ({newPreviewUrls.length}):</p>
+                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Pendukung Baru ({newGalleryPreviewUrls.length}):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {newPreviewUrls.map((url, idx) => (
+                  {newGalleryPreviewUrls.map((url, idx) => (
                     <div key={idx} className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
-                      <img src={url} alt={`Foto Baru ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                      <img src={url} alt={`Foto Pendukung Baru ${idx + 1}`} className="w-full h-20 object-cover rounded" />
                       <button
                         type="button"
-                        onClick={() => handleRemoveNewImage(idx)}
+                        onClick={() => handleRemoveNewGalleryItem(idx)}
                         className="mt-1.5 bg-red-50 text-red-750 hover:bg-red-100 text-xs py-1 rounded border border-red-200 transition font-bold cursor-pointer"
                       >
                         Hapus
@@ -378,12 +490,12 @@ export default function BeritaEdit() {
                 type="file"
                 accept="image/*"
                 multiple
-                onChange={handleImageChange}
+                onChange={handleGalleryChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              <i className="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
-              <p className="text-sm font-bold text-gray-700">Klik atau Ketuk di sini untuk memilih Foto</p>
-              <p className="text-xs text-gray-500 mt-1">Bisa pilih foto dari galeri HP atau komputer. Pastikan gambarnya jelas.</p>
+              <i className="fa-solid fa-images text-3xl text-gray-400 mb-2"></i>
+              <p className="text-sm font-bold text-gray-700">Klik atau Ketuk di sini untuk memilih Foto Pendukung</p>
+              <p className="text-xs text-gray-500 mt-1">Bisa pilih beberapa foto sekaligus untuk ditambahkan ke galeri slide.</p>
             </div>
           </div>
 
@@ -547,7 +659,7 @@ export default function BeritaEdit() {
                         </h1>
 
                         {/* Render combined images from state using NewsGallery */}
-                        <NewsGallery images={[...existingImagesList, ...newPreviewUrls]} />
+                        <NewsGallery images={previewImages} />
 
                         {/* Metadata */}
                         <div className="flex flex-wrap items-center gap-y-2 gap-x-3 text-xs text-slate-500 border-b border-gray-200 pb-4 mb-6">
