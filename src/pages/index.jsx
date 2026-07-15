@@ -158,6 +158,8 @@ export default function Home({
   const headlines = berita?.filter(n => n.posisi_layout === 'headline') || [];
   // Fallback: jika kosong, gunakan 3 berita terbaru
   const headlineSlides = headlines.length > 0 ? headlines : berita?.slice(0, 3) || [];
+  const mainHeadline = headlineSlides[0];
+  const sideHeadlines = headlineSlides.slice(1, 3);
 
   // Sorotan: berita dengan posisi_layout === 'sorotan'
   const rawSorotan = berita?.filter(n => n.posisi_layout === 'sorotan') || [];
@@ -206,7 +208,7 @@ export default function Home({
 
       <main className="main-wrapper my-8 gap-8 flex flex-col pt-0">
         <div className="container">
-          {/* 3. Hero Section — Static Grid Headline */}
+          {/* 3. Hero Section — Asymmetric Layout Headline */}
           <section className="mb-6">
             {berita.length === 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 mb-10">
@@ -217,43 +219,53 @@ export default function Home({
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {headlineSlides.map((post) => (
-                  <article
-                    key={post.id}
-                    className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 flex flex-col hover:shadow-md transition-shadow"
-                  >
-                    {/* Gambar */}
-                    <div className="relative w-full aspect-[16/9] overflow-hidden group bg-slate-900">
-                      {(post.gambar_utama || getThumbnail(post)) ? (
-                        <img
-                          src={post.gambar_utama || getThumbnail(post)}
-                          alt={post.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-bold">
-                          Tidak ada gambar
-                        </div>
-                      )}
-                      <span className="absolute top-3 left-3 bg-[#E30A17] text-white text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
-                        {post.category}
-                      </span>
+              mainHeadline && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                  {/* KIRI: KOTAK BESAR (Mengambil 2 kolom dari 3 kolom yang tersedia) */}
+                  <div className="lg:col-span-2 bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                    <div className="relative w-full h-64 md:h-[400px] bg-gray-200">
+                      <img src={mainHeadline.gambar_utama || getThumbnail(mainHeadline)} alt={mainHeadline.title} className="absolute inset-0 w-full h-full object-cover" />
                     </div>
-                    {/* Judul di bawah gambar */}
-                    <div className="p-4 flex flex-col gap-2 flex-grow">
-                      <h2 className="text-base font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
-                        <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                    <div className="p-5">
+                      <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">
+                        {mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}
+                      </span>
+                      <h2 className="text-2xl md:text-4xl font-extrabold text-slate-900 leading-tight mb-3 hover:text-[#E30A17] transition-colors">
+                        <Link href={`/berita/${mainHeadline.slug}`}>{mainHeadline.title}</Link>
                       </h2>
-                      <div className="text-xs text-gray-400 flex items-center gap-2 mt-auto">
-                        <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i>{post.author || post.penulis || 'Redaksi'}</span>
-                        <span>•</span>
-                        <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i>{formatTimeAgo(post.created_at)}</span>
+                      <div className="text-sm text-gray-500 flex items-center gap-2">
+                        <span>👤 {mainHeadline.author || mainHeadline.penulis || 'Redaksi'}</span>
                       </div>
                     </div>
-                  </article>
-                ))}
-              </div>
+                  </div>
+
+                  {/* KANAN: 2 KOTAK KECIL BERSUSUN BAWAH */}
+                  {sideHeadlines.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      {sideHeadlines.map((berita) => (
+                        <div key={berita.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex-1 flex flex-col">
+                          <div className="relative w-full h-40 md:h-48 bg-gray-200">
+                            <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="absolute inset-0 w-full h-full object-cover" />
+                          </div>
+                          <div className="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                              <span className="inline-block px-2 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded mb-2">
+                                {berita.category || berita.kategori || berita.rubrik}
+                              </span>
+                              <h3 className="text-base md:text-lg font-bold text-slate-900 leading-snug line-clamp-3 hover:text-[#E30A17] transition-colors">
+                                <Link href={`/berita/${berita.slug}`}>{berita.title}</Link>
+                              </h3>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                              <span>👤 {berita.author || berita.penulis || 'Redaksi'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
             )}
           </section>
 
