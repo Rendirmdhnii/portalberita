@@ -139,23 +139,21 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   return (
     <Layout activeCategoryName={berita?.category}>
       <Head>
-        <title>{berita?.title || berita?.judul} - PojokTV</title>
-        <meta name="description" content={berita?.ringkasan || stripHtmlAndEntities(berita?.isi || berita?.content || berita?.title || berita?.judul).slice(0, 160) || "Berita terbaru dari PojokTV"} />
-        <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title || berita?.judul}, PojokTV`} />
-        <link rel="icon" href="/logo-pojoktv.png" />
-        <link rel="shortcut icon" href="/logo-pojoktv.png" />
+        <title>{berita?.title} - PojokTV</title>
+        <meta property="og:title" content={berita?.title} />
+        <meta property="og:description" content={berita?.description || 'Baca berita selengkapnya di PojokTV.com'} />
         
-        {/* OPEN GRAPH WAJIB UNTUK WHATSAPP */}
-        <meta property="og:title" content={berita?.title || berita?.judul} />
-        <meta property="og:description" content="Baca berita selengkapnya di PojokTV.com" />
-        <meta property="og:image" content={fixImageUrl} />
+        {/* INI KUNCI UTAMANYA: Arahkan langsung ke gambar_utama */}
+        <meta property="og:image" content={berita?.gambar_utama || 'https://pojoktv.com/logo-default.png'} />
+        
         <meta property="og:url" content={`https://pojoktv.com/berita/${berita?.slug}`} />
-        
-        {/* TAG ESENSIAL WHATSAPP */}
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
         <meta property="og:type" content="article" />
         <meta name="twitter:card" content="summary_large_image" />
+
+        {/* SEO Icons & Keywords */}
+        <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title}, PojokTV`} />
+        <link rel="icon" href="/logo-pojoktv.png" />
+        <link rel="shortcut icon" href="/logo-pojoktv.png" />
       </Head>
 
       {/* Header Ad Slot */}
@@ -479,6 +477,9 @@ export async function getServerSideProps(context) {
           }
         }
       }
+      
+      // Update mainBerita.gambar_utama dengan URL absolut/fallback yang siap digunakan
+      mainBerita.gambar_utama = fixImageUrl;
     }
 
     return {
