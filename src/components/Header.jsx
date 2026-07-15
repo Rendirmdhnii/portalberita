@@ -187,13 +187,15 @@ export default function Header({ activeSlug, activeCategoryName }) {
           </form>
 
           {/* LIVE TV Button */}
-          <button 
+          <a 
+            href="https://www.youtube.com/channel/UC7-Jj-CtUK-MxbYEvcE_rJA"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-1.5 bg-[#E30A17] text-white text-xs font-black rounded-full hover:bg-[#C20814] transition shadow-sm cursor-pointer" 
-            onClick={handleLiveTv}
           >
             <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
             <span>LIVE TV</span>
-          </button>
+          </a>
         </div>
       </div>
 
