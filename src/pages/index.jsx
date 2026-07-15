@@ -206,25 +206,22 @@ export default function Home({
 
       <main className="main-wrapper my-8 gap-8 flex flex-col pt-0">
         <div className="container">
-          {/* 3. Hero Section — Horizontal Headline Slider */}
+          {/* 3. Hero Section — Static Grid Headline */}
           <section className="mb-6">
             {berita.length === 0 ? (
-              <div className="flex gap-4 overflow-hidden mt-6 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 mb-10">
                 {[1,2,3].map(i => (
-                  <div key={i} className="shrink-0 w-[85vw] sm:w-[60vw] lg:w-[45%] aspect-[16/9] bg-slate-200 animate-pulse rounded-xl flex items-center justify-center text-slate-400 font-bold">
+                  <div key={i} className="aspect-[16/9] bg-slate-200 animate-pulse rounded-xl flex items-center justify-center text-slate-400 font-bold">
                     Memuat berita...
                   </div>
                 ))}
               </div>
             ) : (
-              <div
-                className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 mt-6 mb-6"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 mb-6">
                 {headlineSlides.map((post) => (
                   <article
                     key={post.id}
-                    className="snap-start shrink-0 w-[88vw] sm:w-[70vw] lg:w-[560px] bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 flex flex-col hover:shadow-md transition-shadow"
+                    className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 flex flex-col hover:shadow-md transition-shadow"
                   >
                     {/* Gambar */}
                     <div className="relative w-full aspect-[16/9] overflow-hidden group bg-slate-900">
@@ -245,7 +242,7 @@ export default function Home({
                     </div>
                     {/* Judul di bawah gambar */}
                     <div className="p-4 flex flex-col gap-2 flex-grow">
-                      <h2 className="text-base md:text-lg font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
+                      <h2 className="text-base font-extrabold text-slate-900 hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
                         <Link href={`/berita/${post.slug}`}>{post.title}</Link>
                       </h2>
                       <div className="text-xs text-gray-400 flex items-center gap-2 mt-auto">
@@ -487,30 +484,36 @@ export default function Home({
               </h2>
             </div>
 
-            <div className="sorotan-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              className="flex overflow-x-auto snap-x snap-mandatory gap-5 pb-6"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {sorotanNews.map((post) => (
-                <article key={post.id} className="sorotan-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition">
-                  <div className="sorotan-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
+                <article
+                  key={post.id}
+                  className="min-w-[85%] sm:min-w-[300px] md:min-w-[350px] flex-shrink-0 snap-start bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 flex flex-col hover:shadow-md transition"
+                >
+                  <div className="relative w-full aspect-[16/9] overflow-hidden group bg-slate-900">
                     {(post.gambar_utama || getThumbnail(post)) ? (
-                      <img src={post.gambar_utama || getThumbnail(post)} alt={post.title} className="sorotan-img w-full h-full object-cover" />
+                      <img src={post.gambar_utama || getThumbnail(post)} alt={post.title} className="sorotan-img w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
-                      <div className="sorotan-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
+                      <div className="bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
                         No Image
                       </div>
                     )}
+                    <span className="absolute top-3 left-3 bg-[#E30A17] text-white text-[9px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider">
+                      {post.category}
+                    </span>
                   </div>
-                  <div className="sorotan-content flex-1 flex flex-col justify-between overflow-hidden p-1 sm:p-0">
-                    <div>
-                      <span className="text-red-600 text-[10px] font-extrabold uppercase">{post.category}</span>
-                      <h3 className="sorotan-title text-base font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2 mt-0.5">
-                        <Link href={`/berita/${post.slug}`}>{post.title}</Link>
-                      </h3>
-                      <p className="sorotan-snippet text-gray-600 text-sm line-clamp-2 mt-1 leading-relaxed">{cleanExcerpt(post.content)}</p>
-                    </div>
-                    <div className="sorotan-meta text-xs text-gray-400 mt-2 flex items-center gap-2">
-                      <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {post.author || post.penulis || 'Redaksi'}</span>
+                  <div className="p-4 flex flex-col gap-2 flex-grow">
+                    <h3 className="sorotan-title text-sm font-bold text-slate-900 hover:text-[#E30A17] line-clamp-2">
+                      <Link href={`/berita/${post.slug}`}>{post.title}</Link>
+                    </h3>
+                    <p className="sorotan-snippet text-gray-600 text-xs line-clamp-2 leading-relaxed">{cleanExcerpt(post.content)}</p>
+                    <div className="sorotan-meta text-xs text-gray-400 mt-auto flex items-center gap-2">
+                      <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i>{post.author || post.penulis || 'Redaksi'}</span>
                       <span>•</span>
-                      <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(post.created_at)}</span>
+                      <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i>{formatTimeAgo(post.created_at)}</span>
                     </div>
                   </div>
                 </article>
