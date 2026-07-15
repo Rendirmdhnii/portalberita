@@ -234,10 +234,7 @@ export default function BeritaCreate() {
       }
 
       // 3. Generate slug from title
-      const slug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '') + '-' + Date.now();
+      const slug = title.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 
       // 4. Keep the user-inputted author (use fallback if empty)
       const finalAuthor = author.trim() || 'Redaksi PojokTV';
