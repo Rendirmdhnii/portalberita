@@ -13,7 +13,7 @@ const stripHtmlAndEntities = (htmlString) => {
   return htmlString.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
 };
 
-export default function DetailBerita({ berita, categories = [], ads = [], latestBerita = [], popularBerita = [] }) {
+export default function DetailBerita({ berita, categories = [], ads = [], latestBerita = [], popularBerita = [], fixImageUrl }) {
   const router = useRouter();
   const { slug } = router.query;
 
@@ -104,26 +104,6 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
     : '';
 
-  const ogImgUrl = (() => {
-    // Prioritaskan kolom string gambar_utama, baru fallback ke images[0]
-    const rawImg = berita?.gambar_utama || images[0];
-    if (!rawImg) return 'https://pojoktv.com/logo-pojoktv.png';
-    if (rawImg.startsWith('http')) return rawImg;
-    
-    // Pastikan path relatif memiliki /storage/v1/object/public/
-    let path = rawImg;
-    if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
-      const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-      path = `/storage/v1/object/public/${cleanPath}`;
-    }
-    
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
-    const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
-    
-    return `${cleanSupabaseUrl}${cleanPath}`;
-  })();
-
   if (!berita) {
     return (
       <Layout>
@@ -151,17 +131,17 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   return (
     <Layout activeCategoryName={berita?.category}>
       <Head>
-        <title>{(berita.title || berita.judul)} - PojokTV</title>
-        <meta name="description" content={berita.ringkasan || stripHtmlAndEntities(berita.isi || berita.content || berita.title || berita.judul).slice(0, 160) || "Berita terbaru dari PojokTV"} />
-        <meta name="keywords" content={`${berita.category}, berita ${berita.category}, ${berita.title || berita.judul}, PojokTV`} />
+        <title>{berita?.title || berita?.judul} - PojokTV</title>
+        <meta name="description" content={berita?.ringkasan || stripHtmlAndEntities(berita?.isi || berita?.content || berita?.title || berita?.judul).slice(0, 160) || "Berita terbaru dari PojokTV"} />
+        <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title || berita?.judul}, PojokTV`} />
         <link rel="icon" href="/logo-pojoktv.png" />
         <link rel="shortcut icon" href="/logo-pojoktv.png" />
         
         {/* OPEN GRAPH WAJIB UNTUK WHATSAPP */}
-        <meta property="og:title" content={berita.title || berita.judul} />
-        <meta property="og:description" content={berita.ringkasan || stripHtmlAndEntities(berita.isi || berita.content || berita.title || berita.judul).slice(0, 160) || "Baca selengkapnya di PojokTV"} />
-        <meta property="og:image" content={ogImgUrl} />
-        <meta property="og:url" content={`https://pojoktv.com/berita/${berita.slug}`} />
+        <meta property="og:title" content={berita?.title || berita?.judul} />
+        <meta property="og:description" content="Baca berita selengkapnya di PojokTV.com" />
+        <meta property="og:image" content={fixImageUrl} />
+        <meta property="og:url" content={`https://pojoktv.com/berita/${berita?.slug}`} />
         
         {/* TAG ESENSIAL WHATSAPP */}
         <meta property="og:image:width" content="1200" />
@@ -450,6 +430,27 @@ export async function getServerSideProps(context) {
       .order('views', { ascending: false })
       .limit(5);
 
+    // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp
+    let fixImageUrl = 'https://pojoktv.com/logo-pojoktv.png'; // Fallback aman
+    if (mainBerita) {
+      const rawImg = mainBerita.gambar_utama || (mainBerita.images && Array.isArray(mainBerita.images) && mainBerita.images[0]) || mainBerita.image || mainBerita.gambar;
+      if (rawImg && rawImg.trim() !== '') {
+        if (rawImg.startsWith('http')) {
+          fixImageUrl = rawImg;
+        } else {
+          let path = rawImg;
+          if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
+            const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+            path = `/storage/v1/object/public/${cleanPath}`;
+          }
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
+          const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
+          const cleanPath = path.startsWith('/') ? path : `/${path}`;
+          fixImageUrl = `${cleanSupabaseUrl}${cleanPath}`;
+        }
+      }
+    }
+
     return {
       props: {
         berita: mainBerita || null,
@@ -457,6 +458,7 @@ export async function getServerSideProps(context) {
         ads: ads || [],
         latestBerita: latestBerita || [],
         popularBerita: popularBerita || [],
+        fixImageUrl,
       },
     };
   } catch (err) {
@@ -468,6 +470,7 @@ export async function getServerSideProps(context) {
         ads: [],
         latestBerita: [],
         popularBerita: [],
+        fixImageUrl: 'https://pojoktv.com/logo-pojoktv.png',
       },
     };
   }
