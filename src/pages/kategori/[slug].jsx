@@ -146,7 +146,7 @@ export default function KategoriPage() {
   };
 
   const handleLiveTv = () => {
-    alert("🔴 Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
+    alert("Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
   };
 
   const handleSearch = (e) => {

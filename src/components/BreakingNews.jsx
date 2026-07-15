@@ -28,7 +28,7 @@ export default function BreakingNews() {
     <div className="flex items-center h-10 w-full overflow-hidden border-b border-gray-200 bg-[#0B162C]">
       {/* Label BREAKING NEWS - merah solid */}
       <div className="bg-[#DC2626] text-white px-4 h-full flex items-center font-bold uppercase text-sm [clip-path:polygon(0_0,_100%_0,_90%_100%,_0_100%)] shrink-0 select-none pr-8">
-        ⚠️ BREAKING NEWS
+        BREAKING NEWS
       </div>
 
       {/* Ticker text area - Navy, teks putih */}

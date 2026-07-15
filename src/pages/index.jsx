@@ -122,7 +122,7 @@ export default function Home({
   };
 
   const handleLiveTv = () => {
-    alert("🔴 Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
+    alert("Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
   };
 
   const handleSearch = (e) => {
@@ -234,7 +234,7 @@ export default function Home({
                         <Link href={`/berita/${mainHeadline.slug}`}>{mainHeadline.title}</Link>
                       </h2>
                       <div className="text-sm text-gray-500 flex items-center gap-2">
-                        <span>👤 {mainHeadline.author || mainHeadline.penulis || 'Redaksi'}</span>
+                        <span>Oleh: {mainHeadline.author || mainHeadline.penulis || 'Redaksi'}</span>
                       </div>
                     </div>
                   </div>
@@ -257,7 +257,7 @@ export default function Home({
                               </h3>
                             </div>
                             <div className="text-xs text-gray-500 mt-3 flex items-center gap-2">
-                              <span>👤 {berita.author || berita.penulis || 'Redaksi'}</span>
+                              <span>Oleh: {berita.author || berita.penulis || 'Redaksi'}</span>
                             </div>
                           </div>
                         </div>
@@ -492,7 +492,7 @@ export default function Home({
           <div className="container my-8" id="sorotan-section">
             <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
               <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
-                <span className="border-b-4 border-red-650 pb-2">🔥 SOROTAN HARI INI</span>
+                <span className="border-b-4 border-red-650 pb-2">SOROTAN HARI INI</span>
               </h2>
             </div>
 

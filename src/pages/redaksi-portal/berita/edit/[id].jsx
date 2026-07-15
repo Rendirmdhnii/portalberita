@@ -611,7 +611,7 @@ export default function BeritaEdit() {
               onClick={() => setIsPreviewOpen(true)}
               className="w-full md:w-auto px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer"
             >
-              👀 Lihat Pratinjau
+              Lihat Pratinjau
             </button>
 
             <Link

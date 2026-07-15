@@ -329,7 +329,7 @@ export default function AdIndex() {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
                 {previewUrl && (
                   <div className="mt-3">
-                    <p className="text-xs font-bold text-gray-600 mb-1">✅ Pratinjau Hasil Crop:</p>
+                    <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
                     <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                   </div>
                 )}
@@ -337,7 +337,7 @@ export default function AdIndex() {
               <div className="flex flex-col gap-2.5 mt-4">
                 <button type="button" onClick={handleOpenPreview}
                   className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
-                  👀 Lihat Pratinjau
+                  Lihat Pratinjau
                 </button>
                 <button type="submit" disabled={processing}
                   className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">
@@ -607,7 +607,7 @@ export default function AdIndex() {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
               {previewUrl && (
                 <div className="mt-3">
-                  <p className="text-xs font-bold text-gray-600 mb-1">✅ Pratinjau Hasil Crop:</p>
+                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
                   <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                 </div>
               )}
@@ -615,7 +615,7 @@ export default function AdIndex() {
             <div className="flex flex-col gap-2.5 mt-4">
               <button type="button" onClick={handleOpenPreview}
                 className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
-                👀 Lihat Pratinjau
+                Lihat Pratinjau
               </button>
               <button type="submit" disabled={processing}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">

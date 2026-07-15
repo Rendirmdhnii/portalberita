@@ -166,7 +166,7 @@ export default function VideoIndex() {
       <div className="flex flex-col gap-2.5 mt-4">
         <button type="button" onClick={handleOpenPreview}
           className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
-          👀 Lihat Pratinjau
+          Lihat Pratinjau
         </button>
         <button type="submit" disabled={processing}
           className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 cursor-pointer">

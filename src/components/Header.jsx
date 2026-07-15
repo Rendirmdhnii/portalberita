@@ -38,7 +38,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
   };
 
   const handleLiveTv = () => {
-    alert("🔴 Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
+    alert("Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
   };
 
   // Determine if main menu item is active
