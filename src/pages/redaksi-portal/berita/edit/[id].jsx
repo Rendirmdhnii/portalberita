@@ -243,10 +243,11 @@ export default function BeritaEdit() {
       // 1. Upload new thumbnail if selected with compression
       if (newThumbnailFile) {
         const options = {
-          maxSizeMB: 0.25, // Maksimal 250KB agar aman untuk WA
+          maxSizeMB: 0.2, // Kompres agresif agar selalu di bawah limit WA
           maxWidthOrHeight: 1200,
           useWebWorker: true,
-          fileType: 'image/jpeg' // Paksa convert ke JPEG
+          fileType: 'image/jpeg', // KONVERSI KE JPEG
+          initialQuality: 0.8
         };
         
         try {
@@ -268,10 +269,16 @@ export default function BeritaEdit() {
 
           finalThumbnailUrl = publicUrl;
         } catch (err) {
-          alert('Gagal memproses/mengupload gambar utama baru: ' + err.message);
+          alert('Gambar tidak bisa diproses, coba gambar lain: ' + err.message);
           setProcessing(false);
           return;
         }
+      }
+
+      if (!finalThumbnailUrl) {
+        alert('Gambar tidak bisa diproses, coba gambar lain.');
+        setProcessing(false);
+        return;
       }
 
       let finalGalleryUrls = [...existingGallery];

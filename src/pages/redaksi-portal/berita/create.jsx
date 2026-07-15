@@ -169,10 +169,11 @@ export default function BeritaCreate() {
 
       if (thumbnailFile) {
         const options = {
-          maxSizeMB: 0.25, // Maksimal 250KB agar aman untuk WA
+          maxSizeMB: 0.2, // Kompres agresif agar selalu di bawah limit WA
           maxWidthOrHeight: 1200,
           useWebWorker: true,
-          fileType: 'image/jpeg' // Paksa convert ke JPEG
+          fileType: 'image/jpeg', // KONVERSI KE JPEG
+          initialQuality: 0.8
         };
         
         try {
@@ -195,10 +196,16 @@ export default function BeritaCreate() {
           finalImageUrl = publicUrlData.publicUrl;
           
         } catch (error) {
-          alert('Gagal memproses/mengupload gambar: ' + error.message);
+          alert('Gambar tidak bisa diproses, coba gambar lain: ' + error.message);
           setProcessing(false);
           return; // Hentikan proses jika gambar wajib tapi gagal upload
         }
+      }
+
+      if (!finalImageUrl) {
+        alert('Gambar tidak bisa diproses, coba gambar lain.');
+        setProcessing(false);
+        return;
       }
 
       let imageUrls = [];
