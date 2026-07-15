@@ -47,6 +47,7 @@ export default function BeritaEdit() {
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [isHeadline, setIsHeadline] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -91,6 +92,7 @@ export default function BeritaEdit() {
       setCategory(data.category || '');
       setContent(data.content || '');
       setStatus(data.status || 'Published');
+      setIsHeadline(data.is_headline || false);
       
       // Load images (jsonb) or fallback to image (text)
       const imgs = data.images || data.image;
@@ -322,6 +324,7 @@ export default function BeritaEdit() {
           content,
           images: combinedImages, // Simpan sebagai array jsonb
           gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
+          is_headline: isHeadline,
           author: author.trim() || 'Redaksi PojokTV',
           status
         })
@@ -558,6 +561,28 @@ export default function BeritaEdit() {
               <i className="fa-solid fa-circle-info text-red-600 text-sm"></i>
               <span>Tips: Tekan Ctrl + Shift + V (di Windows) atau Cmd + Shift + V (di Mac) saat menempelkan teks agar spasi dan paragraf rapi sesuai bawaan Word/WhatsApp.</span>
             </p>
+          </div>
+
+          {/* Penempatan Berita di Halaman Depan */}
+          <div className="mb-6 p-4 border rounded bg-gray-50">
+            <label className="block text-gray-700 font-bold mb-2">Penempatan Berita di Halaman Depan *</label>
+            <p className="text-sm text-gray-500 mb-4">Pilih di mana berita ini akan ditampilkan saat pembaca membuka website.</p>
+            <div className="flex flex-col gap-3">
+              <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-blue-50 bg-white">
+                <input type="radio" name="posisi" className="w-5 h-5 mr-3" checked={isHeadline === true} onChange={() => setIsHeadline(true)} />
+                <div>
+                  <span className="block font-bold text-blue-700">🌟 JADIKAN BERITA UTAMA (HEADLINE)</span>
+                  <span className="text-sm text-gray-600">Gambar ukuran besar, teks judul menimpa gambar.</span>
+                </div>
+              </label>
+              <label className="flex items-center p-3 border rounded cursor-pointer hover:bg-blue-50 bg-white">
+                <input type="radio" name="posisi" className="w-5 h-5 mr-3" checked={isHeadline === false} onChange={() => setIsHeadline(false)} />
+                <div>
+                  <span className="block font-bold text-gray-700">📰 BERITA BIASA / FEED</span>
+                  <span className="text-sm text-gray-600">Gambar ukuran standar, masuk ke daftar berita terbaru di bawah/samping.</span>
+                </div>
+              </label>
+            </div>
           </div>
 
           {/* Tombol Aksi Lalu Lintas */}

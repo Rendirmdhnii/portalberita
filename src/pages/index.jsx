@@ -153,6 +153,12 @@ export default function Home({
   const middleAd = ads?.find(a => a.position === 'Tengah Konten');
   const footerAd = ads?.find(a => a.position === 'Footer');
 
+  // Pisahkan Berita Headline dan Berita Biasa
+  const headlineBerita = berita?.find(post => post.is_headline === true) || berita?.[0];
+  const feedBerita = headlineBerita 
+    ? berita?.filter(post => post.id !== headlineBerita.id) || []
+    : berita?.slice(1) || [];
+
   // Filter Categories
   const kriminalNews = berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [];
   const ekonomiNews = berita?.filter(b => b.category?.toLowerCase() === 'ekonomi' || b.category?.toLowerCase() === 'ekonomi & bisnis') || [];
@@ -207,12 +213,12 @@ export default function Home({
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-6 mb-10">
                 {/* Kolom Kiri (Porsi 8 Kolom / ~65%) */}
                 <div className="lg:col-span-8 flex flex-col">
-                  {berita[0] && (
+                  {headlineBerita && (
                     <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden group shadow-sm bg-slate-900">
-                      {getThumbnail(berita[0]) ? (
+                      {getThumbnail(headlineBerita) ? (
                         <img 
-                          src={getThumbnail(berita[0])} 
-                          alt={berita[0].title} 
+                          src={getThumbnail(headlineBerita)} 
+                          alt={headlineBerita.title} 
                           className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500" 
                         />
                       ) : (
@@ -224,17 +230,17 @@ export default function Home({
                       {/* Text Container: Overlay with gradient */}
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent flex flex-col justify-end p-4 md:p-8">
                         <span className="bg-[#E30A17] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded w-fit mb-2 uppercase tracking-wider">
-                          {berita[0].category}
+                          {headlineBerita.category}
                         </span>
                         <h1 className="text-xl md:text-3xl lg:text-4xl font-extrabold text-white hover:text-[#E30A17] transition-colors leading-tight line-clamp-2">
-                          <Link href={`/berita/${berita[0].slug}`}>
-                            {berita[0].title}
+                          <Link href={`/berita/${headlineBerita.slug}`}>
+                            {headlineBerita.title}
                           </Link>
                         </h1>
                         <div className="text-xs text-gray-400 mt-3 flex items-center gap-3">
-                          <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {berita[0].author || berita[0].penulis || 'Redaksi'}</span>
+                          <span><i className="fa-regular fa-user text-[#E30A17] mr-1"></i> {headlineBerita.author || headlineBerita.penulis || 'Redaksi'}</span>
                           <span>•</span>
-                          <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(berita[0].created_at)}</span>
+                          <span><i className="fa-regular fa-clock text-[#E30A17] mr-1"></i> {formatTimeAgo(headlineBerita.created_at)}</span>
                         </div>
                       </div>
                     </div>
@@ -243,7 +249,7 @@ export default function Home({
 
                 {/* Kolom Kanan (Porsi 4 Kolom / ~35%) */}
                 <div className="lg:col-span-4 flex flex-col gap-4">
-                  {berita.slice(1, 3).map((post) => (
+                  {feedBerita.slice(0, 2).map((post) => (
                     <div key={post.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-155 flex flex-col hover:shadow-md transition-shadow">
                       <div className="aspect-video w-full relative overflow-hidden group">
                         {getThumbnail(post) ? (
@@ -274,7 +280,7 @@ export default function Home({
                     </div>
                   ))}
                   {/* Handle case when there is only 1 secondary news */}
-                  {berita.slice(1, 3).length === 1 && (
+                  {feedBerita.slice(0, 2).length === 1 && (
                     <div className="bg-slate-50 rounded-xl border border-dashed border-gray-200 aspect-video flex items-center justify-center text-slate-400 text-xs">
                       Belum ada berita pendamping
                     </div>
@@ -297,8 +303,8 @@ export default function Home({
               </div>
 
               <div className="flex flex-col gap-4">
-                {berita && berita.slice(3, 10).length > 0 ? (
-                  berita.slice(3, 10).map((post) => (
+                {feedBerita && feedBerita.slice(2, 9).length > 0 ? (
+                  feedBerita.slice(2, 9).map((post) => (
                     <article key={post.id} className="latest-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition duration-200">
                       <div className="latest-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
