@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
 import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
+import imageCompression from 'browser-image-compression';
 
 // Safely load ReactQuill client-side only
 const ReactQuill = dynamic(
@@ -164,25 +165,45 @@ export default function BeritaCreate() {
     }
 
     try {
-      let imageUrls = [];
+      let finalImageUrl = null;
 
-      // 1. Upload thumbnail to Supabase Storage
       if (thumbnailFile) {
-        const fileExt = thumbnailFile.name.split('.').pop();
-        const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `berita/${fileName}`;
+        const options = {
+          maxSizeMB: 0.25, // Maksimal 250KB agar aman untuk WA
+          maxWidthOrHeight: 1200,
+          useWebWorker: true,
+          fileType: 'image/jpeg' // Paksa convert ke JPEG
+        };
+        
+        try {
+          // 1. Kompres file
+          const compressedFile = await imageCompression(thumbnailFile, options);
+          
+          // 2. Upload ke Supabase Storage (bucket: images)
+          const fileExt = 'jpg';
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `berita/${fileName}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, compressedFile, { contentType: 'image/jpeg' });
+            
+          if (uploadError) throw uploadError;
+          
+          // 3. Dapatkan URL Publik
+          const { data: publicUrlData } = supabase.storage.from('images').getPublicUrl(filePath);
+          finalImageUrl = publicUrlData.publicUrl;
+          
+        } catch (error) {
+          alert('Gagal memproses/mengupload gambar: ' + error.message);
+          setProcessing(false);
+          return; // Hentikan proses jika gambar wajib tapi gagal upload
+        }
+      }
 
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(filePath, thumbnailFile);
-
-        if (uploadError) throw new Error('Gagal mengunggah Foto Utama: ' + uploadError.message);
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('images')
-          .getPublicUrl(filePath);
-
-        imageUrls.push(publicUrl);
+      let imageUrls = [];
+      if (finalImageUrl) {
+        imageUrls.push(finalImageUrl);
       }
 
       // 2. Upload gallery images if any
@@ -223,7 +244,7 @@ export default function BeritaCreate() {
             category,
             content,
             images: imageUrls, // Simpan sebagai array jsonb (indeks 0 adalah foto utama)
-            gambar_utama: imageUrls[0] || null, // Simpan URL publik Foto Utama secara spesifik
+            gambar_utama: finalImageUrl, // Simpan URL publik Foto Utama secara spesifik
             author: finalAuthor,
             status: 'Published',
             views: 0

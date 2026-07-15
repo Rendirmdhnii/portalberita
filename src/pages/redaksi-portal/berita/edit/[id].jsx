@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
 import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
+import imageCompression from 'browser-image-compression';
 
 // Safely load ReactQuill client-side only
 const ReactQuill = dynamic(
@@ -239,23 +240,38 @@ export default function BeritaEdit() {
     try {
       let finalThumbnailUrl = existingThumbnail;
 
-      // 1. Upload new thumbnail if selected
+      // 1. Upload new thumbnail if selected with compression
       if (newThumbnailFile) {
-        const fileExt = newThumbnailFile.name.split('.').pop();
-        const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `berita/${fileName}`;
+        const options = {
+          maxSizeMB: 0.25, // Maksimal 250KB agar aman untuk WA
+          maxWidthOrHeight: 1200,
+          useWebWorker: true,
+          fileType: 'image/jpeg' // Paksa convert ke JPEG
+        };
+        
+        try {
+          const compressedFile = await imageCompression(newThumbnailFile, options);
+          
+          const fileExt = 'jpg';
+          const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `berita/${fileName}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('images')
-          .upload(filePath, newThumbnailFile);
+          const { error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(filePath, compressedFile, { contentType: 'image/jpeg' });
 
-        if (uploadError) throw new Error('Gagal mengunggah Foto Utama baru: ' + uploadError.message);
+          if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('images')
-          .getPublicUrl(filePath);
+          const { data: { publicUrl } } = supabase.storage
+            .from('images')
+            .getPublicUrl(filePath);
 
-        finalThumbnailUrl = publicUrl;
+          finalThumbnailUrl = publicUrl;
+        } catch (err) {
+          alert('Gagal memproses/mengupload gambar utama baru: ' + err.message);
+          setProcessing(false);
+          return;
+        }
       }
 
       let finalGalleryUrls = [...existingGallery];
