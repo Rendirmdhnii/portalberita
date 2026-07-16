@@ -112,107 +112,170 @@ export default function VisitorLogs() {
         </div>
       )}
 
-      {/* Table Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-250/60 overflow-hidden">
-        {loading && logs.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 font-bold">
-            <i className="fa-solid fa-satellite-dish animate-pulse text-4xl text-emerald-500 mb-3 block"></i>
-            <span>Menghubungkan ke satelit pemantau...</span>
-          </div>
-        ) : logs.length === 0 ? (
-          <div className="text-center py-20 text-gray-500 font-bold text-sm">
-            <i className="fa-solid fa-box-open text-3xl text-gray-300 mb-3 block"></i>
-            <span>Belum ada log lalu lintas data pengunjung.</span>
-          </div>
-        ) : (
-          <div className="max-h-[65vh] overflow-y-auto overflow-x-auto relative">
-            <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm border-b border-gray-200 text-[10px] uppercase tracking-widest text-slate-500 font-bold font-mono">
-                <tr>
-                  <th className="px-6 py-3.5">Waktu Akses</th>
-                  <th className="px-6 py-3.5">Target IP</th>
-                  <th className="px-6 py-3.5">Titik Lokasi</th>
-                  <th className="px-6 py-3.5">Jejak URL</th>
-                  <th className="px-6 py-3.5">Sistem Perangkat (User Agent)</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 font-mono">
-                {logs.map((log) => {
-                  const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
-                  const isSuspicious = suspiciousIPs.includes(log.ip_address);
+      {/* Data Section */}
+      {loading && logs.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-250/60 overflow-hidden text-center py-20 text-gray-400 font-bold">
+          <i className="fa-solid fa-satellite-dish animate-pulse text-4xl text-emerald-500 mb-3 block"></i>
+          <span>Menghubungkan ke satelit pemantau...</span>
+        </div>
+      ) : logs.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-250/60 overflow-hidden text-center py-20 text-gray-500 font-bold text-sm">
+          <i className="fa-solid fa-box-open text-3xl text-gray-300 mb-3 block"></i>
+          <span>Belum ada log lalu lintas data pengunjung.</span>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {/* MOBILE VIEW (Daftar Kartu / Card View - Hidden on Desktop) */}
+          <div className="md:hidden space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+            {logs.map((log) => {
+              const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
+              const isSuspicious = suspiciousIPs.includes(log.ip_address);
 
-                  return (
-                    <tr key={log.id} className="hover:bg-slate-50 transition-colors">
-                      {/* Waktu Akses */}
-                      <td className="px-6 py-3.5 font-mono text-[11px] text-slate-500 font-medium">
-                        {formatAccessTime(log.created_at)}
-                      </td>
-                      
-                      {/* Target IP */}
-                      <td className="px-6 py-3.5">
-                        <a
-                          href={`https://ipinfo.io/${log.ip_address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={
-                            isSuspicious
-                              ? "font-mono font-bold text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200 animate-pulse flex items-center gap-1 w-max hover:bg-slate-800 hover:text-red-400 transition-all cursor-pointer text-[11px]"
-                              : "font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 w-max hover:bg-slate-800 hover:text-emerald-400 transition-all cursor-pointer text-[11px]"
-                          }
-                        >
-                          {log.ip_address || '0.0.0.0'}
-                          <ExternalLink className="w-2.5 h-2.5 opacity-75 shrink-0" />
-                        </a>
-                      </td>
-                      
-                      {/* Titik Lokasi */}
-                      <td className="px-6 py-3.5">
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery || 'Indonesia')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-slate-700 hover:text-blue-700 flex items-center gap-1 text-xs cursor-pointer"
-                        >
-                          <MapPin className="w-3 h-3 text-red-500/80 shrink-0" />
-                          <span>
-                            {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
-                          </span>
-                          <span className="text-[10px] text-gray-400 font-mono uppercase font-bold">
-                            ({log.country || 'ID'})
-                          </span>
-                        </a>
-                      </td>
-                      
-                      {/* Jejak URL */}
-                      <td className="px-6 py-3.5 text-xs text-slate-500 font-mono whitespace-normal break-words">
-                        <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-650 transition-colors">
-                          {log.visited_url || '/'}
-                        </a>
-                      </td>
-                      
-                      {/* Sistem Perangkat */}
-                      <td className="px-6 py-3.5 text-[10px] text-slate-400 font-mono whitespace-normal break-words">
-                        {log.user_agent || 'Unknown Agent'}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              return (
+                <div key={log.id} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2">
+                  {/* Baris 1: Flex space-between. Kiri = Waktu, Kanan = Target IP */}
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="font-mono text-[10px] text-slate-500">
+                      {formatAccessTime(log.created_at)}
+                    </span>
+                    <a
+                      href={`https://ipinfo.io/${log.ip_address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={
+                        isSuspicious
+                          ? "font-mono font-bold text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200 animate-pulse flex items-center gap-1 hover:bg-slate-800 hover:text-red-400 transition-all cursor-pointer text-[10px] shrink-0"
+                          : "font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 hover:bg-slate-800 hover:text-emerald-450 transition-all cursor-pointer text-[10px] shrink-0"
+                      }
+                    >
+                      {log.ip_address || '0.0.0.0'}
+                      <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                    </a>
+                  </div>
+
+                  {/* Baris 2: Jejak URL (text-sm font-medium text-slate-800 whitespace-normal break-words) */}
+                  <div className="text-sm font-medium text-slate-800 whitespace-normal break-words">
+                    <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-650 transition-colors">
+                      {log.visited_url || '/'}
+                    </a>
+                  </div>
+
+                  {/* Baris 3: Titik Lokasi (text-xs text-slate-500 flex items-center gap-1) */}
+                  <div className="text-xs text-slate-500 flex items-center gap-1">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery || 'Indonesia')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-slate-700 hover:text-blue-700 flex items-center gap-1 text-xs cursor-pointer"
+                    >
+                      <MapPin className="w-3 h-3 text-red-500/80 shrink-0" />
+                      <span>
+                        {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-mono uppercase font-bold">
+                        ({log.country || 'ID'})
+                      </span>
+                    </a>
+                  </div>
+
+                  {/* Baris 4: Perangkat (text-[10px] text-slate-400 whitespace-normal break-words) */}
+                  <div className="text-[10px] text-slate-400 font-mono whitespace-normal break-words">
+                    {log.user_agent || 'Unknown Agent'}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
-        
-        {/* Table Footer Stats (Fixed bar at bottom with dark theme) */}
-        {!loading && logs.length > 0 && (
-          <div className="px-6 py-4 bg-slate-900 border-t border-slate-800 text-xs font-bold text-gray-300 font-mono flex items-center justify-between">
+
+          {/* DESKTOP VIEW (Table View - Hidden on Mobile) */}
+          <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-250/60 overflow-hidden">
+            <div className="max-h-[65vh] overflow-y-auto overflow-x-auto relative">
+              <table className="w-full text-left text-sm">
+                <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm border-b border-gray-200 text-[10px] uppercase tracking-widest text-slate-500 font-bold font-mono">
+                  <tr>
+                    <th className="px-6 py-3.5">Waktu Akses</th>
+                    <th className="px-6 py-3.5">Target IP</th>
+                    <th className="px-6 py-3.5">Titik Lokasi</th>
+                    <th className="px-6 py-3.5">Jejak URL</th>
+                    <th className="px-6 py-3.5">Sistem Perangkat (User Agent)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-mono">
+                  {logs.map((log) => {
+                    const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
+                    const isSuspicious = suspiciousIPs.includes(log.ip_address);
+
+                    return (
+                      <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                        {/* Waktu Akses */}
+                        <td className="px-6 py-3.5 font-mono text-[11px] text-slate-500 font-medium">
+                          {formatAccessTime(log.created_at)}
+                        </td>
+                        
+                        {/* Target IP */}
+                        <td className="px-6 py-3.5">
+                          <a
+                            href={`https://ipinfo.io/${log.ip_address}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={
+                              isSuspicious
+                                ? "font-mono font-bold text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200 animate-pulse flex items-center gap-1 w-max hover:bg-slate-800 hover:text-red-400 transition-all cursor-pointer text-[11px]"
+                                : "font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 w-max hover:bg-slate-800 hover:text-emerald-450 transition-all cursor-pointer text-[11px]"
+                            }
+                          >
+                            {log.ip_address || '0.0.0.0'}
+                            <ExternalLink className="w-2.5 h-2.5 opacity-75 shrink-0" />
+                          </a>
+                        </td>
+                        
+                        {/* Titik Lokasi */}
+                        <td className="px-6 py-3.5">
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery || 'Indonesia')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-medium text-slate-700 hover:text-blue-700 flex items-center gap-1 text-xs cursor-pointer"
+                          >
+                            <MapPin className="w-3 h-3 text-red-500/80 shrink-0" />
+                            <span>
+                              {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-mono uppercase font-bold">
+                              ({log.country || 'ID'})
+                            </span>
+                          </a>
+                        </td>
+                        
+                        {/* Jejak URL */}
+                        <td className="px-6 py-3.5 text-xs text-slate-500 font-mono whitespace-normal break-words">
+                          <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-650 transition-colors">
+                            {log.visited_url || '/'}
+                          </a>
+                        </td>
+                        
+                        {/* Sistem Perangkat */}
+                        <td className="px-6 py-3.5 text-[10px] text-slate-400 font-mono whitespace-normal break-words">
+                          {log.user_agent || 'Unknown Agent'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Table Footer Stats (Fixed bar at bottom with dark theme) */}
+          <div className="px-6 py-4 bg-slate-900 rounded-xl border border-slate-800 text-xs font-bold text-gray-300 font-mono flex items-center justify-between shadow-sm">
             <span>SYSTEM ONLINE // TRACKING 50 ACTIVE CONNECTIONS</span>
             <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Sistem Aktif
             </span>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
