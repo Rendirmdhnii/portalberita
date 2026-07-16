@@ -7,7 +7,7 @@ export default function Footer({ categories = [] }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Kolom 1: Logo & Tentang */}
           <div className="md:col-span-2">
-            <img src="/logo-pojoktv.png" alt="PojokTV" className="h-[80px] md:h-[110px] lg:h-[130px] w-auto object-contain mb-6" />
+            <img src="/logo-pojoktv.png" alt="PojokTV" className="h-[80px] md:h-[110px] lg:h-[130px] w-auto object-contain mb-6 brightness-0 invert" />
             <p className="text-sm text-gray-300 leading-relaxed">
               PojokTV.com adalah bagian dari jaringan televisi berita digital nasional terkemuka yang berdedikasi menghadirkan jurnalisme berwibawa, independen, tajam, dan tercepat dari seluruh penjuru nusantara.
             </p>
