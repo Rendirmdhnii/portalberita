@@ -68,9 +68,7 @@ export default function AdminLayout({ children }) {
       {/* SIDEBAR */}
       <aside className={`fixed inset-y-0 left-0 w-64 bg-gray-900 text-white flex flex-col z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="h-24 flex flex-col items-center justify-center border-b border-gray-800 bg-gray-950 shrink-0 px-4 relative">
-          <span className="text-4xl font-black tracking-tighter leading-none">
-            <span className="text-white">Pojok</span><span className="text-red-600">TV</span>
-          </span>
+          <img src="/logo-pojoktv.png" alt="Logo PojokTV" className="h-10 w-auto object-contain drop-shadow-sm" />
           <span className="text-xs text-gray-300 font-bold uppercase tracking-[0.2em] mt-2">Panel Admin Redaksi</span>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden absolute top-3 right-3 text-gray-400 hover:text-white p-1.5">
             <i className="fa-solid fa-xmark text-lg"></i>

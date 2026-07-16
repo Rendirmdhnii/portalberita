@@ -685,9 +685,7 @@ export default function BeritaEdit() {
                   
                   {/* Branding Simulation */}
                   <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
-                    <span className="text-2xl font-black tracking-tighter text-slate-900">
-                      Pojok<span className="text-red-600">TV.com</span>
-                    </span>
+                    <img src="/logo-pojoktv.png" alt="PojokTV" className="h-7 sm:h-8 w-auto object-contain" />
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">SIMULASI</span>
                   </div>
 
