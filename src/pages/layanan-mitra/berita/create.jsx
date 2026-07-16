@@ -552,7 +552,7 @@ export default function BeritaCreate() {
                   
                   {/* Branding Simulation */}
                   <div className="bg-white py-4 border-b border-gray-200 rounded-t-xl px-4 flex justify-between items-center">
-                    <img src="/logo-pojoktv.png" alt="PojokTV" className="h-7 sm:h-8 w-auto object-contain" />
+                    <img src="/logo-pojoktv.png" alt="PojokTV" className="w-32 sm:w-40 md:w-48 h-auto object-contain" />
                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">SIMULASI</span>
                   </div>
 
