@@ -17,6 +17,22 @@ export default async function handler(req, res) {
 
   const { ip_address, city, region, country, user_agent, visited_url } = req.body;
 
+  const detectSuspiciousBehavior = (url, ua) => {
+    if (!url || !ua) return false;
+    const urlLower = url.toLowerCase();
+    const uaLower = ua.toLowerCase();
+
+    const sensitiveKeywords = ['.env', 'wp-admin', 'wp-login', 'phpmyadmin', 'config', 'admin', 'eval('];
+    const hasSensitiveKeyword = sensitiveKeywords.some((keyword) => urlLower.includes(keyword));
+
+    const botSignatures = ['curl', 'python', 'postman', 'axios', 'bot', 'crawler'];
+    const hasBotSignature = botSignatures.some((sig) => uaLower.includes(sig));
+
+    return hasSensitiveKeyword || hasBotSignature;
+  };
+
+  const is_suspicious = detectSuspiciousBehavior(visited_url, user_agent);
+
   try {
     const { error } = await supabase
       .from('sys_visitor_logs')
@@ -27,7 +43,8 @@ export default async function handler(req, res) {
           region,
           country,
           user_agent,
-          visited_url
+          visited_url,
+          is_suspicious
         }
       ]);
 

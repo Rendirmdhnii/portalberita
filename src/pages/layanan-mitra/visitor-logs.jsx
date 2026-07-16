@@ -4,13 +4,6 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { ExternalLink, MapPin } from 'lucide-react';
 
-const suspiciousIPs = [
-  '192.168.1.1',
-  '10.0.0.1',
-  '8.8.8.8',
-  '127.0.0.1', // for local testing
-];
-
 export default function VisitorLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,7 +122,7 @@ export default function VisitorLogs() {
           <div className="md:hidden space-y-3 max-h-[65vh] overflow-y-auto pr-1">
             {logs.map((log) => {
               const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
-              const isSuspicious = suspiciousIPs.includes(log.ip_address);
+              const isSuspicious = !!log.is_suspicious;
 
               return (
                 <div key={log.id} className="bg-white p-4 rounded-lg border border-slate-200 shadow-sm flex flex-col gap-2">
@@ -203,7 +196,7 @@ export default function VisitorLogs() {
                 <tbody className="divide-y divide-gray-100 font-mono">
                   {logs.map((log) => {
                     const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
-                    const isSuspicious = suspiciousIPs.includes(log.ip_address);
+                    const isSuspicious = !!log.is_suspicious;
 
                     return (
                       <tr key={log.id} className="hover:bg-slate-50 transition-colors">

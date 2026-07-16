@@ -7,8 +7,12 @@ create table if not exists public.sys_visitor_logs (
     country text,
     user_agent text,
     visited_url text,
+    is_suspicious boolean default false not null,
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- Migration query to add column to existing tables:
+-- alter table public.sys_visitor_logs add column if not exists is_suspicious boolean default false not null;
 
 -- Enable RLS for database security
 alter table public.sys_visitor_logs enable row level security;
