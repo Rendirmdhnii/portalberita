@@ -1,2 +1,8 @@
+User-agent: Googlebot-News
+Allow: /
+
 User-agent: *
-Disallow:
+Allow: /
+
+Sitemap: https://pojoktv.com/sitemap.xml
+Sitemap: https://pojoktv.com/sitemap-news.xml

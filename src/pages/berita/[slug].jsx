@@ -129,27 +129,114 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     );
   }
 
+  const plainText = stripHtmlAndEntities(berita?.content || berita?.isi || '');
+  const metaDescription = berita?.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
+  const keywords = `${berita?.category || ''}, berita ${berita?.category || ''}, ${berita?.title || ''}, PojokTV, berita terkini, berita nasional`;
+  const canonicalUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+  const publishedTime = berita?.created_at ? new Date(berita.created_at).toISOString() : '';
+  const modifiedTime = (berita?.updated_at || berita?.created_at) ? new Date(berita.updated_at || berita.created_at).toISOString() : '';
+  const authorName = berita?.author || 'Redaksi PojokTV';
+  const categorySlug = berita?.category ? berita.category.toLowerCase().replace(/\s+/g, '-') : '';
+
+  const newsArticleSchema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": canonicalUrl
+    },
+    "headline": berita?.title || '',
+    "image": images && images.length > 0 ? images : [fixImageUrl],
+    "datePublished": publishedTime,
+    "dateModified": modifiedTime,
+    "author": {
+      "@type": "Person",
+      "name": authorName,
+      "url": "https://pojoktv.com"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PojokTV",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://pojoktv.com/logo-pojoktv.png"
+      }
+    },
+    "description": metaDescription
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Beranda",
+        "item": "https://pojoktv.com"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": berita?.category || "Berita",
+        "item": `https://pojoktv.com/kategori/${categorySlug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": berita?.title || "Detail Berita",
+        "item": canonicalUrl
+      }
+    ]
+  };
+
   return (
     <Layout activeCategoryName={berita?.category}>
       <Head>
-        <title>{berita?.title} - PojokTV</title>
-        <meta property="og:title" content={berita?.title} />
-        <meta property="og:description" content={berita?.description || 'Baca berita selengkapnya di PojokTV.com'} />
+        <title>{`${berita?.title} | PojokTV.com - Jaringan Berita Nasional`}</title>
+        <meta name="description" content={metaDescription} />
+        <meta name="keywords" content={keywords} />
+        <link rel="canonical" href={canonicalUrl} />
         
-        {/* INI KUNCI UNTUK GAMBAR BESAR WHATSAPP / FACEBOOK */}
-        <meta name="twitter:card" content="summary_large_image" />
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={berita?.title} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="PojokTV" />
+        <meta property="og:image" content={fixImageUrl} />
+        <meta property="og:image:secure_url" content={fixImageUrl} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/jpeg" />
-        <meta property="og:image" content={berita?.gambar_utama} />
-        
-        <meta property="og:url" content={`https://pojoktv.com/berita/${berita?.slug}`} />
-        <meta property="og:type" content="article" />
 
-        {/* SEO Icons & Keywords */}
-        <meta name="keywords" content={`${berita?.category}, berita ${berita?.category}, ${berita?.title}, PojokTV`} />
+        {/* Article Specific Metadata */}
+        <meta property="article:published_time" content={publishedTime} />
+        <meta property="article:modified_time" content={modifiedTime} />
+        <meta property="article:author" content={authorName} />
+        <meta property="article:section" content={berita?.category || 'News'} />
+
+        {/* Twitter Cards */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={berita?.title} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={fixImageUrl} />
+        <meta name="twitter:site" content="@PojokTV" />
+        <meta name="twitter:creator" content="@PojokTV" />
+
+        {/* SEO Icons & Fallbacks */}
         <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+
+        {/* JSON-LD Schemas */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(newsArticleSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
       </Head>
 
       {/* Header Ad Slot */}

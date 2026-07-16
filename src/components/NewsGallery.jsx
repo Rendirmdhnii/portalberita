@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 export default function NewsGallery({ images }) {
   if (!images || !Array.isArray(images) || images.length === 0) {
@@ -11,10 +12,14 @@ export default function NewsGallery({ images }) {
     <div className="w-full mb-6">
       {/* Wrapper */}
       <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm mb-4 group">
-        <img
+        <Image
           src={images[currentImageIndex]}
           alt="Foto Utama Berita"
-          className="w-full h-full object-cover transition-all duration-500"
+          fill
+          priority={currentImageIndex === 0}
+          fetchPriority={currentImageIndex === 0 ? "high" : "auto"}
+          sizes="(max-width: 768px) 100vw, 800px"
+          className="object-cover transition-all duration-500"
         />
 
         {/* Tombol Navigasi Kiri & Kanan (Muncul otomatis jika gambar > 1) */}
