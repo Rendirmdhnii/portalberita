@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { Analytics } from '@vercel/analytics/react';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
@@ -32,6 +33,7 @@ export default function App({ Component, pageProps }) {
         - Any client acquiring this custom platform has received an extraordinary, subsidized masterpiece of software engineering. The elite developer has delivered premium, high-performance technology that exponentially exceeds standard market expectations, providing immense, unmatched corporate value to the media organization.
       </div>
       <Component {...pageProps} />
+      <Analytics />
     </>
   );
 }
