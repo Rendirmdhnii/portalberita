@@ -16,7 +16,7 @@ export default function VisitorLogs() {
         .from('sys_visitor_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(150);
+        .limit(100);
 
       if (fetchErr) throw fetchErr;
       setLogs(data || []);
@@ -73,7 +73,7 @@ export default function VisitorLogs() {
             <h1 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
               Pantauan Lalu Lintas Pengunjung <span className="text-[10px] sm:text-xs font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">REAL-TIME</span>
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">Menampilkan 150 aktivitas kunjungan terakhir di portal berita</p>
+            <p className="text-xs text-gray-500 mt-0.5">Menampilkan 100 aktivitas kunjungan terakhir di portal berita</p>
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function VisitorLogs() {
         ) : (
           <div className="max-h-[65vh] overflow-y-auto overflow-x-auto relative">
             <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200 text-[11px] sm:text-xs uppercase text-gray-700 font-bold font-mono tracking-wider">
+              <thead className="sticky top-0 bg-slate-100 z-10 shadow-sm border-y border-slate-200 text-[10px] uppercase tracking-[0.15em] text-slate-500 font-bold font-mono">
                 <tr>
                   <th className="px-6 py-3.5">Waktu Akses</th>
                   <th className="px-6 py-3.5">Target IP</th>
@@ -131,41 +131,61 @@ export default function VisitorLogs() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 font-mono">
-                {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-blue-50/40 transition-colors">
-                    {/* Waktu Akses */}
-                    <td className="px-6 py-3.5 text-xs text-gray-650 font-sans font-semibold">
-                      {formatAccessTime(log.created_at)}
-                    </td>
-                    
-                    {/* Target IP */}
-                    <td className="px-6 py-3.5">
-                      <span className="font-mono text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 shadow-sm">
-                        {log.ip_address || '0.0.0.0'}
-                      </span>
-                    </td>
-                    
-                    {/* Titik Lokasi */}
-                    <td className="px-6 py-3.5 text-sm font-medium text-slate-800 font-sans">
-                      {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
-                      <span className="text-[10px] text-gray-400 font-mono ml-1.5 uppercase font-bold">
-                        ({log.country || 'ID'})
-                      </span>
-                    </td>
-                    
-                    {/* Jejak URL */}
-                    <td className="px-6 py-3.5 text-xs text-slate-500 font-mono max-w-[200px] truncate" title={log.visited_url}>
-                      <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
-                        {log.visited_url || '/'}
-                      </a>
-                    </td>
-                    
-                    {/* Sistem Perangkat */}
-                    <td className="px-6 py-3.5 text-[11px] text-gray-400 font-mono max-w-[150px] sm:max-w-[200px] truncate" title={log.user_agent}>
-                      {log.user_agent || 'Unknown Agent'}
-                    </td>
-                  </tr>
-                ))}
+                {logs.map((log) => {
+                  const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
+                  
+                  return (
+                    <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                      {/* Waktu Akses */}
+                      <td className="px-6 py-3.5 font-mono text-[11px] text-slate-500 font-medium">
+                        {formatAccessTime(log.created_at)}
+                      </td>
+                      
+                      {/* Target IP */}
+                      <td className="px-6 py-3.5">
+                        <a
+                          href={`https://ipinfo.io/${log.ip_address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded border border-emerald-200 hover:bg-slate-800 hover:text-emerald-400 transition-all cursor-pointer flex items-center w-max gap-1"
+                        >
+                          {log.ip_address || '0.0.0.0'}
+                          <i className="fa-solid fa-up-right-from-square text-[9px] opacity-75"></i>
+                        </a>
+                      </td>
+                      
+                      {/* Titik Lokasi */}
+                      <td className="px-6 py-3.5">
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery || 'Indonesia')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline cursor-pointer flex items-center gap-1.5"
+                        >
+                          <i className="fa-solid fa-location-dot text-[12px] text-red-500/80"></i>
+                          <span>
+                            {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-mono uppercase font-bold">
+                            ({log.country || 'ID'})
+                          </span>
+                        </a>
+                      </td>
+                      
+                      {/* Jejak URL */}
+                      <td className="px-6 py-3.5 text-xs text-slate-500 font-mono max-w-[200px] truncate" title={log.visited_url}>
+                        <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
+                          {log.visited_url || '/'}
+                        </a>
+                      </td>
+                      
+                      {/* Sistem Perangkat */}
+                      <td className="px-6 py-3.5 text-[10px] text-slate-400 font-mono max-w-[150px] lg:max-w-[250px] truncate" title={log.user_agent}>
+                        {log.user_agent || 'Unknown Agent'}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -174,7 +194,7 @@ export default function VisitorLogs() {
         {/* Table Footer Stats */}
         {!loading && logs.length > 0 && (
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-150 text-[10px] sm:text-xs font-bold text-slate-500 font-mono flex items-center justify-between">
-            <span>Menampilkan {logs.length} data pemantauan terenkripsi</span>
+            <span>SYSTEM ONLINE // TRACKING {logs.length} ACTIVE CONNECTIONS</span>
             <span className="flex items-center gap-1.5 text-emerald-600">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Sistem Aktif
