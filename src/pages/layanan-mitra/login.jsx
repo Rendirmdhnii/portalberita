@@ -65,10 +65,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md animate-slide-up-fade z-10">
         {/* LOGO */}
         <div className="text-center mb-8">
-          <div className="inline-block tracking-tighter leading-none text-5xl select-none">
-            <span className="text-white font-extrabold">Pojok</span>
-            <span className="text-red-600 font-extrabold ml-1">TV</span>
-          </div>
+          <img src="/logo.png" alt="PojokTV" className="h-14 w-auto mx-auto object-contain" />
         </div>
 
         {/* LOGIN CARD */}
