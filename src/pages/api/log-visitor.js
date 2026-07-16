@@ -22,8 +22,8 @@ export default async function handler(req, res) {
     const urlLower = url.toLowerCase();
     const uaLower = ua.toLowerCase();
 
-    const sensitiveKeywords = ['.env', 'wp-admin', 'wp-login', 'phpmyadmin', 'config', 'admin', 'eval('];
-    const hasSensitiveKeyword = sensitiveKeywords.some((keyword) => urlLower.includes(keyword));
+    const sensitiveKeywords = ['.env', '.git', 'wp-admin', 'wp-login', 'xmlrpc', 'phpmyadmin', 'adminer', 'config', 'backup', '.sql', '<script>', 'UNION SELECT', '../'];
+    const hasSensitiveKeyword = sensitiveKeywords.some((keyword) => urlLower.includes(keyword.toLowerCase()));
 
     const botSignatures = ['curl', 'python', 'postman', 'axios', 'bot', 'crawler'];
     const hasBotSignature = botSignatures.some((sig) => uaLower.includes(sig));
