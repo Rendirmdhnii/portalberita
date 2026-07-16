@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
+import { Radar } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -96,7 +97,7 @@ export default function AdminLayout({ children }) {
             <i className="fa-brands fa-youtube w-5"></i> Kelola Video
           </Link>
           <Link href="/layanan-mitra/visitor-logs" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
-            <i className="fa-solid fa-satellite-dish w-5 text-emerald-400 animate-pulse"></i> Intelijen
+            <Radar className="w-5 h-5 text-emerald-400 animate-pulse shrink-0" /> Intelijen
           </Link>
         </nav>
 

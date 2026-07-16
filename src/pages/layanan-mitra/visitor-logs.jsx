@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import { ExternalLink, MapPin } from 'lucide-react';
+
+const suspiciousIPs = [
+  '192.168.1.1',
+  '10.0.0.1',
+  '8.8.8.8',
+  '127.0.0.1', // for local testing
+];
 
 export default function VisitorLogs() {
   const [logs, setLogs] = useState([]);
@@ -16,7 +24,7 @@ export default function VisitorLogs() {
         .from('sys_visitor_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(50);
 
       if (fetchErr) throw fetchErr;
       setLogs(data || []);
@@ -65,15 +73,13 @@ export default function VisitorLogs() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 bg-white p-4 rounded-xl border border-gray-250/60 shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="flex h-3 w-3 relative shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-          </span>
+          {/* Green blinking pulse indicator to the left of the title */}
+          <span className="h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse shrink-0"></span>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center gap-2">
-              Pantauan Lalu Lintas Pengunjung <span className="text-[10px] sm:text-xs font-mono bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">REAL-TIME</span>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+              Pantauan Lalu Lintas Pengunjung (Real-Time)
             </h1>
-            <p className="text-xs text-gray-500 mt-0.5">Menampilkan 100 aktivitas kunjungan terakhir di portal berita</p>
+            <p className="text-xs text-gray-500 mt-0.5">Menampilkan 50 aktivitas kunjungan terakhir di portal berita</p>
           </div>
         </div>
 
@@ -120,8 +126,8 @@ export default function VisitorLogs() {
           </div>
         ) : (
           <div className="max-h-[65vh] overflow-y-auto overflow-x-auto relative">
-            <table className="w-full text-left text-sm whitespace-nowrap">
-              <thead className="sticky top-0 bg-slate-100 z-10 shadow-sm border-y border-slate-200 text-[10px] uppercase tracking-[0.15em] text-slate-500 font-bold font-mono">
+            <table className="w-full text-left text-sm">
+              <thead className="sticky top-0 bg-slate-50 z-10 shadow-sm border-b border-gray-200 text-[10px] uppercase tracking-widest text-slate-500 font-bold font-mono">
                 <tr>
                   <th className="px-6 py-3.5">Waktu Akses</th>
                   <th className="px-6 py-3.5">Target IP</th>
@@ -133,7 +139,8 @@ export default function VisitorLogs() {
               <tbody className="divide-y divide-gray-100 font-mono">
                 {logs.map((log) => {
                   const locationQuery = `${log.city && log.city !== 'Unknown' ? log.city : ''}, ${log.region && log.region !== 'Unknown' ? log.region : ''}`.trim();
-                  
+                  const isSuspicious = suspiciousIPs.includes(log.ip_address);
+
                   return (
                     <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                       {/* Waktu Akses */}
@@ -147,10 +154,14 @@ export default function VisitorLogs() {
                           href={`https://ipinfo.io/${log.ip_address}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono text-[11px] font-semibold text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded border border-emerald-200 hover:bg-slate-800 hover:text-emerald-400 transition-all cursor-pointer flex items-center w-max gap-1"
+                          className={
+                            isSuspicious
+                              ? "font-mono font-bold text-red-800 bg-red-50 px-2 py-0.5 rounded border border-red-200 animate-pulse flex items-center gap-1 w-max hover:bg-slate-800 hover:text-red-400 transition-all cursor-pointer text-[11px]"
+                              : "font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1 w-max hover:bg-slate-800 hover:text-emerald-400 transition-all cursor-pointer text-[11px]"
+                          }
                         >
                           {log.ip_address || '0.0.0.0'}
-                          <i className="fa-solid fa-up-right-from-square text-[9px] opacity-75"></i>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-75 shrink-0" />
                         </a>
                       </td>
                       
@@ -160,9 +171,9 @@ export default function VisitorLogs() {
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationQuery || 'Indonesia')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-medium text-slate-700 hover:text-blue-600 hover:underline cursor-pointer flex items-center gap-1.5"
+                          className="font-medium text-slate-700 hover:text-blue-700 flex items-center gap-1 text-xs cursor-pointer"
                         >
-                          <i className="fa-solid fa-location-dot text-[12px] text-red-500/80"></i>
+                          <MapPin className="w-3 h-3 text-red-500/80 shrink-0" />
                           <span>
                             {log.city && log.city !== 'Unknown' ? log.city : 'N/A'}, {log.region && log.region !== 'Unknown' ? log.region : 'N/A'}
                           </span>
@@ -173,14 +184,14 @@ export default function VisitorLogs() {
                       </td>
                       
                       {/* Jejak URL */}
-                      <td className="px-6 py-3.5 text-xs text-slate-500 font-mono max-w-[200px] truncate" title={log.visited_url}>
-                        <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-600 transition-colors">
+                      <td className="px-6 py-3.5 text-xs text-slate-500 font-mono whitespace-normal break-words">
+                        <a href={log.visited_url} target="_blank" rel="noreferrer" className="hover:text-blue-650 transition-colors">
                           {log.visited_url || '/'}
                         </a>
                       </td>
                       
                       {/* Sistem Perangkat */}
-                      <td className="px-6 py-3.5 text-[10px] text-slate-400 font-mono max-w-[150px] lg:max-w-[250px] truncate" title={log.user_agent}>
+                      <td className="px-6 py-3.5 text-[10px] text-slate-400 font-mono whitespace-normal break-words">
                         {log.user_agent || 'Unknown Agent'}
                       </td>
                     </tr>
@@ -191,11 +202,11 @@ export default function VisitorLogs() {
           </div>
         )}
         
-        {/* Table Footer Stats */}
+        {/* Table Footer Stats (Fixed bar at bottom with dark theme) */}
         {!loading && logs.length > 0 && (
-          <div className="px-6 py-3 bg-gray-50 border-t border-gray-150 text-[10px] sm:text-xs font-bold text-slate-500 font-mono flex items-center justify-between">
-            <span>SYSTEM ONLINE // TRACKING {logs.length} ACTIVE CONNECTIONS</span>
-            <span className="flex items-center gap-1.5 text-emerald-600">
+          <div className="px-6 py-4 bg-slate-900 border-t border-slate-800 text-xs font-bold text-gray-300 font-mono flex items-center justify-between">
+            <span>SYSTEM ONLINE // TRACKING 50 ACTIVE CONNECTIONS</span>
+            <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
               Sistem Aktif
             </span>
