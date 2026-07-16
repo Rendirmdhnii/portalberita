@@ -56,7 +56,7 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans overflow-hidden relative">
+    <div className="flex h-screen overflow-hidden bg-gray-50 font-sans relative">
       {/* Overlay Mobile */}
       {isSidebarOpen && (
         <div
@@ -66,9 +66,9 @@ export default function AdminLayout({ children }) {
       )}
 
       {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-gray-900 text-white flex flex-col z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="h-24 flex flex-col items-center justify-center border-b border-gray-800 bg-gray-950 shrink-0 px-4 relative">
-          <img src="/logo-pojoktv.png" alt="Logo PojokTV" className="w-48 sm:w-56 h-auto mx-auto object-contain drop-shadow-md mb-2" />
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-[#1a2234] h-screen flex flex-col text-white z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="h-24 flex flex-col items-center justify-center border-b border-gray-700/50 bg-[#141a28] shrink-0 px-4 relative">
+          <img src="/logo-pojoktv.png" alt="Logo PojokTV" className="w-40 sm:w-48 h-auto object-contain mx-auto drop-shadow-sm" />
           <span className="text-xs text-gray-300 font-bold uppercase tracking-[0.2em] mt-2">Panel Admin Redaksi</span>
           <button onClick={() => setIsSidebarOpen(false)} className="md:hidden absolute top-3 right-3 text-gray-400 hover:text-white p-1.5">
             <i className="fa-solid fa-xmark text-lg"></i>
@@ -91,10 +91,35 @@ export default function AdminLayout({ children }) {
             <i className="fa-brands fa-youtube w-5"></i> Kelola Video
           </Link>
         </nav>
+
+        {/* System Status Widget */}
+        <div className="mt-auto p-4 border-t border-gray-700/50 bg-[#141a28]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">System Status</span>
+            <span className="flex items-center">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse mr-1.5"></span>
+              <span className="text-xs text-green-400 font-medium">Online</span>
+            </span>
+          </div>
+          <div className="space-y-1">
+            <div className="flex justify-between text-[11px] text-gray-400">
+              <span>Server</span>
+              <span className="text-gray-300">Vercel Edge</span>
+            </div>
+            <div className="flex justify-between text-[11px] text-gray-400">
+              <span>Database</span>
+              <span className="text-gray-300">Supabase</span>
+            </div>
+            <div className="flex justify-between text-[11px] text-gray-400 mt-2 pt-2 border-t border-gray-700/50">
+              <span>PojokTV Admin</span>
+              <span>v2.1.0-pro</span>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden w-full">
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-16 bg-white shadow-sm flex justify-between items-center w-full px-4 sm:px-6 shrink-0 border-b border-gray-200">
           <div className="flex items-center gap-4">
             <button
@@ -120,7 +145,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 sm:p-6 text-gray-900">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 text-gray-900">
           {children}
         </main>
       </div>
