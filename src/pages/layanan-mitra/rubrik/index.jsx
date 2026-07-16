@@ -8,7 +8,7 @@ const ITEMS_PER_PAGE = 15;
 function GuideBox({ title, children }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 overflow-hidden">
+    <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left text-blue-800 font-semibold text-sm hover:bg-blue-100 transition-colors"
@@ -186,7 +186,7 @@ export default function CategoryIndex() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form (Desktop only — di mobile pakai modal) */}
-        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+        <div className="hidden lg:block bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-fit">
           <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Rubrik Baru</h3>
           <AddForm />
         </div>
@@ -194,7 +194,7 @@ export default function CategoryIndex() {
         {/* Daftar Rubrik */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Search */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-3 border-b border-gray-200">
             <div className="relative">
               <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
               <input
@@ -236,23 +236,23 @@ export default function CategoryIndex() {
               </div>
 
               {/* Desktop Table */}
-              <div className="hidden md:block">
+              <div className="hidden md:block max-h-[50vh] sm:max-h-[55vh] overflow-y-auto overflow-x-auto relative">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
+                  <thead className="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
                     <tr>
-                      <th className="px-6 py-3">Nama Rubrik</th>
-                      <th className="px-6 py-3">Slug URL</th>
-                      <th className="px-6 py-3 text-right">Aksi</th>
+                      <th className="px-6 py-1.5">Nama Rubrik</th>
+                      <th className="px-6 py-1.5">Slug URL</th>
+                      <th className="px-6 py-1.5 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {paginated.map(cat => (
                       <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
-                        <td className="px-6 py-3 font-bold text-gray-900">{cat.name}</td>
-                        <td className="px-6 py-3 font-mono text-xs text-gray-500">/kategori/{cat.slug}</td>
-                        <td className="px-6 py-3 text-right">
+                        <td className="px-6 py-1.5 font-bold text-gray-900 text-sm">{cat.name}</td>
+                        <td className="px-6 py-1.5 font-mono text-xs text-gray-500 text-sm">/kategori/{cat.slug}</td>
+                        <td className="px-6 py-1.5 text-right">
                           <button onClick={() => handleDelete(cat.id)}
-                            className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                            className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
                             Hapus Rubrik
                           </button>
                         </td>
