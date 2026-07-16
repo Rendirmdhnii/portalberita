@@ -68,8 +68,8 @@ export default function AdminLayout({ children }) {
       {/* SIDEBAR */}
       <aside className={`fixed inset-y-0 left-0 w-64 bg-[#1a2234] h-screen flex flex-col text-white z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-4 border-b border-gray-700/50 bg-[#141a28] shrink-0 relative">
-          <div className="bg-white rounded-lg p-2.5 flex justify-center items-center shadow-md">
-            <img src="/logo-pojoktv.png" alt="PojokTV" className="h-7 sm:h-8 w-auto object-contain" />
+          <div className="bg-white rounded-lg py-3 px-4 flex justify-center items-center shadow-md w-full">
+            <img src="/logo-pojoktv.png" alt="PojokTV" className="w-full h-auto max-h-12 sm:max-h-14 object-contain drop-shadow-sm" />
           </div>
           <div className="text-center mt-4">
             <span className="text-xs text-gray-300 font-bold uppercase tracking-[0.2em]">Panel Admin Redaksi</span>
