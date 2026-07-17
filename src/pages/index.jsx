@@ -7,6 +7,50 @@ import EmptyState from '@/components/EmptyState';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
+// State-independent helper functions declared at the file level to prevent TDZ and recreate overhead
+const formatTimeAgo = (dateString) => {
+  if (!dateString) return '';
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now - date;
+  
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHrs = Math.floor(diffMin / 60);
+  const diffDays = Math.floor(diffHrs / 24);
+
+  if (diffSec < 60) return 'Baru Saja';
+  if (diffMin < 60) return `${diffMin} Menit Lalu`;
+  if (diffHrs < 24) return `${diffHrs} Jam Lalu`;
+  return `${diffDays} Hari Lalu`;
+};
+
+const getThumbnail = (post) => {
+  if (!post) return '';
+  const imagesData = post.images || post.image;
+  if (!imagesData) return '';
+  if (Array.isArray(imagesData)) {
+    return imagesData[0] || '';
+  }
+  if (typeof imagesData === 'string') {
+    try {
+      if (imagesData.startsWith('[')) {
+        const parsed = JSON.parse(imagesData);
+        return parsed[0] || '';
+      }
+    } catch (e) {
+      // ignore
+    }
+    return imagesData;
+  }
+  return '';
+};
+
+const cleanExcerpt = (text) => {
+  if (!text) return '';
+  return text.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '').trim();
+};
+
 export default function Home({
   initialCategories = [],
   initialBerita = [],
@@ -31,6 +75,50 @@ export default function Home({
   const [videos, setVideos] = useState(initialVideos);
   const [loading, setLoading] = useState(initialBerita.length === 0);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // ── News bucketing (declared at the top to prevent Temporal Dead Zone ReferenceErrors) ──
+  // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
+  const headlineSlides = useMemo(() => {
+    if (headlines && headlines.length > 0) return headlines;
+    // Fallback: legacy positions
+    const legacyHeadlines = berita?.filter(n => n.posisi_tampilan === 'HEADLINE' || n.posisi_layout === 'headline') || [];
+    return legacyHeadlines.length > 0 ? legacyHeadlines : berita?.slice(0, 3) || [];
+  }, [headlines, berita]);
+
+  const sideHeadlines = useMemo(() => {
+    return headlineSlides.slice(1, 3);
+  }, [headlineSlides]);
+
+  // Sorotan: berita dengan posisi_tampilan === 'SOROTAN'
+  const sorotanNews = useMemo(() => {
+    if (sorotan && sorotan.length > 0) return sorotan.slice(0, 4);
+    // Fallback: legacy positions
+    const legacySorotan = berita?.filter(n => n.posisi_tampilan === 'SOROTAN' || n.posisi_layout === 'sorotan') || [];
+    if (legacySorotan.length > 0) return legacySorotan.slice(0, 4);
+    
+    // Ultimate Fallback: berita terbaru yang bukan headline
+    const headlineIds = new Set(headlineSlides.map(n => n.id));
+    return (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
+  }, [sorotan, berita, headlineSlides]);
+
+  // Global deduplication: semua ID yang sudah tampil di atas
+  const displayedNewsIds = useMemo(() => {
+    return new Set([
+      ...headlineSlides.map(n => n.id),
+      ...sorotanNews.map(n => n.id)
+    ]);
+  }, [headlineSlides, sorotanNews]);
+
+  // Berita reguler untuk Berita Terbaru (deduplikasi)
+  const feedBerita = useMemo(() => {
+    return berita?.filter(n => !displayedNewsIds.has(n.id)) || [];
+  }, [berita, displayedNewsIds]);
+
+  // Filter Kriminal (deduplikasi)
+  const kriminalNews = useMemo(() => {
+    return (berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [])
+      .filter(p => !displayedNewsIds.has(p.id));
+  }, [berita, displayedNewsIds]);
 
   useEffect(() => {
     // Realtime Clock
@@ -98,48 +186,7 @@ export default function Home({
     return () => clearInterval(interval);
   }, [headlineSlides]);
 
-  const formatTimeAgo = (dateString) => {
-    if (!dateString) return '';
-    const now = new Date();
-    const date = new Date(dateString);
-    const diffMs = now - date;
-    
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHrs = Math.floor(diffMin / 60);
-    const diffDays = Math.floor(diffHrs / 24);
-
-    if (diffSec < 60) return 'Baru Saja';
-    if (diffMin < 60) return `${diffMin} Menit Lalu`;
-    if (diffHrs < 24) return `${diffHrs} Jam Lalu`;
-    return `${diffDays} Hari Lalu`;
-  };
-
-  const getThumbnail = (post) => {
-    if (!post) return '';
-    const imagesData = post.images || post.image;
-    if (!imagesData) return '';
-    if (Array.isArray(imagesData)) {
-      return imagesData[0] || '';
-    }
-    if (typeof imagesData === 'string') {
-      try {
-        if (imagesData.startsWith('[')) {
-          const parsed = JSON.parse(imagesData);
-          return parsed[0] || '';
-        }
-      } catch (e) {
-        // ignore
-      }
-      return imagesData;
-    }
-    return '';
-  };
-
-  const cleanExcerpt = (text) => {
-    if (!text) return '';
-    return text.replace(/&nbsp;/g, ' ').replace(/<[^>]+>/g, '').trim();
-  };
+  // Helper methods
 
   const handleLiveTv = () => {
     alert("Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
@@ -173,45 +220,7 @@ export default function Home({
   const middleAd = ads?.find(a => a.position === 'Tengah Konten');
   const footerAd = ads?.find(a => a.position === 'Footer');
 
-  // ── News bucketing by posisi_layout ──────────────────────────────
-  // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
-  const headlineSlides = useMemo(() => {
-    if (headlines && headlines.length > 0) return headlines;
-    // Fallback: legacy positions
-    const legacyHeadlines = berita?.filter(n => n.posisi_tampilan === 'HEADLINE' || n.posisi_layout === 'headline') || [];
-    return legacyHeadlines.length > 0 ? legacyHeadlines : berita?.slice(0, 3) || [];
-  }, [headlines, berita]);
-
-  const sideHeadlines = useMemo(() => {
-    return headlineSlides.slice(1, 3);
-  }, [headlineSlides]);
-
-  // Sorotan: berita dengan posisi_tampilan === 'SOROTAN'
-  const sorotanNews = useMemo(() => {
-    if (sorotan && sorotan.length > 0) return sorotan.slice(0, 4);
-    // Fallback: legacy positions
-    const legacySorotan = berita?.filter(n => n.posisi_tampilan === 'SOROTAN' || n.posisi_layout === 'sorotan') || [];
-    if (legacySorotan.length > 0) return legacySorotan.slice(0, 4);
-    
-    // Ultimate Fallback: berita terbaru yang bukan headline
-    const headlineIds = new Set(headlineSlides.map(n => n.id));
-    return (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
-  }, [sorotan, berita, headlineSlides]);
-
-  // Global deduplication: semua ID yang sudah tampil di atas
-  const displayedNewsIds = useMemo(() => {
-    return new Set([
-      ...headlineSlides.map(n => n.id),
-      ...sorotanNews.map(n => n.id)
-    ]);
-  }, [headlineSlides, sorotanNews]);
-
-  // Berita reguler untuk Berita Terbaru (deduplikasi)
-  const feedBerita = berita?.filter(n => !displayedNewsIds.has(n.id)) || [];
-
-  // Filter Kriminal (deduplikasi)
-  const kriminalNews = (berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [])
-    .filter(p => !displayedNewsIds.has(p.id));
+  // Bucketed lists processed above to prevent TDZ
 
   // Sorted by views
   const popularNews = berita ? [...berita].sort((a, b) => (b.views || 0) - (a.views || 0)) : [];
