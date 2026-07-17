@@ -2338,3 +2338,64 @@ button, input {
   font-weight: 900 !important;
 }
 
+/* Custom Rich Text Styling for Static Pages */
+.rich-text-content {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #374151;
+}
+.rich-text-content p {
+  margin-bottom: 1.5rem !important;
+}
+.rich-text-content h1, 
+.rich-text-content h2, 
+.rich-text-content h3 {
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+}
+.rich-text-content h2 {
+  font-size: 1.5rem !important;
+}
+.rich-text-content h3 {
+  font-size: 1.25rem !important;
+}
+.rich-text-content ul, 
+.rich-text-content ol {
+  margin-left: 1.5rem !important;
+  margin-bottom: 1.5rem !important;
+  list-style-position: outside !important;
+}
+.rich-text-content ul {
+  list-style-type: disc !important;
+}
+.rich-text-content ol {
+  list-style-type: decimal !important;
+}
+.rich-text-content li {
+  margin-bottom: 0.5rem !important;
+}
+.rich-text-content blockquote {
+  border-left: 4px solid #ef4444 !important;
+  padding-left: 1.25rem !important;
+  font-style: italic !important;
+  color: #4b5563 !important;
+  margin: 1.5rem 0 !important;
+}
+.rich-text-content strong {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+.rich-text-content em {
+  font-style: italic !important;
+}
+.rich-text-content a {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+.rich-text-content a:hover {
+  color: #1d4ed8 !important;
+}
+
+
