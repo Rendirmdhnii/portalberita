@@ -262,30 +262,31 @@ export default function Home({
               headlineSlides.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
                   {/* KIRI: CAROUSEL SLIDER DENGAN TRANSISI HALUS */}
-                  <div className="lg:col-span-2 relative w-full h-[320px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200">
+                  <div className="lg:col-span-2 relative w-full h-[370px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200">
                     {headlineSlides.map((slide, idx) => {
                       const isActive = currentSlide === idx;
                       return (
                         <div
                           key={slide.id}
-                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out flex flex-col md:block ${
                             isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                           }`}
                         >
-                          <img 
-                            src={slide.gambar_utama || getThumbnail(slide)} 
-                            alt={slide.title} 
-                            className="absolute inset-0 w-full h-full object-cover" 
-                          />
-                          {/* Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent z-[1]" />
+                          {/* Lapisan Visual (Image) */}
+                          <div className="relative w-full h-[220px] md:h-full shrink-0">
+                            <img 
+                              src={slide.gambar_utama || getThumbnail(slide)} 
+                              alt={slide.title} 
+                              className="absolute inset-0 w-full h-full object-cover" 
+                            />
+                          </div>
                           
-                          {/* Content Overlay */}
-                          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white z-[2]">
-                            <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">
+                          {/* Lapisan Konten (Text & Metadata) */}
+                          <div className="flex flex-col justify-end p-4 bg-slate-900 flex-1 md:absolute md:inset-0 md:bg-transparent md:bg-gradient-to-t md:from-black/95 md:via-black/40 md:to-transparent md:p-6 md:pb-8 text-white z-10">
+                            <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3 self-start">
                               {slide.category || slide.kategori || slide.rubrik}
                             </span>
-                            <h2 className="text-xl md:text-3xl font-extrabold text-white leading-tight mb-4 hover:text-red-400 transition-colors">
+                            <h2 className="text-lg md:text-3xl font-extrabold text-white leading-tight mb-3 hover:text-red-400 transition-colors line-clamp-2 md:line-clamp-none">
                               <Link href={`/berita/${slide.slug}`}>{slide.title}</Link>
                             </h2>
                             
@@ -312,12 +313,12 @@ export default function Home({
 
                     {/* Dot Indicators */}
                     {headlineSlides.length > 1 && (
-                      <div className="absolute bottom-5 right-5 flex gap-1.5 z-20">
+                      <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex gap-1.5 z-20">
                         {headlineSlides.map((_, idx) => (
                           <button
                             key={idx}
                             onClick={() => setCurrentSlide(idx)}
-                            className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
                               currentSlide === idx ? 'bg-red-650 w-6' : 'bg-white/50 hover:bg-white'
                             }`}
                             aria-label={`Buka slide ${idx + 1}`}
