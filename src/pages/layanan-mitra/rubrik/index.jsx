@@ -56,12 +56,7 @@ export default function CategoryIndex() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pinCallback, setPinCallback] = useState(null);
-
-  const triggerWithPin = (callback) => {
-    setPinCallback(() => callback);
-    setIsPinModalOpen(true);
-  };
+  const [pendingAction, setPendingAction] = useState(null);
 
   const fetchCategories = async () => {
     try {
@@ -82,34 +77,32 @@ export default function CategoryIndex() {
     if (e) e.preventDefault();
     if (name.trim() === '') return;
     
-    triggerWithPin(async () => {
-      setProcessing(true);
-      try {
-        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-        
-        // Fetch the current maximum sort_order to append this category at the end
-        const { data: maxData } = await supabase
-          .from('categories')
-          .select('sort_order')
-          .order('sort_order', { ascending: false })
-          .limit(1);
+    setProcessing(true);
+    try {
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      
+      // Fetch the current maximum sort_order to append this category at the end
+      const { data: maxData } = await supabase
+        .from('categories')
+        .select('sort_order')
+        .order('sort_order', { ascending: false })
+        .limit(1);
 
-        const maxSortOrder = maxData && maxData.length > 0 ? (maxData[0].sort_order || 0) : 0;
-        const nextSortOrder = maxSortOrder + 1;
+      const maxSortOrder = maxData && maxData.length > 0 ? (maxData[0].sort_order || 0) : 0;
+      const nextSortOrder = maxSortOrder + 1;
 
-        const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif', sort_order: nextSortOrder }]);
-        if (error) throw error;
-        setName('');
-        setMessage('Rubrik baru berhasil ditambahkan.');
-        setShowModal(false);
-        fetchCategories();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        alert('Gagal menambahkan rubrik: ' + err.message);
-      } finally {
-        setProcessing(false);
-      }
-    });
+      const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif', sort_order: nextSortOrder }]);
+      if (error) throw error;
+      setName('');
+      setMessage('Rubrik baru berhasil ditambahkan.');
+      setShowModal(false);
+      fetchCategories();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      alert('Gagal menambahkan rubrik: ' + err.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const moveUp = async (category) => {
@@ -185,18 +178,14 @@ export default function CategoryIndex() {
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus rubrik ini? Semua berita di rubrik ini mungkin terpengaruh.')) {
-      triggerWithPin(async () => {
-        try {
-          const { error } = await supabase.from('categories').delete().eq('id', id);
-          if (error) throw error;
-          setMessage('Rubrik berhasil dihapus.');
-          fetchCategories();
-          setTimeout(() => setMessage(''), 4000);
-        } catch (err) {
-          alert('Gagal menghapus rubrik: ' + err.message);
-        }
-      });
+    try {
+      const { error } = await supabase.from('categories').delete().eq('id', id);
+      if (error) throw error;
+      setMessage('Rubrik berhasil dihapus.');
+      fetchCategories();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      alert('Gagal menghapus rubrik: ' + err.message);
     }
   };
 
@@ -211,7 +200,7 @@ export default function CategoryIndex() {
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   const AddForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => { e.preventDefault(); setPendingAction(() => handleSubmit); setIsPinModalOpen(true); }} className="space-y-4">
       <div>
         <label className="block text-sm font-bold text-gray-800 mb-1">Nama Rubrik Baru</label>
         <input
@@ -403,7 +392,7 @@ export default function CategoryIndex() {
                               >
                                 <i className="fa-solid fa-arrow-down text-xs"></i>
                               </button>
-                              <button onClick={() => handleDelete(cat.id)}
+                              <button onClick={() => { setPendingAction(() => () => handleDelete(cat.id)); setIsPinModalOpen(true); }}
                                 className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
                                 Hapus Rubrik
                               </button>
@@ -423,10 +412,13 @@ export default function CategoryIndex() {
       </div>
       <PinAuthModal 
         isOpen={isPinModalOpen} 
-        onClose={() => setIsPinModalOpen(false)} 
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
         onSuccess={() => {
           setIsPinModalOpen(false);
-          if (pinCallback) pinCallback();
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
         }}
       />
     </AdminLayout>

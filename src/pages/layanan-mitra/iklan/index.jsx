@@ -88,12 +88,7 @@ export default function AdIndex() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pinCallback, setPinCallback] = useState(null);
-
-  const triggerWithPin = (callback) => {
-    setPinCallback(() => callback);
-    setIsPinModalOpen(true);
-  };
+  const [pendingAction, setPendingAction] = useState(null);
 
   // Form states
   const [name, setName] = useState('');
@@ -204,41 +199,35 @@ export default function AdIndex() {
     if (e) e.preventDefault();
     if (!imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
     
-    triggerWithPin(async () => {
-      setProcessing(true);
-      setError('');
-      try {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `ads/${fileName}`;
-        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
-        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
-        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-        const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
-        if (insertError) throw insertError;
-        resetForm();
-        setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
-        setShowFormModal(false);
-        fetchAds();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        setError(err.message || 'Gagal menambahkan iklan.');
-      } finally { setProcessing(false); }
-    });
+    setProcessing(true);
+    setError('');
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `ads/${fileName}`;
+      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
+      if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
+      if (insertError) throw insertError;
+      resetForm();
+      setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
+      setShowFormModal(false);
+      fetchAds();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      setError(err.message || 'Gagal menambahkan iklan.');
+    } finally { setProcessing(false); }
   };
 
   const handleDelete = async (id) => {
-    if (confirm('Apakah Anda yakin ingin menghapus iklan ini dari sistem?')) {
-      triggerWithPin(async () => {
-        try {
-          const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
-          if (deleteErr) throw deleteErr;
-          setMessage('Iklan berhasil dihapus.');
-          fetchAds();
-          setTimeout(() => setMessage(''), 4000);
-        } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }
-      });
-    }
+    try {
+      const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
+      if (deleteErr) throw deleteErr;
+      setMessage('Iklan berhasil dihapus.');
+      fetchAds();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }
   };
 
   const filtered = useMemo(() => {
@@ -301,7 +290,7 @@ export default function AdIndex() {
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={(e) => { e.preventDefault(); setPendingAction(() => handleSubmit); setIsPinModalOpen(true); }} className="space-y-4">
               {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
               <div>
                 <label className="block text-sm font-bold text-gray-800 mb-1">Nama Iklan / Klien</label>
@@ -719,7 +708,7 @@ export default function AdIndex() {
                           ) : <span className="text-gray-400 text-xs">—</span>}
                         </td>
                         <td className="px-5 py-3 text-right">
-                          <button onClick={() => handleDelete(ad.id)}
+                          <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
                             className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
                             Hapus
                           </button>
@@ -737,10 +726,13 @@ export default function AdIndex() {
       </div>
       <PinAuthModal 
         isOpen={isPinModalOpen} 
-        onClose={() => setIsPinModalOpen(false)} 
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
         onSuccess={() => {
           setIsPinModalOpen(false);
-          if (pinCallback) pinCallback();
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
         }}
       />
     </AdminLayout>

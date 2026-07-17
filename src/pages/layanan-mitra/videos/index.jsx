@@ -55,12 +55,7 @@ export default function VideoIndex() {
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pinCallback, setPinCallback] = useState(null);
-
-  const triggerWithPin = (callback) => {
-    setPinCallback(() => callback);
-    setIsPinModalOpen(true);
-  };
+  const [pendingAction, setPendingAction] = useState(null);
 
   const fetchVideos = async () => {
     try {
@@ -112,41 +107,37 @@ export default function VideoIndex() {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    triggerWithPin(async () => {
-      setProcessing(true);
-      setError('');
-      try {
-        const ytId = extractYoutubeId(link);
-        if (!ytId) throw new Error('Format link YouTube tidak valid. Harap masukkan tautan yang benar.');
-        const { error: insertError } = await supabase.from('videos').insert([{ judul, link, youtube_id: ytId }]);
-        if (insertError) throw insertError;
-        setJudul('');
-        setLink('');
-        setMessage('Video YouTube berhasil ditambahkan.');
-        setShowModal(false);
-        fetchVideos();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        setError(err.message || 'Gagal menambahkan video.');
-      } finally {
-        setProcessing(false);
-      }
-    });
+    setProcessing(true);
+    setError('');
+    try {
+      const ytId = extractYoutubeId(link);
+      if (!ytId) throw new Error('Format link YouTube tidak valid. Harap masukkan tautan yang benar.');
+      const { error: insertError } = await supabase.from('videos').insert([{ judul, link, youtube_id: ytId }]);
+      if (insertError) throw insertError;
+      setJudul('');
+      setLink('');
+      setMessage('Video YouTube berhasil ditambahkan.');
+      setShowModal(false);
+      fetchVideos();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      setError(err.message || 'Gagal menambahkan video.');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const handleDelete = async (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus video ini?')) {
-      triggerWithPin(async () => {
-        try {
-          const { error: deleteErr } = await supabase.from('videos').delete().eq('id', id);
-          if (deleteErr) throw deleteErr;
-          setMessage('Video berhasil dihapus.');
-          fetchVideos();
-          setTimeout(() => setMessage(''), 4000);
-        } catch (err) {
-          alert('Gagal menghapus video: ' + err.message);
-        }
-      });
+      try {
+        const { error: deleteErr } = await supabase.from('videos').delete().eq('id', id);
+        if (deleteErr) throw deleteErr;
+        setMessage('Video berhasil dihapus.');
+        fetchVideos();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) {
+        alert('Gagal menghapus video: ' + err.message);
+      }
     }
   };
 
@@ -161,7 +152,7 @@ export default function VideoIndex() {
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
   const AddForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => { e.preventDefault(); setPendingAction(() => handleSubmit); setIsPinModalOpen(true); }} className="space-y-4">
       {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
       <div>
         <label className="block text-sm font-bold text-gray-800 mb-1">Judul Video</label>
@@ -371,7 +362,7 @@ export default function VideoIndex() {
                         </td>
                         <td className="px-6 py-3 font-mono text-xs text-gray-500">{video.youtube_id}</td>
                         <td className="px-6 py-3 text-right">
-                          <button onClick={() => handleDelete(video.id)}
+                          <button onClick={() => { setPendingAction(() => () => handleDelete(video.id)); setIsPinModalOpen(true); }}
                             className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
                             Hapus
                           </button>
@@ -389,10 +380,13 @@ export default function VideoIndex() {
       </div>
       <PinAuthModal 
         isOpen={isPinModalOpen} 
-        onClose={() => setIsPinModalOpen(false)} 
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
         onSuccess={() => {
           setIsPinModalOpen(false);
-          if (pinCallback) pinCallback();
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
         }}
       />
     </AdminLayout>

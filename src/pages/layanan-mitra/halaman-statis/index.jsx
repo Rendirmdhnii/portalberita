@@ -34,12 +34,7 @@ export default function HalamanStatisIndex() {
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [pinCallback, setPinCallback] = useState(null);
-
-  const triggerWithPin = (callback) => {
-    setPinCallback(() => callback);
-    setIsPinModalOpen(true);
-  };
+  const [pendingAction, setPendingAction] = useState(null);
 
   const fetchPages = async () => {
     try {
@@ -71,30 +66,28 @@ export default function HalamanStatisIndex() {
     if (e) e.preventDefault();
     if (!judul.trim()) return alert('Judul tidak boleh kosong.');
     
-    triggerWithPin(async () => {
-      setProcessing(true);
-      try {
-        const { error } = await supabase
-          .from('halaman_statis')
-          .update({
-            judul,
-            konten,
-            updated_at: new Date().toISOString()
-          })
-          .eq('slug', editingPage.slug);
+    setProcessing(true);
+    try {
+      const { error } = await supabase
+        .from('halaman_statis')
+        .update({
+          judul,
+          konten,
+          updated_at: new Date().toISOString()
+        })
+        .eq('slug', editingPage.slug);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        setMessage(`Halaman "${judul}" berhasil diperbarui.`);
-        setEditingPage(null);
-        fetchPages();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        alert('Gagal memperbarui halaman: ' + err.message);
-      } finally {
-        setProcessing(false);
-      }
-    });
+      setMessage(`Halaman "${judul}" berhasil diperbarui.`);
+      setEditingPage(null);
+      fetchPages();
+      setTimeout(() => setMessage(''), 4000);
+    } catch (err) {
+      alert('Gagal memperbarui halaman: ' + err.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -133,7 +126,7 @@ export default function HalamanStatisIndex() {
               </button>
             </div>
 
-            <form onSubmit={handleUpdate} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); setPendingAction(() => handleUpdate); setIsPinModalOpen(true); }} className="space-y-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">JUDUL HALAMAN *</label>
                 <input 
@@ -229,10 +222,13 @@ export default function HalamanStatisIndex() {
       </div>
       <PinAuthModal 
         isOpen={isPinModalOpen} 
-        onClose={() => setIsPinModalOpen(false)} 
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
         onSuccess={() => {
           setIsPinModalOpen(false);
-          if (pinCallback) pinCallback();
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
         }}
       />
     </AdminLayout>

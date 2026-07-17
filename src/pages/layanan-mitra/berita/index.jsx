@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -61,6 +62,8 @@ export default function BeritaIndex() {
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
 
   const fetchPosts = async () => {
     try {
@@ -203,7 +206,7 @@ export default function BeritaIndex() {
                       <i className="fa-solid fa-pen mr-1"></i>Edit
                     </Link>
                     <button
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => { setPendingAction(() => () => handleDelete(post.id)); setIsPinModalOpen(true); }}
                       className="flex-1 text-center bg-red-600 hover:bg-red-700 text-white px-3 py-2.5 rounded-lg font-bold text-xs shadow-md transition-colors"
                     >
                       <i className="fa-solid fa-trash mr-1"></i>Hapus
@@ -249,7 +252,7 @@ export default function BeritaIndex() {
                             className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-colors mr-2"
                           >Edit</Link>
                           <button
-                            onClick={() => handleDelete(post.id)}
+                            onClick={() => { setPendingAction(() => () => handleDelete(post.id)); setIsPinModalOpen(true); }}
                             className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow-sm transition-colors"
                           >Hapus</button>
                         </div>
@@ -269,6 +272,17 @@ export default function BeritaIndex() {
           </>
         )}
       </div>
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+          }
+        }}
+      />
     </AdminLayout>
   );
 }
