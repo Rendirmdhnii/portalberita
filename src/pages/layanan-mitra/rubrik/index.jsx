@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 const ITEMS_PER_PAGE = 15;
 
@@ -53,6 +54,13 @@ export default function CategoryIndex() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinCallback, setPinCallback] = useState(null);
+
+  const triggerWithPin = (callback) => {
+    setPinCallback(() => callback);
+    setIsPinModalOpen(true);
+  };
 
   const fetchCategories = async () => {
     try {
@@ -70,34 +78,37 @@ export default function CategoryIndex() {
   useEffect(() => { fetchCategories(); }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (name.trim() === '') return;
-    setProcessing(true);
-    try {
-      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-      
-      // Fetch the current maximum sort_order to append this category at the end
-      const { data: maxData } = await supabase
-        .from('categories')
-        .select('sort_order')
-        .order('sort_order', { ascending: false })
-        .limit(1);
+    
+    triggerWithPin(async () => {
+      setProcessing(true);
+      try {
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        
+        // Fetch the current maximum sort_order to append this category at the end
+        const { data: maxData } = await supabase
+          .from('categories')
+          .select('sort_order')
+          .order('sort_order', { ascending: false })
+          .limit(1);
 
-      const maxSortOrder = maxData && maxData.length > 0 ? (maxData[0].sort_order || 0) : 0;
-      const nextSortOrder = maxSortOrder + 1;
+        const maxSortOrder = maxData && maxData.length > 0 ? (maxData[0].sort_order || 0) : 0;
+        const nextSortOrder = maxSortOrder + 1;
 
-      const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif', sort_order: nextSortOrder }]);
-      if (error) throw error;
-      setName('');
-      setMessage('Rubrik baru berhasil ditambahkan.');
-      setShowModal(false);
-      fetchCategories();
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      alert('Gagal menambahkan rubrik: ' + err.message);
-    } finally {
-      setProcessing(false);
-    }
+        const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif', sort_order: nextSortOrder }]);
+        if (error) throw error;
+        setName('');
+        setMessage('Rubrik baru berhasil ditambahkan.');
+        setShowModal(false);
+        fetchCategories();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) {
+        alert('Gagal menambahkan rubrik: ' + err.message);
+      } finally {
+        setProcessing(false);
+      }
+    });
   };
 
   const moveUp = async (category) => {
@@ -174,15 +185,17 @@ export default function CategoryIndex() {
 
   const handleDelete = async (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus rubrik ini? Semua berita di rubrik ini mungkin terpengaruh.')) {
-      try {
-        const { error } = await supabase.from('categories').delete().eq('id', id);
-        if (error) throw error;
-        setMessage('Rubrik berhasil dihapus.');
-        fetchCategories();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        alert('Gagal menghapus rubrik: ' + err.message);
-      }
+      triggerWithPin(async () => {
+        try {
+          const { error } = await supabase.from('categories').delete().eq('id', id);
+          if (error) throw error;
+          setMessage('Rubrik berhasil dihapus.');
+          fetchCategories();
+          setTimeout(() => setMessage(''), 4000);
+        } catch (err) {
+          alert('Gagal menghapus rubrik: ' + err.message);
+        }
+      });
     }
   };
 
@@ -407,6 +420,14 @@ export default function CategoryIndex() {
           )}
         </div>
       </div>
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => setIsPinModalOpen(false)} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pinCallback) pinCallback();
+        }}
+      />
     </AdminLayout>
   );
 }

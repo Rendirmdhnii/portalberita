@@ -7,6 +7,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
 import imageCompression from 'browser-image-compression';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 // Safely load ReactQuill client-side only
 const ReactQuill = dynamic(
@@ -42,6 +43,7 @@ export default function BeritaCreate() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
   const [posisiTampilan, setPosisiTampilan] = useState('REGULER');
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -155,7 +157,7 @@ export default function BeritaCreate() {
   }), []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setProcessing(true);
     setError('');
 
@@ -293,7 +295,7 @@ export default function BeritaCreate() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); setIsPinModalOpen(true); }} className="space-y-6">
           {/* Judul Utama */}
           <div>
             <label className="block text-lg font-bold text-gray-800 mb-1.5">Judul Utama Berita <span className="text-red-500">*</span></label>
@@ -667,6 +669,14 @@ export default function BeritaCreate() {
           </div>
         </div>
       )}
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => setIsPinModalOpen(false)} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          handleSubmit();
+        }}
+      />
     </AdminLayout>
   );
 }

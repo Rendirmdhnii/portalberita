@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import 'react-quill-new/dist/quill.snow.css';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 const ReactQuill = dynamic(
   async () => {
@@ -32,6 +33,13 @@ export default function HalamanStatisIndex() {
   const [konten, setKonten] = useState('');
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState('');
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinCallback, setPinCallback] = useState(null);
+
+  const triggerWithPin = (callback) => {
+    setPinCallback(() => callback);
+    setIsPinModalOpen(true);
+  };
 
   const fetchPages = async () => {
     try {
@@ -60,30 +68,33 @@ export default function HalamanStatisIndex() {
   };
 
   const handleUpdate = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!judul.trim()) return alert('Judul tidak boleh kosong.');
-    setProcessing(true);
-    try {
-      const { error } = await supabase
-        .from('halaman_statis')
-        .update({
-          judul,
-          konten,
-          updated_at: new Date().toISOString()
-        })
-        .eq('slug', editingPage.slug);
+    
+    triggerWithPin(async () => {
+      setProcessing(true);
+      try {
+        const { error } = await supabase
+          .from('halaman_statis')
+          .update({
+            judul,
+            konten,
+            updated_at: new Date().toISOString()
+          })
+          .eq('slug', editingPage.slug);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      setMessage(`Halaman "${judul}" berhasil diperbarui.`);
-      setEditingPage(null);
-      fetchPages();
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      alert('Gagal memperbarui halaman: ' + err.message);
-    } finally {
-      setProcessing(false);
-    }
+        setMessage(`Halaman "${judul}" berhasil diperbarui.`);
+        setEditingPage(null);
+        fetchPages();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) {
+        alert('Gagal memperbarui halaman: ' + err.message);
+      } finally {
+        setProcessing(false);
+      }
+    });
   };
 
   return (
@@ -216,6 +227,14 @@ export default function HalamanStatisIndex() {
           </div>
         )}
       </div>
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => setIsPinModalOpen(false)} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pinCallback) pinCallback();
+        }}
+      />
     </AdminLayout>
   );
 }

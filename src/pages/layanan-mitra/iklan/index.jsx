@@ -3,6 +3,7 @@ import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import Cropper from 'react-easy-crop';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 // ============================================================
 // Canvas Cropping Helpers
@@ -86,6 +87,13 @@ export default function AdIndex() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinCallback, setPinCallback] = useState(null);
+
+  const triggerWithPin = (callback) => {
+    setPinCallback(() => callback);
+    setIsPinModalOpen(true);
+  };
 
   // Form states
   const [name, setName] = useState('');
@@ -193,38 +201,43 @@ export default function AdIndex() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
-    setProcessing(true);
-    setError('');
-    try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `ads/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
-      if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-      const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
-      if (insertError) throw insertError;
-      resetForm();
-      setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
-      setShowFormModal(false);
-      fetchAds();
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      setError(err.message || 'Gagal menambahkan iklan.');
-    } finally { setProcessing(false); }
+    
+    triggerWithPin(async () => {
+      setProcessing(true);
+      setError('');
+      try {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `ads/${fileName}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
+        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
+        if (insertError) throw insertError;
+        resetForm();
+        setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
+        setShowFormModal(false);
+        fetchAds();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) {
+        setError(err.message || 'Gagal menambahkan iklan.');
+      } finally { setProcessing(false); }
+    });
   };
 
   const handleDelete = async (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus iklan ini dari sistem?')) {
-      try {
-        const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
-        if (deleteErr) throw deleteErr;
-        setMessage('Iklan berhasil dihapus.');
-        fetchAds();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }
+      triggerWithPin(async () => {
+        try {
+          const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
+          if (deleteErr) throw deleteErr;
+          setMessage('Iklan berhasil dihapus.');
+          fetchAds();
+          setTimeout(() => setMessage(''), 4000);
+        } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }
+      });
     }
   };
 
@@ -722,6 +735,14 @@ export default function AdIndex() {
           )}
         </div>
       </div>
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => setIsPinModalOpen(false)} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pinCallback) pinCallback();
+        }}
+      />
     </AdminLayout>
   );
 }

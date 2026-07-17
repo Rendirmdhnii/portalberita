@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import PinAuthModal from '@/components/admin/PinAuthModal';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -53,6 +54,13 @@ export default function VideoIndex() {
   const [showModal, setShowModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinCallback, setPinCallback] = useState(null);
+
+  const triggerWithPin = (callback) => {
+    setPinCallback(() => callback);
+    setIsPinModalOpen(true);
+  };
 
   const fetchVideos = async () => {
     try {
@@ -102,38 +110,43 @@ export default function VideoIndex() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setProcessing(true);
-    setError('');
-    try {
-      const ytId = extractYoutubeId(link);
-      if (!ytId) throw new Error('Format link YouTube tidak valid. Harap masukkan tautan yang benar.');
-      const { error: insertError } = await supabase.from('videos').insert([{ judul, link, youtube_id: ytId }]);
-      if (insertError) throw insertError;
-      setJudul('');
-      setLink('');
-      setMessage('Video YouTube berhasil ditambahkan.');
-      setShowModal(false);
-      fetchVideos();
-      setTimeout(() => setMessage(''), 4000);
-    } catch (err) {
-      setError(err.message || 'Gagal menambahkan video.');
-    } finally {
-      setProcessing(false);
-    }
+    if (e) e.preventDefault();
+    
+    triggerWithPin(async () => {
+      setProcessing(true);
+      setError('');
+      try {
+        const ytId = extractYoutubeId(link);
+        if (!ytId) throw new Error('Format link YouTube tidak valid. Harap masukkan tautan yang benar.');
+        const { error: insertError } = await supabase.from('videos').insert([{ judul, link, youtube_id: ytId }]);
+        if (insertError) throw insertError;
+        setJudul('');
+        setLink('');
+        setMessage('Video YouTube berhasil ditambahkan.');
+        setShowModal(false);
+        fetchVideos();
+        setTimeout(() => setMessage(''), 4000);
+      } catch (err) {
+        setError(err.message || 'Gagal menambahkan video.');
+      } finally {
+        setProcessing(false);
+      }
+    });
   };
 
   const handleDelete = async (id) => {
     if (confirm('Apakah Anda yakin ingin menghapus video ini?')) {
-      try {
-        const { error: deleteErr } = await supabase.from('videos').delete().eq('id', id);
-        if (deleteErr) throw deleteErr;
-        setMessage('Video berhasil dihapus.');
-        fetchVideos();
-        setTimeout(() => setMessage(''), 4000);
-      } catch (err) {
-        alert('Gagal menghapus video: ' + err.message);
-      }
+      triggerWithPin(async () => {
+        try {
+          const { error: deleteErr } = await supabase.from('videos').delete().eq('id', id);
+          if (deleteErr) throw deleteErr;
+          setMessage('Video berhasil dihapus.');
+          fetchVideos();
+          setTimeout(() => setMessage(''), 4000);
+        } catch (err) {
+          alert('Gagal menghapus video: ' + err.message);
+        }
+      });
     }
   };
 
@@ -374,6 +387,14 @@ export default function VideoIndex() {
           )}
         </div>
       </div>
+      <PinAuthModal 
+        isOpen={isPinModalOpen} 
+        onClose={() => setIsPinModalOpen(false)} 
+        onSuccess={() => {
+          setIsPinModalOpen(false);
+          if (pinCallback) pinCallback();
+        }}
+      />
     </AdminLayout>
   );
 }
