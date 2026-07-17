@@ -75,6 +75,8 @@ export default function Home({
   const [videos, setVideos] = useState(initialVideos);
   const [loading, setLoading] = useState(initialBerita.length === 0);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
 
   // ── News bucketing (declared at the top to prevent Temporal Dead Zone ReferenceErrors) ──
   // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
@@ -177,16 +179,35 @@ export default function Home({
     }
   }, []);
 
-  // Auto-slide effect for Hero Carousel
+  // Auto-slide effect for Hero Carousel (resets interval loop on currentSlide manual adjustments)
   useEffect(() => {
     if (headlineSlides.length <= 1) return;
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % headlineSlides.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, [headlineSlides]);
+  }, [currentSlide, headlineSlides.length]);
 
   // Helper methods
+  const nextSlide = () => {
+    if (headlineSlides.length <= 1) return;
+    setCurrentSlide((prev) => (prev + 1) % headlineSlides.length);
+  };
+
+  const prevSlide = () => {
+    if (headlineSlides.length <= 1) return;
+    setCurrentSlide((prev) => (prev > 0 ? prev - 1 : headlineSlides.length - 1));
+  };
+
+  const handleTouchEnd = () => {
+    if (headlineSlides.length <= 1) return;
+    const diffX = touchStartX - touchEndX;
+    if (diffX > 50) {
+      nextSlide();
+    } else if (diffX < -50) {
+      prevSlide();
+    }
+  };
 
   const handleLiveTv = () => {
     alert("Menghubungkan ke Siaran Live Streaming PojokTV... (Siaran Berjalan Lancar)");
@@ -261,8 +282,13 @@ export default function Home({
             ) : (
               headlineSlides.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
-                  {/* KIRI: CAROUSEL SLIDER DENGAN TRANSISI HALUS */}
-                  <div className="lg:col-span-2 relative w-full h-[370px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200">
+                  {/* KIRI: CAROUSEL SLIDER DENGAN SWIPE GESTURE & MULTI-TOUCH SUPPORT */}
+                  <div 
+                    onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
+                    onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
+                    onTouchEnd={handleTouchEnd}
+                    className="lg:col-span-2 relative w-full h-[370px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200 cursor-grab active:cursor-grabbing"
+                  >
                     {headlineSlides.map((slide, idx) => {
                       const isActive = currentSlide === idx;
                       return (
@@ -277,12 +303,13 @@ export default function Home({
                             <img 
                               src={slide.gambar_utama || getThumbnail(slide)} 
                               alt={slide.title} 
-                              className="absolute inset-0 w-full h-full object-cover" 
+                              className="absolute inset-0 w-full h-full object-cover select-none" 
+                              draggable="false"
                             />
                           </div>
                           
                           {/* Lapisan Konten (Text & Metadata) */}
-                          <div className="flex flex-col justify-end p-4 bg-slate-900 flex-1 md:absolute md:inset-0 md:bg-transparent md:bg-gradient-to-t md:from-black/95 md:via-black/40 md:to-transparent md:p-6 md:pb-8 text-white z-10">
+                          <div className="flex flex-col justify-end p-4 bg-slate-900 flex-1 md:absolute md:inset-0 md:bg-transparent md:bg-gradient-to-t md:from-black/95 md:via-black/40 md:to-transparent md:p-6 md:pb-8 text-white z-10 select-none">
                             <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3 self-start">
                               {slide.category || slide.kategori || slide.rubrik}
                             </span>
@@ -293,7 +320,7 @@ export default function Home({
                             {/* Metadata */}
                             <div className="flex items-center text-xs text-gray-300 gap-2 flex-wrap font-medium">
                               <div className="flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <svg xmlns="http://www.w3.org/2050/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                                 <span>{slide.author || slide.penulis || 'Redaksi PojokTV'}</span>
@@ -310,22 +337,6 @@ export default function Home({
                         </div>
                       );
                     })}
-
-                    {/* Dot Indicators */}
-                    {headlineSlides.length > 1 && (
-                      <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 flex gap-1.5 z-20">
-                        {headlineSlides.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setCurrentSlide(idx)}
-                            className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-                              currentSlide === idx ? 'bg-red-650 w-6' : 'bg-white/50 hover:bg-white'
-                            }`}
-                            aria-label={`Buka slide ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
                   </div>
 
                   {/* KANAN: 2 KOTAK KECIL BERSUSUN */}
