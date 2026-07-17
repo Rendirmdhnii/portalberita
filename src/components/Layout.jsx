@@ -14,7 +14,7 @@ export default function Layout({ children, activeCategoryName }) {
           .from('categories')
           .select('*')
           .eq('status', 'Aktif')
-          .order('name');
+          .order('sort_order', { ascending: true });
         if (data) {
           setCategories(data);
         }

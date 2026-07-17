@@ -57,7 +57,7 @@ export default function KategoriPage() {
         .from('categories')
         .select('*')
         .eq('status', 'Aktif')
-        .order('name');
+        .order('sort_order', { ascending: true });
       
       setCategories(catData || []);
 

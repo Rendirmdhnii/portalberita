@@ -57,7 +57,7 @@ export default function CategoryIndex() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('categories').select('*').order('name');
+      const { data, error } = await supabase.from('categories').select('*').order('sort_order', { ascending: true });
       if (error) throw error;
       setCategories(data || []);
     } catch (err) {
@@ -75,7 +75,18 @@ export default function CategoryIndex() {
     setProcessing(true);
     try {
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-      const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif' }]);
+      
+      // Fetch the current maximum sort_order to append this category at the end
+      const { data: maxData } = await supabase
+        .from('categories')
+        .select('sort_order')
+        .order('sort_order', { ascending: false })
+        .limit(1);
+
+      const maxSortOrder = maxData && maxData.length > 0 ? (maxData[0].sort_order || 0) : 0;
+      const nextSortOrder = maxSortOrder + 1;
+
+      const { error } = await supabase.from('categories').insert([{ name, slug, status: 'Aktif', sort_order: nextSortOrder }]);
       if (error) throw error;
       setName('');
       setMessage('Rubrik baru berhasil ditambahkan.');
@@ -84,6 +95,78 @@ export default function CategoryIndex() {
       setTimeout(() => setMessage(''), 4000);
     } catch (err) {
       alert('Gagal menambahkan rubrik: ' + err.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const moveUp = async (category) => {
+    const index = categories.findIndex(c => c.id === category.id);
+    if (index <= 0) return; // Already at the top
+    const prevCategory = categories[index - 1];
+
+    let currentOrder = category.sort_order ?? 0;
+    let prevOrder = prevCategory.sort_order ?? 0;
+
+    // Swap values
+    if (currentOrder === prevOrder) {
+      currentOrder = prevOrder - 1;
+    } else {
+      const temp = currentOrder;
+      currentOrder = prevOrder;
+      prevOrder = temp;
+    }
+
+    setProcessing(true);
+    try {
+      const [res1, res2] = await Promise.all([
+        supabase.from('categories').update({ sort_order: currentOrder }).eq('id', category.id),
+        supabase.from('categories').update({ sort_order: prevOrder }).eq('id', prevCategory.id)
+      ]);
+      if (res1.error) throw res1.error;
+      if (res2.error) throw res2.error;
+
+      await fetchCategories();
+      setMessage('Urutan rubrik berhasil diperbarui.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      alert('Gagal mengubah urutan rubrik: ' + err.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const moveDown = async (category) => {
+    const index = categories.findIndex(c => c.id === category.id);
+    if (index < 0 || index >= categories.length - 1) return; // Already at the bottom
+    const nextCategory = categories[index + 1];
+
+    let currentOrder = category.sort_order ?? 0;
+    let nextOrder = nextCategory.sort_order ?? 0;
+
+    // Swap values
+    if (currentOrder === nextOrder) {
+      currentOrder = nextOrder + 1;
+    } else {
+      const temp = currentOrder;
+      currentOrder = nextOrder;
+      nextOrder = temp;
+    }
+
+    setProcessing(true);
+    try {
+      const [res1, res2] = await Promise.all([
+        supabase.from('categories').update({ sort_order: currentOrder }).eq('id', category.id),
+        supabase.from('categories').update({ sort_order: nextOrder }).eq('id', nextCategory.id)
+      ]);
+      if (res1.error) throw res1.error;
+      if (res2.error) throw res2.error;
+
+      await fetchCategories();
+      setMessage('Urutan rubrik berhasil diperbarui.');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      alert('Gagal mengubah urutan rubrik: ' + err.message);
     } finally {
       setProcessing(false);
     }
@@ -219,20 +302,48 @@ export default function CategoryIndex() {
             <>
               {/* Mobile Cards */}
               <div className="md:hidden divide-y divide-gray-100">
-                {paginated.map(cat => (
-                  <div key={cat.id} className="flex items-center justify-between px-4 py-3">
-                    <div>
-                      <p className="font-bold text-gray-900 text-sm">{cat.name}</p>
-                      <p className="text-xs text-gray-500 font-mono">/kategori/{cat.slug}</p>
+                {paginated.map(cat => {
+                  const globalIdx = categories.findIndex(c => c.id === cat.id);
+                  const isFirst = globalIdx === 0;
+                  const isLast = globalIdx === categories.length - 1;
+                  return (
+                    <div key={cat.id} className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-gray-900 text-sm">{cat.name}</p>
+                          <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200">
+                            Urutan: {cat.sort_order ?? 0}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 font-mono">/kategori/{cat.slug}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          onClick={() => moveUp(cat)}
+                          disabled={isFirst || processing}
+                          className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                          title="Naik"
+                        >
+                          <i className="fa-solid fa-arrow-up text-xs"></i>
+                        </button>
+                        <button
+                          onClick={() => moveDown(cat)}
+                          disabled={isLast || processing}
+                          className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                          title="Turun"
+                        >
+                          <i className="fa-solid fa-arrow-down text-xs"></i>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(cat.id)}
+                          className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg border border-red-200 font-bold transition-colors shrink-0"
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleDelete(cat.id)}
-                      className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors shrink-0"
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Desktop Table */}
@@ -241,23 +352,52 @@ export default function CategoryIndex() {
                   <thead className="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
                     <tr>
                       <th className="px-6 py-1.5">Nama Rubrik</th>
+                      <th className="px-6 py-1.5">Urutan</th>
                       <th className="px-6 py-1.5">Slug URL</th>
                       <th className="px-6 py-1.5 text-right">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {paginated.map(cat => (
-                      <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
-                        <td className="px-6 py-1.5 font-bold text-gray-900 text-sm">{cat.name}</td>
-                        <td className="px-6 py-1.5 font-mono text-xs text-gray-500 text-sm">/kategori/{cat.slug}</td>
-                        <td className="px-6 py-1.5 text-right">
-                          <button onClick={() => handleDelete(cat.id)}
-                            className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
-                            Hapus Rubrik
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {paginated.map(cat => {
+                      const globalIdx = categories.findIndex(c => c.id === cat.id);
+                      const isFirst = globalIdx === 0;
+                      const isLast = globalIdx === categories.length - 1;
+                      return (
+                        <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
+                          <td className="px-6 py-1.5 font-bold text-gray-900 text-sm">{cat.name}</td>
+                          <td className="px-6 py-1.5 font-semibold text-gray-700 text-sm">
+                            <span className="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded border border-gray-200 text-xs font-mono">
+                              {cat.sort_order ?? 0}
+                            </span>
+                          </td>
+                          <td className="px-6 py-1.5 font-mono text-xs text-gray-500 text-sm">/kategori/{cat.slug}</td>
+                          <td className="px-6 py-1.5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => moveUp(cat)}
+                                disabled={isFirst || processing}
+                                className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                title="Naik"
+                              >
+                                <i className="fa-solid fa-arrow-up text-xs"></i>
+                              </button>
+                              <button
+                                onClick={() => moveDown(cat)}
+                                disabled={isLast || processing}
+                                className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                title="Turun"
+                              >
+                                <i className="fa-solid fa-arrow-down text-xs"></i>
+                              </button>
+                              <button onClick={() => handleDelete(cat.id)}
+                                className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
+                                Hapus Rubrik
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

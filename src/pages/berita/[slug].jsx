@@ -521,7 +521,7 @@ export async function getServerSideProps({ params, res }) {
       .from('categories')
       .select('*')
       .eq('status', 'Aktif')
-      .order('name');
+      .order('sort_order', { ascending: true });
 
     // 3. Fetch ads
     const { data: ads } = await supabase

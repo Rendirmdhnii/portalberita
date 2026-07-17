@@ -55,7 +55,7 @@ export default function SearchPage() {
         .from('categories')
         .select('*')
         .eq('status', 'Aktif')
-        .order('name');
+        .order('sort_order', { ascending: true });
       setCategories(catData || []);
 
       // 2. Fetch ads

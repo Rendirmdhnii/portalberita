@@ -55,7 +55,7 @@ export default function Home({
         { data: adsData },
         { data: videosData }
       ] = await Promise.all([
-        supabase.from('categories').select('*').eq('status', 'Aktif').order('name'),
+        supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
         supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
@@ -552,7 +552,7 @@ export async function getStaticProps() {
       { data: adsData },
       { data: videosData }
     ] = await Promise.all([
-      supabase.from('categories').select('*').eq('status', 'Aktif').order('name'),
+      supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
       supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })

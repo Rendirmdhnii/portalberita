@@ -17,7 +17,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
           .from('categories')
           .select('*')
           .eq('status', 'Aktif')
-          .order('name');
+          .order('sort_order', { ascending: true });
         if (data) {
           setCategories(data);
         }
