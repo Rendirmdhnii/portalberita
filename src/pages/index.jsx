@@ -266,16 +266,16 @@ export default function Home({
                             </h3>
                             
                             {/* META INFO ICON MERAH KECIL */}
-                            <div className="flex items-center text-xs text-gray-500 gap-1.5 flex-wrap font-medium">
-                              <div className="flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <div className="flex items-center text-xs text-gray-500 gap-2 flex-wrap font-medium w-full">
+                              <div className="flex items-center gap-1.5 whitespace-normal break-words">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
-                                <span className="truncate max-w-[90px]">{berita.author || berita.penulis || 'Redaksi'}</span>
+                                <span>{berita.author || berita.penulis || 'Redaksi'}</span>
                               </div>
-                              <span className="text-gray-400">•</span>
-                              <div className="flex items-center gap-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <span className="text-gray-400 shrink-0">•</span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span>{formatTimeAgo(berita.created_at) || 'Baru saja'}</span>

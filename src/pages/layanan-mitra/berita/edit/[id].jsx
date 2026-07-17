@@ -41,6 +41,7 @@ export default function BeritaEdit() {
   
   const [newThumbnailFile, setNewThumbnailFile] = useState(null);
   const [newThumbnailPreviewUrl, setNewThumbnailPreviewUrl] = useState('');
+  const [imageCaption, setImageCaption] = useState('');
   
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
   const [newGalleryPreviewUrls, setNewGalleryPreviewUrls] = useState([]);
@@ -93,6 +94,7 @@ export default function BeritaEdit() {
       setContent(data.content || '');
       setStatus(data.status || 'Published');
       setPosisiLayout(data.posisi_layout || 'biasa');
+      setImageCaption(data.image_caption || '');
       
       // Load images (jsonb) or fallback to image (text)
       const imgs = data.images || data.image;
@@ -321,6 +323,7 @@ export default function BeritaEdit() {
           content,
           images: combinedImages, // Simpan sebagai array jsonb
           gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
+          image_caption: imageCaption.trim() || null,
           posisi_layout: posisiLayout,
           is_headline: posisiLayout === 'headline',
           author: author.trim() || 'Redaksi PojokTV',
@@ -465,6 +468,19 @@ export default function BeritaEdit() {
                 <p className="text-xs text-gray-500 mt-1">Gambar ini akan digunakan sebagai cover berita dan preview link WhatsApp.</p>
               </div>
             )}
+          </div>
+
+          {/* Sumber/Caption Foto */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-1">Sumber / Caption Foto (Opsional)</label>
+            <input
+              type="text"
+              value={imageCaption}
+              onChange={e => setImageCaption(e.target.value)}
+              placeholder="Cth: Dokumentasi Redaksi PojokTV / Humas Polres"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium text-base"
+            />
+            <p className="text-xs text-gray-500 mt-1">Keterangan fotografer atau sumber gambar yang akan muncul di bawah foto utama.</p>
           </div>
 
           {/* Foto Pendukung / Galeri */}

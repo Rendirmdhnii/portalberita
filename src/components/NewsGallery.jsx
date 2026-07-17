@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 
-export default function NewsGallery({ images }) {
+export default function NewsGallery({ images, caption }) {
   if (!images || !Array.isArray(images) || images.length === 0) {
     return null;
   }
@@ -58,7 +58,7 @@ export default function NewsGallery({ images }) {
 
       {/* Keterangan / Sumber Foto */}
       <p className="text-xs text-gray-500 italic mt-2">
-        Foto: Dokumentasi Redaksi PojokTV
+        {caption ? `Foto: ${caption}` : "Foto: Dokumentasi Redaksi PojokTV"}
       </p>
     </div>
   );

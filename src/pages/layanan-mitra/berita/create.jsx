@@ -35,6 +35,7 @@ export default function BeritaCreate() {
   
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState('');
+  const [imageCaption, setImageCaption] = useState('');
   const [imageFiles, setImageFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   
@@ -250,6 +251,7 @@ export default function BeritaCreate() {
             content,
             images: imageUrls, // Simpan sebagai array jsonb (indeks 0 adalah foto utama)
             gambar_utama: finalImageUrl, // Simpan URL publik Foto Utama secara spesifik
+            image_caption: imageCaption.trim() || null,
             posisi_layout: posisiLayout,
             is_headline: posisiLayout === 'headline',
             author: finalAuthor,
@@ -369,6 +371,19 @@ export default function BeritaCreate() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Sumber/Caption Foto */}
+          <div>
+            <label className="block text-base font-bold text-gray-800 mb-1">Sumber / Caption Foto (Opsional)</label>
+            <input 
+              type="text" 
+              value={imageCaption} 
+              onChange={e => setImageCaption(e.target.value)} 
+              placeholder="Cth: Dokumentasi Redaksi PojokTV / Humas Polres"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-950 font-medium text-base" 
+            />
+            <p className="text-xs text-gray-500 mt-1">Keterangan fotografer atau sumber gambar yang akan muncul di bawah foto utama.</p>
           </div>
 
           {/* Foto Pendukung / Galeri */}

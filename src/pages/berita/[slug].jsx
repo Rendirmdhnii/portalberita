@@ -278,7 +278,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                   </h1>
 
                   {/* News Gallery Slider (only if images exist) */}
-                  <NewsGallery images={images} />
+                  <NewsGallery images={images} caption={berita.image_caption} />
 
                   {/* Metadata */}
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-500 border-b border-gray-200 pb-4 mb-6">
