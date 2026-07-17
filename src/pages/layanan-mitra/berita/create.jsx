@@ -41,7 +41,7 @@ export default function BeritaCreate() {
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
-  const [posisiLayout, setPosisiLayout] = useState('biasa');
+  const [posisiTampilan, setPosisiTampilan] = useState('REGULER');
   
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -252,8 +252,9 @@ export default function BeritaCreate() {
             images: imageUrls, // Simpan sebagai array jsonb (indeks 0 adalah foto utama)
             gambar_utama: finalImageUrl, // Simpan URL publik Foto Utama secara spesifik
             image_caption: imageCaption.trim() || null,
-            posisi_layout: posisiLayout,
-            is_headline: posisiLayout === 'headline',
+            posisi_tampilan: posisiTampilan,
+            posisi_layout: posisiTampilan === 'HEADLINE' ? 'headline' : posisiTampilan === 'SOROTAN' ? 'sorotan' : 'biasa',
+            is_headline: posisiTampilan === 'HEADLINE',
             author: finalAuthor,
             status: 'Published',
             views: 0
@@ -453,8 +454,8 @@ export default function BeritaCreate() {
             
             <div className="flex flex-col gap-3">
               {/* Opsi Headline */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'headline' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'headline'} onChange={() => setPosisiLayout('headline')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'HEADLINE' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'HEADLINE'} onChange={() => setPosisiTampilan('HEADLINE')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA UTAMA (HEADLINE ATAS)</span>
                   <span className="block text-sm text-gray-600">Berita akan ditampilkan di baris paling atas halaman depan.</span>
@@ -462,8 +463,8 @@ export default function BeritaCreate() {
               </label>
 
               {/* Opsi Sorotan */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'sorotan' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'sorotan'} onChange={() => setPosisiLayout('sorotan')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'SOROTAN' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'SOROTAN'} onChange={() => setPosisiTampilan('SOROTAN')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">SOROTAN HARI INI (SLIDER TENGAH)</span>
                   <span className="block text-sm text-gray-600">Berita masuk ke deretan isu terkini yang dapat digeser (slider).</span>
@@ -471,8 +472,8 @@ export default function BeritaCreate() {
               </label>
 
               {/* Opsi Biasa */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiLayout === 'biasa' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiLayout === 'biasa'} onChange={() => setPosisiLayout('biasa')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'REGULER' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'REGULER'} onChange={() => setPosisiTampilan('REGULER')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA REGULER (DAFTAR BAWAH)</span>
                   <span className="block text-sm text-gray-600">Berita akan masuk ke daftar standar sesuai kategori rubriknya.</span>

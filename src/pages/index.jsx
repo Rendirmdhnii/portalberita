@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -10,6 +10,8 @@ import { supabase } from '@/lib/supabase';
 export default function Home({
   initialCategories = [],
   initialBerita = [],
+  initialHeadlines = [],
+  initialSorotan = [],
   initialAds = [],
   initialVideos = []
 }) {
@@ -23,9 +25,12 @@ export default function Home({
   // Dynamic States from Supabase
   const [categories, setCategories] = useState(initialCategories);
   const [berita, setBerita] = useState(initialBerita);
+  const [headlines, setHeadlines] = useState(initialHeadlines);
+  const [sorotan, setSorotan] = useState(initialSorotan);
   const [ads, setAds] = useState(initialAds);
   const [videos, setVideos] = useState(initialVideos);
   const [loading, setLoading] = useState(initialBerita.length === 0);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
     // Realtime Clock
@@ -52,17 +57,23 @@ export default function Home({
       const [
         { data: catData },
         { data: beritaData },
+        { data: headlineData },
+        { data: sorotanData },
         { data: adsData },
         { data: videosData }
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
         supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
 
       setCategories(catData || []);
       setBerita(beritaData || []);
+      setHeadlines(headlineData || []);
+      setSorotan(sorotanData || []);
       setAds(adsData || []);
       setVideos(videosData || []);
     } catch (err) {
@@ -77,6 +88,15 @@ export default function Home({
       fetchData();
     }
   }, []);
+
+  // Auto-slide effect for Hero Carousel
+  useEffect(() => {
+    if (headlineSlides.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % headlineSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [headlineSlides]);
 
   const formatTimeAgo = (dateString) => {
     if (!dateString) return '';
@@ -154,26 +174,37 @@ export default function Home({
   const footerAd = ads?.find(a => a.position === 'Footer');
 
   // ── News bucketing by posisi_layout ──────────────────────────────
-  // Headline slider: berita dengan posisi_layout === 'headline'
-  const headlines = berita?.filter(n => n.posisi_layout === 'headline') || [];
-  // Fallback: jika kosong, gunakan 3 berita terbaru
-  const headlineSlides = headlines.length > 0 ? headlines : berita?.slice(0, 3) || [];
-  const mainHeadline = headlineSlides[0];
-  const sideHeadlines = headlineSlides.slice(1, 3);
+  // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
+  const headlineSlides = useMemo(() => {
+    if (headlines && headlines.length > 0) return headlines;
+    // Fallback: legacy positions
+    const legacyHeadlines = berita?.filter(n => n.posisi_tampilan === 'HEADLINE' || n.posisi_layout === 'headline') || [];
+    return legacyHeadlines.length > 0 ? legacyHeadlines : berita?.slice(0, 3) || [];
+  }, [headlines, berita]);
 
-  // Sorotan: berita dengan posisi_layout === 'sorotan'
-  const rawSorotan = berita?.filter(n => n.posisi_layout === 'sorotan') || [];
-  // Fallback: jika kosong, gunakan 4 berita terbaru yang bukan headline
-  const headlineIds = new Set(headlineSlides.map(n => n.id));
-  const sorotanNews = rawSorotan.length > 0
-    ? rawSorotan.slice(0, 4)
-    : (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
+  const sideHeadlines = useMemo(() => {
+    return headlineSlides.slice(1, 3);
+  }, [headlineSlides]);
+
+  // Sorotan: berita dengan posisi_tampilan === 'SOROTAN'
+  const sorotanNews = useMemo(() => {
+    if (sorotan && sorotan.length > 0) return sorotan.slice(0, 4);
+    // Fallback: legacy positions
+    const legacySorotan = berita?.filter(n => n.posisi_tampilan === 'SOROTAN' || n.posisi_layout === 'sorotan') || [];
+    if (legacySorotan.length > 0) return legacySorotan.slice(0, 4);
+    
+    // Ultimate Fallback: berita terbaru yang bukan headline
+    const headlineIds = new Set(headlineSlides.map(n => n.id));
+    return (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
+  }, [sorotan, berita, headlineSlides]);
 
   // Global deduplication: semua ID yang sudah tampil di atas
-  const displayedNewsIds = new Set([
-    ...headlineSlides.map(n => n.id),
-    ...sorotanNews.map(n => n.id)
-  ]);
+  const displayedNewsIds = useMemo(() => {
+    return new Set([
+      ...headlineSlides.map(n => n.id),
+      ...sorotanNews.map(n => n.id)
+    ]);
+  }, [headlineSlides, sorotanNews]);
 
   // Berita reguler untuk Berita Terbaru (deduplikasi)
   const feedBerita = berita?.filter(n => !displayedNewsIds.has(n.id)) || [];
@@ -219,36 +250,72 @@ export default function Home({
                 ))}
               </div>
             ) : (
-              mainHeadline && (
+              headlineSlides.length > 0 && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
-                  {/* KIRI: KOTAK BESAR */}
-                  <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div className="relative w-full h-64 md:h-[400px] bg-gray-200">
-                      <img src={mainHeadline.gambar_utama || getThumbnail(mainHeadline)} alt={mainHeadline.title} className="absolute inset-0 w-full h-full object-cover" />
-                    </div>
-                    <div className="p-5 md:p-6">
-                      <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">{mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}</span>
-                      <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight mb-4 hover:text-[#E30A17] transition-colors">
-                        <Link href={`/berita/${mainHeadline.slug}`}>{mainHeadline.title}</Link>
-                      </h2>
-                      
-                      {/* META INFO ICON MERAH */}
-                      <div className="flex items-center text-sm text-gray-500 gap-2 flex-wrap font-medium">
-                        <div className="flex items-center gap-1.5">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          <span>{mainHeadline.author || mainHeadline.penulis || 'Redaksi PojokTV'}</span>
+                  {/* KIRI: CAROUSEL SLIDER DENGAN TRANSISI HALUS */}
+                  <div className="lg:col-span-2 relative w-full h-[320px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200">
+                    {headlineSlides.map((slide, idx) => {
+                      const isActive = currentSlide === idx;
+                      return (
+                        <div
+                          key={slide.id}
+                          className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                            isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+                          }`}
+                        >
+                          <img 
+                            src={slide.gambar_utama || getThumbnail(slide)} 
+                            alt={slide.title} 
+                            className="absolute inset-0 w-full h-full object-cover" 
+                          />
+                          {/* Gradient Overlay */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/35 to-transparent z-[1]" />
+                          
+                          {/* Content Overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6 text-white z-[2]">
+                            <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3">
+                              {slide.category || slide.kategori || slide.rubrik}
+                            </span>
+                            <h2 className="text-xl md:text-3xl font-extrabold text-white leading-tight mb-4 hover:text-red-400 transition-colors">
+                              <Link href={`/berita/${slide.slug}`}>{slide.title}</Link>
+                            </h2>
+                            
+                            {/* Metadata */}
+                            <div className="flex items-center text-xs text-gray-300 gap-2 flex-wrap font-medium">
+                              <div className="flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>{slide.author || slide.penulis || 'Redaksi PojokTV'}</span>
+                              </div>
+                              <span className="text-gray-500 shrink-0">•</span>
+                              <div className="flex items-center gap-1.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>{formatTimeAgo(slide.created_at) || 'Beberapa saat lalu'}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-gray-400">•</span>
-                        <div className="flex items-center gap-1.5">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>{formatTimeAgo(mainHeadline.created_at) || 'Beberapa saat lalu'} | {mainHeadline.category || mainHeadline.kategori || mainHeadline.rubrik}</span>
-                        </div>
+                      );
+                    })}
+
+                    {/* Dot Indicators */}
+                    {headlineSlides.length > 1 && (
+                      <div className="absolute bottom-5 right-5 flex gap-1.5 z-20">
+                        {headlineSlides.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentSlide(idx)}
+                            className={`h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
+                              currentSlide === idx ? 'bg-red-650 w-6' : 'bg-white/50 hover:bg-white'
+                            }`}
+                            aria-label={`Buka slide ${idx + 1}`}
+                          />
+                        ))}
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* KANAN: 2 KOTAK KECIL BERSUSUN */}
@@ -549,11 +616,15 @@ export async function getStaticProps() {
     const [
       { data: catData },
       { data: beritaData },
+      { data: headlineData },
+      { data: sorotanData },
       { data: adsData },
       { data: videosData }
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
       supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);
@@ -562,6 +633,8 @@ export async function getStaticProps() {
       props: {
         initialCategories: catData || [],
         initialBerita: beritaData || [],
+        initialHeadlines: headlineData || [],
+        initialSorotan: sorotanData || [],
         initialAds: adsData || [],
         initialVideos: videosData || [],
       },
