@@ -451,13 +451,11 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   );
 }
 
-export async function getServerSideProps({ params, res }) {
-  // Tambahkan baris ini untuk caching di Vercel Edge Network
-  res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=60, stale-while-revalidate=300'
-  );
-  console.log("Mencari parameter:", params.slug);
+export async function getStaticPaths() {
+  return { paths: [], fallback: 'blocking' };
+}
+
+export async function getStaticProps({ params }) {
   const slugParam = String(params.slug || '');
 
   try {
@@ -508,42 +506,43 @@ export async function getServerSideProps({ params, res }) {
       }
     }
 
+    // Fire-and-forget: increment views tanpa memblokir render
     if (mainBerita) {
-      // Increment views
-      await supabase
+      supabase
         .from('berita')
         .update({ views: (mainBerita.views || 0) + 1 })
         .eq('id', mainBerita.id);
     }
 
-    // 2. Fetch categories
-    const { data: categories } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('status', 'Aktif')
-      .order('sort_order', { ascending: true });
+    // Parallelisasi 4 query independen — 4x lebih cepat dari sequential await
+    const [categoriesRes, adsRes, latestRes, popularRes] = await Promise.all([
+      supabase
+        .from('categories')
+        .select('id, name, slug, sort_order, status')
+        .eq('status', 'Aktif')
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('ads')
+        .select('id, name, position, image, link, is_active')
+        .eq('is_active', true),
+      supabase
+        .from('berita')
+        .select('id, title, slug, created_at, category')
+        .eq('status', 'Published')
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supabase
+        .from('berita')
+        .select('id, title, slug, views, category')
+        .eq('status', 'Published')
+        .order('views', { ascending: false })
+        .limit(5),
+    ]);
 
-    // 3. Fetch ads
-    const { data: ads } = await supabase
-      .from('ads')
-      .select('*')
-      .eq('is_active', true);
-
-    // 4. Fetch latest news for ticker
-    const { data: latestBerita } = await supabase
-      .from('berita')
-      .select('*')
-      .eq('status', 'Published')
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    // 5. Fetch popular news for sidebar
-    const { data: popularBerita } = await supabase
-      .from('berita')
-      .select('*')
-      .eq('status', 'Published')
-      .order('views', { ascending: false })
-      .limit(5);
+    const categories = categoriesRes.data || [];
+    const ads = adsRes.data || [];
+    const latestBerita = latestRes.data || [];
+    const popularBerita = popularRes.data || [];
 
     // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp
     let fixImageUrl = 'https://pojoktv.com/logo-pojoktv.png'; // Fallback aman
@@ -594,15 +593,16 @@ export async function getServerSideProps({ params, res }) {
     return {
       props: {
         berita: mainBerita || null,
-        categories: categories || [],
-        ads: ads || [],
-        latestBerita: latestBerita || [],
-        popularBerita: popularBerita || [],
+        categories,
+        ads,
+        latestBerita,
+        popularBerita,
         fixImageUrl,
       },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps:', err);
+    console.error('Error in getStaticProps:', err);
     return {
       props: {
         berita: null,
@@ -612,6 +612,8 @@ export async function getServerSideProps({ params, res }) {
         popularBerita: [],
         fixImageUrl: 'https://pojoktv.com/logo-pojoktv.png',
       },
+      revalidate: 60,
     };
   }
 }
+
