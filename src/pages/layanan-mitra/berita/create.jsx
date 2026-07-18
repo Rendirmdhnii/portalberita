@@ -468,8 +468,8 @@ export default function BeritaCreate() {
               <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'SOROTAN' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
                 <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'SOROTAN'} onChange={() => setPosisiTampilan('SOROTAN')} />
                 <div>
-                  <span className="block font-bold text-base text-gray-900">SOROTAN HARI INI (SLIDER TENGAH)</span>
-                  <span className="block text-sm text-gray-600">Berita masuk ke deretan isu terkini yang dapat digeser (slider).</span>
+                  <span className="block font-bold text-base text-gray-900">SOROTAN (KOTAK BAWAH)</span>
+                  <span className="block text-sm text-gray-600">Berita akan disematkan secara khusus di deretan kartu bagian bawah halaman.</span>
                 </div>
               </label>
 
@@ -477,8 +477,8 @@ export default function BeritaCreate() {
               <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'REGULER' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
                 <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'REGULER'} onChange={() => setPosisiTampilan('REGULER')} />
                 <div>
-                  <span className="block font-bold text-base text-gray-900">BERITA REGULER (DAFTAR BAWAH)</span>
-                  <span className="block text-sm text-gray-600">Berita akan masuk ke daftar standar sesuai kategori rubriknya.</span>
+                  <span className="block font-bold text-base text-gray-900">BERITA TERBARU / REGULER (KOLOM TENGAH)</span>
+                  <span className="block text-sm text-gray-600">Berita akan masuk ke daftar urutan waktu terbaru di tengah halaman.</span>
                 </div>
               </label>
             </div>

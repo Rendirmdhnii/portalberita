@@ -630,7 +630,7 @@ export default function Home({
           <div className="container my-8" id="sorotan-section">
             <div className="section-header border-b border-gray-250 pb-2 mb-4 flex justify-between items-center">
               <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
-                <span className="border-b-4 border-red-650 pb-2">SOROTAN HARI INI</span>
+                <span className="border-b-4 border-red-650 pb-2">SOROTAN</span>
               </h2>
             </div>
 
