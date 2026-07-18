@@ -77,6 +77,7 @@ export default function Home({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStartX, setTouchStartX] = useState(0);
   const [touchEndX, setTouchEndX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   // ── News bucketing (declared at the top to prevent Temporal Dead Zone ReferenceErrors) ──
   // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
@@ -284,8 +285,17 @@ export default function Home({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
                   {/* KIRI: CAROUSEL SLIDER DENGAN SWIPE GESTURE & MULTI-TOUCH SUPPORT */}
                   <div 
-                    onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
-                    onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
+                    onTouchStart={(e) => {
+                      setTouchStartX(e.targetTouches[0].clientX);
+                      setIsDragging(false);
+                    }}
+                    onTouchMove={(e) => {
+                      const currentX = e.targetTouches[0].clientX;
+                      if (touchStartX && Math.abs(currentX - touchStartX) > 10) {
+                        setIsDragging(true);
+                      }
+                      setTouchEndX(currentX);
+                    }}
                     onTouchEnd={handleTouchEnd}
                     className="lg:col-span-2 relative w-full h-[370px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200 cursor-grab active:cursor-grabbing"
                   >
@@ -314,7 +324,7 @@ export default function Home({
                               {slide.category || slide.kategori || slide.rubrik}
                             </span>
                             <h2 className="text-lg md:text-3xl font-extrabold text-white leading-tight mb-3 hover:text-red-400 transition-colors line-clamp-2 md:line-clamp-none">
-                              <Link href={`/berita/${slide.slug}`}>{slide.title}</Link>
+                              <Link href={`/berita/${slide.slug}`} onClick={(e) => { if (isDragging) e.preventDefault(); }}>{slide.title}</Link>
                             </h2>
                             
                             {/* Metadata */}
