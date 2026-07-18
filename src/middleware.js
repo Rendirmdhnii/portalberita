@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 
 export function middleware(request, event) {
   const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') || '';
+
+  // Canonical Domain Shield: Cegah akses via URL bawaan Vercel
+  if (hostname.includes('.vercel.app')) {
+    const canonicalUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://pojoktv.com');
+    return NextResponse.redirect(canonicalUrl, 301);
+  }
 
   // Define static files and routes that must be excluded from logging to avoid cluttering and infinite loops
   if (
