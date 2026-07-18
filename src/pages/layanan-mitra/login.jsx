@@ -65,7 +65,8 @@ export default function AuthPage() {
       <div className="w-full max-w-md animate-slide-up-fade z-10">
         {/* LOGO */}
         <div className="text-center mb-10">
-          <img src="/logo-pojoktv.png" alt="PojokTV" className="grayscale opacity-40 hover:opacity-100 transition-opacity duration-500 w-64 sm:w-72 md:w-80 h-auto mx-auto object-contain drop-shadow-md" />
+          <img src="/logo-pojoktv.png" alt="PojokTV" className="brightness-0 invert opacity-90 mx-auto" />
+          <p className="text-center text-xs md:text-sm text-slate-400 mt-3 font-semibold tracking-widest uppercase">Layanan Mitra PojokTV</p>
         </div>
 
         {/* LOGIN CARD */}
@@ -81,7 +82,7 @@ export default function AuthPage() {
           <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-slate-300 mb-2">
-                User ID
+                Email Mitra
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -93,7 +94,7 @@ export default function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-slate-900/90 border border-slate-700 text-white rounded-xl pl-11 pr-4 py-3.5 block w-full text-sm focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/80 transition-all duration-200 placeholder-slate-500"
-                  placeholder="nama@email.com"
+                  placeholder="mitra@pojoktv.com"
                   required
                 />
               </div>
@@ -101,7 +102,7 @@ export default function AuthPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-slate-300 mb-2">
-                Key
+                Security Key
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
