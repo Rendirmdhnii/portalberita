@@ -200,17 +200,36 @@ export default function Home({
     setCurrentSlide((prev) => (prev > 0 ? prev - 1 : headlineSlides.length - 1));
   };
 
-  const handleTouchEnd = () => {
-    if (headlineSlides.length <= 1) return;
-    const diffX = touchStartX - touchEndX;
-    if (diffX > 50) {
-      nextSlide();
-    } else if (diffX < -50) {
-      prevSlide();
+  const handleTouchStart = (e) => {
+    const clientX = e.targetTouches[0].clientX;
+    setTouchStartX(clientX);
+    setTouchEndX(clientX); // KRITIS: Samakan nilai awal agar selisih tap adalah 0
+    setIsDragging(false);
+  };
+
+  const handleTouchMove = (e) => {
+    const clientX = e.targetTouches[0].clientX;
+    setTouchEndX(clientX);
+    if (Math.abs(clientX - touchStartX) > 10) {
+      setIsDragging(true); // Hanya true jika BENAR-BENAR bergeser > 10px
     }
-    setTimeout(() => {
-      setIsDragging(false);
-    }, 50);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+    const distance = touchStartX - touchEndX;
+
+    if (distance > 50) {
+      nextSlide(); // Fungsi ganti berita ke depan
+    } else if (distance < -50) {
+      prevSlide(); // Fungsi ganti berita ke belakang
+    }
+
+    // Reset State
+    setTouchStartX(0);
+    setTouchEndX(0);
+    // Jeda 50ms untuk memastikan isDragging masih melindungi <Link> saat event onClick terjadi
+    setTimeout(() => setIsDragging(false), 50); 
   };
 
   const handleLiveTv = () => {
@@ -288,17 +307,8 @@ export default function Home({
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-start">
                   {/* KIRI: CAROUSEL SLIDER DENGAN SWIPE GESTURE & MULTI-TOUCH SUPPORT */}
                   <div 
-                    onTouchStart={(e) => {
-                      setTouchStartX(e.targetTouches[0].clientX);
-                      setIsDragging(false);
-                    }}
-                    onTouchMove={(e) => {
-                      const currentX = e.targetTouches[0].clientX;
-                      if (touchStartX && Math.abs(currentX - touchStartX) > 15) {
-                        setIsDragging(true);
-                      }
-                      setTouchEndX(currentX);
-                    }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                     className="lg:col-span-2 relative w-full h-[370px] md:h-[450px] bg-gray-950 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group border border-gray-200 cursor-grab active:cursor-grabbing"
                   >
