@@ -556,7 +556,6 @@ export default function Home({
                   </div>
                   <div>
                     <p className="font-bold text-base text-white">Belum ada video tayang</p>
-                    <p className="text-sm mt-1 text-slate-400">Tambahkan video dari panel admin untuk ditampilkan di sini.</p>
                   </div>
                 </div>
               ) : (

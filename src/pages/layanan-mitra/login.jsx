@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 
-export default function AdminLogin() {
+export default function AuthPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ export default function AdminLogin() {
         router.push('/layanan-mitra/dashboard');
       }
     } catch (err) {
-      setError(err.message || 'Login gagal. Silakan periksa kembali email dan password Anda.');
+      setError(err.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden">
       <Head>
-        <title>Masuk - PojokTV.com</title>
+        <title>Authentication</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
       </Head>
 
@@ -65,12 +65,11 @@ export default function AdminLogin() {
       <div className="w-full max-w-md animate-slide-up-fade z-10">
         {/* LOGO */}
         <div className="text-center mb-10">
-          <img src="/logo-pojoktv.png" alt="PojokTV" className="w-64 sm:w-72 md:w-80 h-auto mx-auto object-contain drop-shadow-md transition-all duration-300" />
+          <img src="/logo-pojoktv.png" alt="PojokTV" className="grayscale opacity-40 hover:opacity-100 transition-opacity duration-500 w-64 sm:w-72 md:w-80 h-auto mx-auto object-contain drop-shadow-md" />
         </div>
 
         {/* LOGIN CARD */}
         <div className="bg-slate-800/90 border border-slate-700/80 shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl py-10 px-8 sm:px-10 backdrop-blur-sm">
-          <h2 className="text-2xl font-bold text-white text-center mb-8 tracking-wide">Masuk</h2>
 
           {error && (
             <div className="mb-6 p-4 bg-red-900/30 border border-red-500/50 rounded-xl text-red-200 text-sm font-medium flex items-start gap-3 animate-pulse">
@@ -82,7 +81,7 @@ export default function AdminLogin() {
           <form onSubmit={handleLogin} className="space-y-6" noValidate>
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-slate-300 mb-2">
-                Alamat Email
+                User ID
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -102,7 +101,7 @@ export default function AdminLogin() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-slate-300 mb-2">
-                Password
+                Key
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
@@ -129,12 +128,12 @@ export default function AdminLogin() {
                 {loading ? (
                   <>
                     <i className="fa-solid fa-spinner animate-spin"></i>
-                    <span>Memproses...</span>
+                    <span>Processing...</span>
                   </>
                 ) : (
                   <>
                     <i className="fa-solid fa-right-to-bracket"></i>
-                    <span>Masuk Sekarang</span>
+                    <span>Continue</span>
                   </>
                 )}
               </button>
@@ -144,7 +143,7 @@ export default function AdminLogin() {
 
         <div className="mt-8 text-center">
           <Link href="/" className="text-xs text-slate-400 hover:text-white transition-colors duration-200 inline-flex items-center gap-1.5">
-            <i className="fa-solid fa-arrow-left-long"></i> Kembali ke Beranda
+            <i className="fa-solid fa-arrow-left-long"></i> Back to Home
           </Link>
         </div>
       </div>
