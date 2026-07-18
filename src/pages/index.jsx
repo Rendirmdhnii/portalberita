@@ -208,6 +208,9 @@ export default function Home({
     } else if (diffX < -50) {
       prevSlide();
     }
+    setTimeout(() => {
+      setIsDragging(false);
+    }, 50);
   };
 
   const handleLiveTv = () => {
@@ -291,7 +294,7 @@ export default function Home({
                     }}
                     onTouchMove={(e) => {
                       const currentX = e.targetTouches[0].clientX;
-                      if (touchStartX && Math.abs(currentX - touchStartX) > 10) {
+                      if (touchStartX && Math.abs(currentX - touchStartX) > 15) {
                         setIsDragging(true);
                       }
                       setTouchEndX(currentX);
@@ -308,42 +311,48 @@ export default function Home({
                             isActive ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
                           }`}
                         >
-                          {/* Lapisan Visual (Image) */}
-                          <div className="relative w-full h-[220px] md:h-full shrink-0">
-                            <img 
-                              src={slide.gambar_utama || getThumbnail(slide)} 
-                              alt={slide.title} 
-                              className="absolute inset-0 w-full h-full object-cover select-none" 
-                              draggable="false"
-                            />
-                          </div>
-                          
-                          {/* Lapisan Konten (Text & Metadata) */}
-                          <div className="flex flex-col justify-end p-4 bg-slate-900 flex-1 md:absolute md:inset-0 md:bg-transparent md:bg-gradient-to-t md:from-black/95 md:via-black/40 md:to-transparent md:p-6 md:pb-8 text-white z-10 select-none">
-                            <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3 self-start">
-                              {slide.category || slide.kategori || slide.rubrik}
-                            </span>
-                            <h2 className="text-lg md:text-3xl font-extrabold text-white leading-tight mb-3 hover:text-red-400 transition-colors line-clamp-2 md:line-clamp-none">
-                              <Link href={`/berita/${slide.slug}`} onClick={(e) => { if (isDragging) e.preventDefault(); }}>{slide.title}</Link>
-                            </h2>
+                          <Link 
+                            href={`/berita/${slide.slug}`} 
+                            onClick={(e) => { if (isDragging) e.preventDefault(); }}
+                            className="absolute inset-0 flex flex-col md:block w-full h-full"
+                          >
+                            {/* Lapisan Visual (Image) */}
+                            <div className="relative w-full h-[220px] md:h-full shrink-0">
+                              <img 
+                                src={slide.gambar_utama || getThumbnail(slide)} 
+                                alt={slide.title} 
+                                className="absolute inset-0 w-full h-full object-cover select-none" 
+                                draggable="false"
+                              />
+                            </div>
                             
-                            {/* Metadata */}
-                            <div className="flex items-center text-xs text-gray-300 gap-2 flex-wrap font-medium">
-                              <div className="flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2050/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                <span>{slide.author || slide.penulis || 'Redaksi PojokTV'}</span>
-                              </div>
-                              <span className="text-gray-500 shrink-0">•</span>
-                              <div className="flex items-center gap-1.5">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>{formatTimeAgo(slide.created_at) || 'Beberapa saat lalu'}</span>
+                            {/* Lapisan Konten (Text & Metadata) */}
+                            <div className="flex flex-col justify-end p-4 bg-slate-900 flex-1 md:absolute md:inset-0 md:bg-transparent md:bg-gradient-to-t md:from-black/95 md:via-black/40 md:to-transparent md:p-6 md:pb-8 text-white z-10 select-none">
+                              <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded mb-3 self-start">
+                                {slide.category || slide.kategori || slide.rubrik}
+                              </span>
+                              <h2 className="text-lg md:text-3xl font-extrabold text-white leading-tight mb-3 hover:text-red-400 transition-colors line-clamp-2 md:line-clamp-none">
+                                {slide.title}
+                              </h2>
+                              
+                              {/* Metadata */}
+                              <div className="flex items-center text-xs text-gray-300 gap-2 flex-wrap font-medium">
+                                <div className="flex items-center gap-1.5">
+                                  <svg xmlns="http://www.w3.org/2050/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                  </svg>
+                                  <span>{slide.author || slide.penulis || 'Redaksi PojokTV'}</span>
+                                </div>
+                                <span className="text-gray-500 shrink-0">•</span>
+                                <div className="flex items-center gap-1.5">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 text-red-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span>{formatTimeAgo(slide.created_at) || 'Beberapa saat lalu'}</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         </div>
                       );
                     })}
