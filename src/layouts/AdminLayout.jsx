@@ -52,7 +52,7 @@ export default function AdminLayout({ children }) {
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-slate-300">
         <div className="flex flex-col items-center gap-3">
           <i className="fa-solid fa-spinner animate-spin text-3xl text-red-600"></i>
-          <p className="text-sm font-medium">Memverifikasi sesi admin...</p>
+          <p className="text-sm font-medium">Membangun koneksi aman...</p>
         </div>
       </div>
     );
