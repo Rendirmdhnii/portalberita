@@ -32,11 +32,18 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    // 2. Increment views
-    const currentViews = article.views || 0;
+    let currentViews = article.views || 0;
+
+    // ALGORITMA SOCIAL PROOF (INJEKSI ANGKA ACAK):
+    // Jika views masih di bawah 50 (termasuk anomali angka 35 saat ini),
+    // sistem akan meng-generate angka acak antara 120 hingga 350 sebagai fondasi.
+    if (currentViews < 50) {
+      currentViews = Math.floor(Math.random() * (350 - 120 + 1)) + 120;
+    }
+
     const newViews = currentViews + 1;
 
-    // 3. Update in database
+    // 2. Update database dengan angka baru
     const { data: updatedArticle, error: updateError } = await supabase
       .from('berita')
       .update({ views: newViews })
