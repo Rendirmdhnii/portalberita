@@ -125,18 +125,18 @@ export default function AdIndex() {
   };
 
   const getGuidelineText = (pos) => {
-    return 'Tips: Sistem akan otomatis menyesuaikan ukuran gambar agar pas dan rapi saat dibuka di layar HP maupun Laptop. Gambar tidak akan terpotong.';
+    return 'Tips: Berikan angka Resolusi (px) atau Rasio di atas kepada desainer grafis Anda. Sistem akan otomatis menyesuaikan gambar agar rapi di HP maupun Laptop tanpa terpotong. Maksimal ukuran file: 2MB (Gunakan format WebP, JPG, atau PNG agar web tetap cepat).';
   };
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)',
-      'Tengah Konten': 'Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)',
-      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)',
-      'Sidebar Bawah': 'Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)',
-      'Footer': 'Spanduk Paling Bawah Website — (Ukuran: 970x250 px)',
-      'header': 'Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)',
-      'sidebar': 'Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)',
+      'Header': 'Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)',
+      'Tengah Konten': 'Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)',
+      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)',
+      'Sidebar Bawah': 'Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)',
+      'Footer': 'Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)',
+      'header': 'Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)',
+      'sidebar': 'Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)',
     };
     return labels[pos] || pos;
   };
@@ -300,11 +300,11 @@ export default function AdIndex() {
                 <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
                 <select value={position} onChange={e => setPosition(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)</option>
-                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)</option>
-                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)</option>
-                  <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)</option>
-                  <option value="Footer">Spanduk Paling Bawah Website — (Ukuran: 970x250 px)</option>
+                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)</option>
+                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)</option>
+                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)</option>
+                  <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)</option>
+                  <option value="Footer">Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)</option>
                 </select>
               </div>
               <div>
@@ -578,11 +578,11 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)</option>
-                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)</option>
-                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)</option>
-                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)</option>
-                 <option value="Footer">Spanduk Paling Bawah Website — (Ukuran: 970x250 px)</option>
+                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)</option>
+                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)</option>
+                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)</option>
+                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)</option>
+                 <option value="Footer">Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)</option>
               </select>
             </div>
             <div>
