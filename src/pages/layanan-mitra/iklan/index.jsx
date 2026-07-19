@@ -260,12 +260,11 @@ export default function AdIndex() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!editingId && !imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
     
     setProcessing(true);
     setError('');
     try {
-      let publicUrl = previewUrl;
+      let publicUrl = null;
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -276,7 +275,7 @@ export default function AdIndex() {
         publicUrl = loadedUrl;
       }
 
-      let mobilePublicUrl = mobilePreviewUrl || null;
+      let mobilePublicUrl = null;
       if (mobileImageFile) {
         const mFileExt = mobileImageFile.name.split('.').pop();
         const mFileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${mFileExt}`;
@@ -290,18 +289,26 @@ export default function AdIndex() {
       const payload = {
         name,
         position,
-        image: publicUrl,
-        image_mobile_url: mobilePublicUrl,
         link: link || '-',
         tanggal_berakhir: tanggalBerakhir || null,
         is_active: true
       };
+
+      if (imageFile) {
+        payload.image = publicUrl;
+      }
+      if (mobileImageFile) {
+        payload.image_mobile_url = mobilePublicUrl;
+      }
 
       if (editingId) {
         const { error: updateError } = await supabase.from('ads').update(payload).eq('id', editingId);
         if (updateError) throw updateError;
         setMessage('Iklan berhasil diperbarui.');
       } else {
+        if (!imageFile) {
+          throw new Error('Gambar Utama / Desktop Wajib diisi!');
+        }
         const { error: insertError } = await supabase.from('ads').insert([payload]);
         if (insertError) throw insertError;
         setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
@@ -347,13 +354,15 @@ export default function AdIndex() {
             <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
               <h3 className="font-bold text-base flex items-center gap-2">
                 <i className="fa-solid fa-crop-simple text-red-500"></i>
-                Sesuaikan Gambar ({croppingType === 'mobile' ? 'Khusus HP' : positionLabel(position)})
+                {croppingType === 'mobile' 
+                  ? 'Potong Gambar Khusus HP (Bentuk Memanjang - 320x130 px)' 
+                  : `Sesuaikan Gambar (${positionLabel(position)})`}
               </h3>
               <button type="button" onClick={handleCancelCrop}
                 className="text-gray-400 hover:text-white text-sm">Batal</button>
             </div>
             <div className="relative flex-1 bg-slate-950 min-h-[280px] sm:min-h-[380px]">
-              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={croppingType === 'mobile' ? (300 / 250) : getAspectForPosition(position)}
+              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={croppingType === 'mobile' ? (320 / 130) : getAspectForPosition(position)}
                 onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
             </div>
             <div className="px-6 py-5 bg-slate-900 border-t border-slate-800 flex flex-col gap-4 text-white">
