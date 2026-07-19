@@ -19,7 +19,7 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
             {/* Tampil HANYA di HP */}
             <img 
               src={ad.image_mobile_url} 
-              className="block md:hidden w-full h-auto object-contain rounded-lg" 
+              className="block md:hidden w-full h-[130px] object-cover object-top rounded-lg shadow-sm" 
               alt={ad.name || "Iklan Mobile"} 
             />
             {/* Tampil HANYA di Desktop */}
