@@ -125,26 +125,18 @@ export default function AdIndex() {
   };
 
   const getGuidelineText = (pos) => {
-    switch (pos) {
-      case 'Header': case 'Tengah Konten': case 'header': case 'Header (728x90)': 
-        return 'Rekomendasi Desktop: 970x90 px atau 1200x200 px. Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
-      case 'Sidebar Atas': case 'sidebar': case 'Sidebar (300x250)': 
-        return 'Rekomendasi Kotak Sidebar / Mobile: 300x250 px (Rasio 6:5). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
-      case 'Sidebar Bawah': 
-        return 'Rekomendasi: 300x600 px (Portrait 1:2). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
-      case 'Footer': case 'Footer (970x250)': 
-        return 'Rekomendasi: 970x250 px (Rasio 4:1). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
-      default: 
-        return 'Pilih file banner iklan.';
-    }
+    return 'Tips: Sistem akan otomatis menyesuaikan ukuran gambar agar pas dan rapi saat dibuka di layar HP maupun Laptop. Gambar tidak akan terpotong.';
   };
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Header Desktop (970x90 / 1200x200)', 'Tengah Konten': 'Tengah Konten (728×90)',
-      'Sidebar Atas': 'Kotak Sidebar / Mobile (300x250)', 'Sidebar Bawah': 'Sidebar Bawah (300×600)',
-      'Footer': 'Footer (970×250)', 'header': 'Header Desktop (970x90 / 1200x200)',
-      'sidebar': 'Kotak Sidebar / Mobile (300x250)',
+      'Header': 'Spanduk Paling Atas (Di Bawah Logo)',
+      'Tengah Konten': 'Menyelip di Tengah Daftar Berita',
+      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak)',
+      'Sidebar Bawah': 'Samping Kanan (Bentuk Memanjang ke Bawah)',
+      'Footer': 'Spanduk Paling Bawah Website',
+      'header': 'Spanduk Paling Atas (Di Bawah Logo)',
+      'sidebar': 'Samping Kanan (Bentuk Kotak)',
     };
     return labels[pos] || pos;
   };
@@ -308,11 +300,11 @@ export default function AdIndex() {
                 <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
                 <select value={position} onChange={e => setPosition(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                  <option value="Header">Header Desktop (970x90 / 1200x200)</option>
-                  <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
-                  <option value="Sidebar Atas">Kotak Sidebar / Mobile (300x250)</option>
-                  <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
-                  <option value="Footer">Footer (Bawah - 970×250)</option>
+                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
+                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
+                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
+                  <option value="Sidebar Bawah">Samping Kanan (Bentuk Memanjang ke Bawah)</option>
+                  <option value="Footer">Spanduk Paling Bawah Website</option>
                 </select>
               </div>
               <div>
@@ -586,11 +578,11 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                <option value="Header">Header Desktop (970x90 / 1200x200)</option>
-                <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
-                <option value="Sidebar Atas">Kotak Sidebar / Mobile (300x250)</option>
-                <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
-                <option value="Footer">Footer (Bawah - 970×250)</option>
+                <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
+                <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
+                <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
+                <option value="Sidebar Bawah">Samping Kanan (Bentuk Memanjang ke Bawah)</option>
+                <option value="Footer">Spanduk Paling Bawah Website</option>
               </select>
             </div>
             <div>
