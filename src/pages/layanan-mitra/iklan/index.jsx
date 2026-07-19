@@ -99,6 +99,8 @@ export default function AdIndex() {
   const [previewUrl, setPreviewUrl] = useState('');
   const [mobileImageFile, setMobileImageFile] = useState(null);
   const [mobilePreviewUrl, setMobilePreviewUrl] = useState('');
+  const [croppingType, setCroppingType] = useState('desktop');
+  const [mobileOriginalFileName, setMobileOriginalFileName] = useState('');
 
   const handleOpenPreview = () => {
     if (!previewUrl) {
@@ -167,6 +169,7 @@ export default function AdIndex() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setOriginalFileName(file.name);
+      setCroppingType('desktop');
       const reader = new FileReader();
       reader.addEventListener('load', () => { setCropImageSrc(reader.result); setIsCropModalOpen(true); });
       reader.readAsDataURL(file);
@@ -176,8 +179,11 @@ export default function AdIndex() {
   const handleMobileImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setMobileImageFile(file);
-      setMobilePreviewUrl(URL.createObjectURL(file));
+      setMobileOriginalFileName(file.name);
+      setCroppingType('mobile');
+      const reader = new FileReader();
+      reader.addEventListener('load', () => { setCropImageSrc(reader.result); setIsCropModalOpen(true); });
+      reader.readAsDataURL(file);
     }
   };
 
@@ -187,12 +193,34 @@ export default function AdIndex() {
     if (!cropImageSrc || !croppedAreaPixels) return;
     try {
       const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
-      const fileExt = originalFileName.split('.').pop() || 'jpg';
-      const file = new File([croppedBlob], `cropped_${Date.now()}.${fileExt}`, { type: croppedBlob.type });
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(croppedBlob));
+      if (croppingType === 'mobile') {
+        const fileExt = mobileOriginalFileName.split('.').pop() || 'jpg';
+        const file = new File([croppedBlob], `mobile_cropped_${Date.now()}.${fileExt}`, { type: croppedBlob.type });
+        setMobileImageFile(file);
+        setMobilePreviewUrl(URL.createObjectURL(croppedBlob));
+      } else {
+        const fileExt = originalFileName.split('.').pop() || 'jpg';
+        const file = new File([croppedBlob], `cropped_${Date.now()}.${fileExt}`, { type: croppedBlob.type });
+        setImageFile(file);
+        setPreviewUrl(URL.createObjectURL(croppedBlob));
+      }
       setIsCropModalOpen(false);
     } catch (err) { alert('Gagal memotong gambar: ' + err.message); }
+  };
+
+  const handleCancelCrop = () => {
+    setIsCropModalOpen(false);
+    if (croppingType === 'mobile') {
+      const f = document.getElementById('ad-mobile-image-input');
+      if (f) f.value = '';
+      const fm = document.getElementById('ad-mobile-image-input-modal');
+      if (fm) fm.value = '';
+    } else {
+      const f = document.getElementById('ad-image-input');
+      if (f) f.value = '';
+      const fm = document.getElementById('ad-image-input-modal');
+      if (fm) fm.value = '';
+    }
   };
 
   const resetForm = () => {
@@ -284,13 +312,13 @@ export default function AdIndex() {
             <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
               <h3 className="font-bold text-base flex items-center gap-2">
                 <i className="fa-solid fa-crop-simple text-red-500"></i>
-                Sesuaikan Gambar ({positionLabel(position)})
+                Sesuaikan Gambar ({croppingType === 'mobile' ? 'Khusus HP' : positionLabel(position)})
               </h3>
-              <button type="button" onClick={() => { setIsCropModalOpen(false); const f = document.getElementById('ad-image-input'); if (f) f.value = ''; }}
+              <button type="button" onClick={handleCancelCrop}
                 className="text-gray-400 hover:text-white text-sm">Batal</button>
             </div>
             <div className="relative flex-1 bg-slate-950 min-h-[280px] sm:min-h-[380px]">
-              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={getAspectForPosition(position)}
+              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={croppingType === 'mobile' ? (300 / 250) : getAspectForPosition(position)}
                 onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
             </div>
             <div className="px-6 py-5 bg-slate-900 border-t border-slate-800 flex flex-col gap-4 text-white">
@@ -301,7 +329,7 @@ export default function AdIndex() {
                 <span className="text-xs text-slate-300 font-bold">{zoom.toFixed(1)}x</span>
               </div>
               <div className="flex justify-end gap-3">
-                <button type="button" onClick={() => { setIsCropModalOpen(false); const f = document.getElementById('ad-image-input'); if (f) f.value = ''; }}
+                <button type="button" onClick={handleCancelCrop}
                   className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">Batal</button>
                 <button type="button" onClick={handleSaveCrop}
                   className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow cursor-pointer">
@@ -376,7 +404,7 @@ export default function AdIndex() {
                 <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
                 {mobilePreviewUrl && (
                   <div className="mt-3">
-                    <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
+                    <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Layar HP:</p>
                     <img src={mobilePreviewUrl} alt="Preview Iklan Mobile" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                   </div>
                 )}
@@ -666,7 +694,7 @@ export default function AdIndex() {
               <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
               {mobilePreviewUrl && (
                 <div className="mt-3">
-                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
+                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Layar HP:</p>
                   <img src={mobilePreviewUrl} alt="Preview Iklan Mobile" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                 </div>
               )}
