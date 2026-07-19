@@ -17,10 +17,41 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const router = useRouter();
   const { slug } = router.query;
 
+  const [realTimeViews, setRealTimeViews] = useState(berita?.views || 0);
   const [currentDate, setCurrentDate] = useState('Kamis, 9 Juli 2026');
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (!berita || !berita.slug) return;
+
+    const sessionKey = `viewed_${berita.slug}`;
+    const hasViewed = sessionStorage.getItem(sessionKey);
+
+    if (!hasViewed) {
+      fetch('/api/increment-view', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ slug: berita.slug }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error('Failed to increment view');
+          return res.json();
+        })
+        .then((data) => {
+          if (data && typeof data.views === 'number') {
+            setRealTimeViews(data.views);
+            sessionStorage.setItem(sessionKey, 'true');
+          }
+        })
+        .catch((err) => {
+          console.error('Error incrementing view count:', err);
+        });
+    }
+  }, []);
 
 
   const images = (() => {
@@ -286,7 +317,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                     <span className="text-gray-300">•</span>
                     <span>{formatDate(berita.created_at)}</span>
                     <span className="text-gray-300">•</span>
-                    <span>{berita.views || 0} kali dibaca</span>
+                    <span>{realTimeViews} kali dibaca</span>
                   </div>
 
                   {/* ===== ISI ARTIKEL ===== */}
@@ -506,13 +537,7 @@ export async function getStaticProps({ params }) {
       }
     }
 
-    // Fire-and-forget: increment views tanpa memblokir render
-    if (mainBerita) {
-      supabase
-        .from('berita')
-        .update({ views: (mainBerita.views || 0) + 1 })
-        .eq('id', mainBerita.id);
-    }
+    // Incremented client-side via api/increment-view
 
     // Parallelisasi 4 query independen — 4x lebih cepat dari sequential await
     const [categoriesRes, adsRes, latestRes, popularRes] = await Promise.all([
