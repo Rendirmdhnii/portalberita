@@ -14,11 +14,28 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
         rel="noreferrer"
         className="block w-full"
       >
-        <img 
-          src={ad.image} 
-          alt={ad.name || "Iklan PojokTV"} 
-          className={imgClass}
-        />
+        {ad.image_mobile_url ? (
+          <>
+            {/* Tampil HANYA di HP */}
+            <img 
+              src={ad.image_mobile_url} 
+              className="block md:hidden w-full h-auto object-contain rounded-lg" 
+              alt={ad.name || "Iklan Mobile"} 
+            />
+            {/* Tampil HANYA di Desktop */}
+            <img 
+              src={ad.image} 
+              className="hidden md:block w-full h-auto object-contain rounded-lg" 
+              alt={ad.name || "Iklan Desktop"} 
+            />
+          </>
+        ) : (
+          <img 
+            src={ad.image} 
+            alt={ad.name || "Iklan Universal"} 
+            className={imgClass}
+          />
+        )}
       </a>
     </div>
   );

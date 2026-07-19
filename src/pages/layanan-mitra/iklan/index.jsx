@@ -97,6 +97,8 @@ export default function AdIndex() {
   const [tanggalBerakhir, setTanggalBerakhir] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [mobileImageFile, setMobileImageFile] = useState(null);
+  const [mobilePreviewUrl, setMobilePreviewUrl] = useState('');
 
   const handleOpenPreview = () => {
     if (!previewUrl) {
@@ -171,6 +173,14 @@ export default function AdIndex() {
     }
   };
 
+  const handleMobileImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setMobileImageFile(file);
+      setMobilePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   const onCropComplete = (_, croppedAreaPixels) => { setCroppedAreaPixels(croppedAreaPixels); };
 
   const handleSaveCrop = async () => {
@@ -188,8 +198,15 @@ export default function AdIndex() {
   const resetForm = () => {
     setName(''); setPosition('Header'); setLink(''); setTanggalBerakhir('');
     setImageFile(null); setPreviewUrl('');
+    setMobileImageFile(null); setMobilePreviewUrl('');
     const fileInput = document.getElementById('ad-image-input');
     if (fileInput) fileInput.value = '';
+    const fileInputModal = document.getElementById('ad-image-input-modal');
+    if (fileInputModal) fileInputModal.value = '';
+    const mobileFileInput = document.getElementById('ad-mobile-image-input');
+    if (mobileFileInput) mobileFileInput.value = '';
+    const mobileFileInputModal = document.getElementById('ad-mobile-image-input-modal');
+    if (mobileFileInputModal) mobileFileInputModal.value = '';
   };
 
   const handleSubmit = async (e) => {
@@ -205,7 +222,26 @@ export default function AdIndex() {
       const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
       if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
       const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-      const { error: insertError } = await supabase.from('ads').insert([{ name, position, image: publicUrl, link: link || '-', is_active: true }]);
+
+      let mobilePublicUrl = null;
+      if (mobileImageFile) {
+        const mFileExt = mobileImageFile.name.split('.').pop();
+        const mFileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${mFileExt}`;
+        const mFilePath = `ads/${mFileName}`;
+        const { error: mUploadError } = await supabase.storage.from('images').upload(mFilePath, mobileImageFile);
+        if (mUploadError) throw new Error('Gagal mengunggah gambar mobile: ' + mUploadError.message);
+        const { data: { publicUrl: mPublicUrl } } = supabase.storage.from('images').getPublicUrl(mFilePath);
+        mobilePublicUrl = mPublicUrl;
+      }
+
+      const { error: insertError } = await supabase.from('ads').insert([{ 
+        name, 
+        position, 
+        image: publicUrl, 
+        image_mobile_url: mobilePublicUrl, 
+        link: link || '-', 
+        is_active: true 
+      }]);
       if (insertError) throw insertError;
       resetForm();
       setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
@@ -330,6 +366,18 @@ export default function AdIndex() {
                   <div className="mt-3">
                     <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
                     <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Khusus HP / Mobile (Opsional)</label>
+                <input id="ad-mobile-image-input-modal" type="file" accept="image/*" onChange={handleMobileImageChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
+                <p className="text-[10px] text-gray-500 mt-1">Upload versi kotak (misal 300x250) agar iklan tampil besar dan jelas di HP. Jika dikosongkan, sistem akan memakai gambar Desktop.</p>
+                {mobilePreviewUrl && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
+                    <img src={mobilePreviewUrl} alt="Preview Iklan Mobile" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                   </div>
                 )}
               </div>
@@ -608,6 +656,18 @@ export default function AdIndex() {
                 <div className="mt-3">
                   <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
                   <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Khusus HP / Mobile (Opsional)</label>
+              <input id="ad-mobile-image-input" type="file" accept="image/*" onChange={handleMobileImageChange}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
+              <p className="text-[10px] text-gray-500 mt-1">Upload versi kotak (misal 300x250) agar iklan tampil besar dan jelas di HP. Jika dikosongkan, sistem akan memakai gambar Desktop.</p>
+              {mobilePreviewUrl && (
+                <div className="mt-3">
+                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
+                  <img src={mobilePreviewUrl} alt="Preview Iklan Mobile" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
                 </div>
               )}
             </div>
