@@ -10,7 +10,7 @@ function generateSiteMap(categories = [], articles = []) {
     '/ketentuan-layanan',
     '/pedoman-media',
   ];
-
+ 
   const currentDate = new Date().toISOString();
 
   return `<?xml version="1.0" encoding="UTF-8"?>
