@@ -126,20 +126,25 @@ export default function AdIndex() {
 
   const getGuidelineText = (pos) => {
     switch (pos) {
-      case 'Header': case 'Tengah Konten': case 'header': case 'Header (728x90)': return 'Rekomendasi: 728×90 px (Rasio lebar 8:1)';
-      case 'Sidebar Atas': case 'sidebar': case 'Sidebar (300x250)': return 'Rekomendasi: 300×250 px (Rasio 6:5)';
-      case 'Sidebar Bawah': return 'Rekomendasi: 300×600 px (Portrait 1:2)';
-      case 'Footer': case 'Footer (970x250)': return 'Rekomendasi: 970×250 px (Rasio 4:1)';
-      default: return 'Pilih file banner iklan.';
+      case 'Header': case 'Tengah Konten': case 'header': case 'Header (728x90)': 
+        return 'Rekomendasi Desktop: 970x90 px atau 1200x200 px. Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
+      case 'Sidebar Atas': case 'sidebar': case 'Sidebar (300x250)': 
+        return 'Rekomendasi Kotak Sidebar / Mobile: 300x250 px (Rasio 6:5). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
+      case 'Sidebar Bawah': 
+        return 'Rekomendasi: 300x600 px (Portrait 1:2). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
+      case 'Footer': case 'Footer (970x250)': 
+        return 'Rekomendasi: 970x250 px (Rasio 4:1). Sistem akan melakukan Auto-Scale secara responsif menyesuaikan layar pembaca tanpa memotong gambar.';
+      default: 
+        return 'Pilih file banner iklan.';
     }
   };
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Header (728×90)', 'Tengah Konten': 'Tengah Konten (728×90)',
-      'Sidebar Atas': 'Sidebar Atas (300×250)', 'Sidebar Bawah': 'Sidebar Bawah (300×600)',
-      'Footer': 'Footer (970×250)', 'header': 'Header (728×90)',
-      'sidebar': 'Sidebar Atas (300×250)',
+      'Header': 'Header Desktop (970x90 / 1200x200)', 'Tengah Konten': 'Tengah Konten (728×90)',
+      'Sidebar Atas': 'Kotak Sidebar / Mobile (300x250)', 'Sidebar Bawah': 'Sidebar Bawah (300×600)',
+      'Footer': 'Footer (970×250)', 'header': 'Header Desktop (970x90 / 1200x200)',
+      'sidebar': 'Kotak Sidebar / Mobile (300x250)',
     };
     return labels[pos] || pos;
   };
@@ -303,9 +308,9 @@ export default function AdIndex() {
                 <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
                 <select value={position} onChange={e => setPosition(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                  <option value="Header">Header (Atas - 728×90)</option>
+                  <option value="Header">Header Desktop (970x90 / 1200x200)</option>
                   <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
-                  <option value="Sidebar Atas">Sidebar Atas (Kanan - 300×250)</option>
+                  <option value="Sidebar Atas">Kotak Sidebar / Mobile (300x250)</option>
                   <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
                   <option value="Footer">Footer (Bawah - 970×250)</option>
                 </select>
@@ -325,7 +330,7 @@ export default function AdIndex() {
               <div>
                 <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
-                  <i className="fa-solid fa-crop-simple mr-1"></i>{getGuidelineText(position)} — Sistem akan Auto-Crop otomatis.
+                  <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
                 </div>
                 <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
@@ -561,7 +566,7 @@ export default function AdIndex() {
       </div>
 
       <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Klik <strong>Pasang Iklan Baru</strong> → isi nama klien, pilih posisi slot, upload foto → sistem akan <strong>Auto-Crop</strong> gambar secara otomatis sesuai rasio slot. Iklan yang aktif dapat dihapus kapan saja dari daftar di bawah.</p>
+        <p>Klik <strong>Pasang Iklan Baru</strong> → isi nama klien, pilih posisi slot, upload foto → sistem akan melakukan <strong>Auto-Scale</strong> secara responsif menyesuaikan layar pembaca tanpa memotong gambar. Iklan yang aktif dapat dihapus kapan saja dari daftar di bawah.</p>
       </GuideBox>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -581,9 +586,9 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                <option value="Header">Header (Atas - 728×90)</option>
+                <option value="Header">Header Desktop (970x90 / 1200x200)</option>
                 <option value="Tengah Konten">Tengah Konten (In-Feed - 728×90)</option>
-                <option value="Sidebar Atas">Sidebar Atas (Kanan - 300×250)</option>
+                <option value="Sidebar Atas">Kotak Sidebar / Mobile (300x250)</option>
                 <option value="Sidebar Bawah">Sidebar Bawah (Kanan Panjang - 300×600)</option>
                 <option value="Footer">Footer (Bawah - 970×250)</option>
               </select>
@@ -603,7 +608,7 @@ export default function AdIndex() {
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
               <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
-                <i className="fa-solid fa-crop-simple mr-1"></i>{getGuidelineText(position)} — Sistem akan Auto-Crop otomatis.
+                <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
               </div>
               <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
