@@ -101,6 +101,7 @@ export default function AdIndex() {
   const [mobilePreviewUrl, setMobilePreviewUrl] = useState('');
   const [croppingType, setCroppingType] = useState('desktop');
   const [mobileOriginalFileName, setMobileOriginalFileName] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   const handleOpenPreview = () => {
     if (!previewUrl) {
@@ -227,6 +228,7 @@ export default function AdIndex() {
     setName(''); setPosition('Header'); setLink(''); setTanggalBerakhir('');
     setImageFile(null); setPreviewUrl('');
     setMobileImageFile(null); setMobilePreviewUrl('');
+    setEditingId(null);
     const fileInput = document.getElementById('ad-image-input');
     if (fileInput) fileInput.value = '';
     const fileInputModal = document.getElementById('ad-image-input-modal');
@@ -237,21 +239,44 @@ export default function AdIndex() {
     if (mobileFileInputModal) mobileFileInputModal.value = '';
   };
 
+  const handleEdit = (iklan) => {
+    setEditingId(iklan.id);
+    setName(iklan.name || '');
+    setPosition(iklan.position || 'Header');
+    setLink(iklan.link || '');
+    setTanggalBerakhir(iklan.tanggal_berakhir || '');
+    setPreviewUrl(iklan.image || '');
+    setMobilePreviewUrl(iklan.image_mobile_url || '');
+    setImageFile(null);
+    setMobileImageFile(null);
+    setShowFormModal(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    resetForm();
+    setShowFormModal(false);
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
+    if (!editingId && !imageFile) { alert('Pilih berkas gambar iklan terlebih dahulu!'); return; }
     
     setProcessing(true);
     setError('');
     try {
-      const fileExt = imageFile.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `ads/${fileName}`;
-      const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
-      if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+      let publicUrl = previewUrl;
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `ads/${fileName}`;
+        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
+        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
+        const { data: { publicUrl: loadedUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        publicUrl = loadedUrl;
+      }
 
-      let mobilePublicUrl = null;
+      let mobilePublicUrl = mobilePreviewUrl || null;
       if (mobileImageFile) {
         const mFileExt = mobileImageFile.name.split('.').pop();
         const mFileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${mFileExt}`;
@@ -262,22 +287,32 @@ export default function AdIndex() {
         mobilePublicUrl = mPublicUrl;
       }
 
-      const { error: insertError } = await supabase.from('ads').insert([{ 
-        name, 
-        position, 
-        image: publicUrl, 
-        image_mobile_url: mobilePublicUrl, 
-        link: link || '-', 
-        is_active: true 
-      }]);
-      if (insertError) throw insertError;
+      const payload = {
+        name,
+        position,
+        image: publicUrl,
+        image_mobile_url: mobilePublicUrl,
+        link: link || '-',
+        tanggal_berakhir: tanggalBerakhir || null,
+        is_active: true
+      };
+
+      if (editingId) {
+        const { error: updateError } = await supabase.from('ads').update(payload).eq('id', editingId);
+        if (updateError) throw updateError;
+        setMessage('Iklan berhasil diperbarui.');
+      } else {
+        const { error: insertError } = await supabase.from('ads').insert([payload]);
+        if (insertError) throw insertError;
+        setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
+      }
+
       resetForm();
-      setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
       setShowFormModal(false);
       fetchAds();
       setTimeout(() => setMessage(''), 4000);
     } catch (err) {
-      setError(err.message || 'Gagal menambahkan iklan.');
+      setError(err.message || 'Gagal menyimpan iklan.');
     } finally { setProcessing(false); }
   };
 
@@ -346,8 +381,8 @@ export default function AdIndex() {
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 px-4" onClick={() => setShowFormModal(false)}>
           <div className="bg-white rounded-2xl rounded-b-none sm:rounded-2xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-gray-900">Pasang Iklan Baru</h3>
-              <button onClick={() => setShowFormModal(false)} className="text-gray-400 hover:text-gray-700 text-xl">
+              <h3 className="font-bold text-lg text-gray-900">{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</h3>
+              <button onClick={handleCancelEdit} className="text-gray-400 hover:text-gray-700 text-xl">
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
@@ -389,7 +424,7 @@ export default function AdIndex() {
                   <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
                 </div>
                 <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
                 {previewUrl && (
                   <div className="mt-3">
                     <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
@@ -414,9 +449,15 @@ export default function AdIndex() {
                   className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
                   Lihat Pratinjau
                 </button>
+                {editingId && (
+                  <button type="button" onClick={handleCancelEdit}
+                    className="w-full px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-200 shadow-sm transition-all cursor-pointer text-center">
+                    Batal Edit
+                  </button>
+                )}
                 <button type="submit" disabled={processing}
                   className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">
-                  {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
+                  {processing ? 'Menyimpan...' : (editingId ? 'Update Iklan' : 'Upload & Pasang Iklan')}
                 </button>
               </div>
             </form>
@@ -640,7 +681,7 @@ export default function AdIndex() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Desktop Form (sidebar kiri) */}
         <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Pasang Iklan Baru</h3>
+          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
             <div>
@@ -679,7 +720,7 @@ export default function AdIndex() {
                 <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
               </div>
               <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required />
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
               {previewUrl && (
                 <div className="mt-3">
                   <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
@@ -704,9 +745,15 @@ export default function AdIndex() {
                 className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
                 Lihat Pratinjau
               </button>
+              {editingId && (
+                <button type="button" onClick={handleCancelEdit}
+                  className="w-full px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-200 shadow-sm transition-all cursor-pointer text-center">
+                  Batal Edit
+                </button>
+              )}
               <button type="submit" disabled={processing}
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm cursor-pointer">
-                {processing ? 'Sedang Mengunggah...' : 'Upload & Pasang Iklan'}
+                {processing ? 'Menyimpan...' : (editingId ? 'Update Iklan' : 'Upload & Pasang Iklan')}
               </button>
             </div>
           </form>
@@ -747,10 +794,16 @@ export default function AdIndex() {
                       {ad.link && ad.link !== '-' && (
                         <p className="text-xs text-blue-600 truncate mt-0.5">{ad.link}</p>
                       )}
-                      <button onClick={() => handleDelete(ad.id)}
-                        className="mt-2 text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
-                        <i className="fa-solid fa-trash mr-1"></i>Hapus
-                      </button>
+                      <div className="flex gap-2 mt-2">
+                        <button onClick={() => handleEdit(ad)}
+                          className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
+                          <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
+                        </button>
+                        <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
+                          className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                          <i className="fa-solid fa-trash mr-1"></i>Hapus
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -793,10 +846,16 @@ export default function AdIndex() {
                           ) : <span className="text-gray-400 text-xs">—</span>}
                         </td>
                         <td className="px-5 py-3 text-right">
-                          <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
-                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
-                            Hapus
-                          </button>
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => handleEdit(ad)}
+                              className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
+                              Edit
+                            </button>
+                            <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
+                              className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                              Hapus
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
