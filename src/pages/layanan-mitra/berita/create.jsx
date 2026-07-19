@@ -242,6 +242,9 @@ export default function BeritaCreate() {
       // 4. Keep the user-inputted author (use fallback if empty)
       const finalAuthor = author.trim() || 'Redaksi PojokTV';
 
+      // Generate seed views (random number between 65 and 185) for social proof
+      const seedViews = Math.floor(Math.random() * (185 - 65 + 1)) + 65;
+
       // 5. Insert into 'berita' table
       const { error: insertError } = await supabase
         .from('berita')
@@ -259,7 +262,7 @@ export default function BeritaCreate() {
             is_headline: posisiTampilan === 'HEADLINE',
             author: finalAuthor,
             status: 'Published',
-            views: 0
+            views: seedViews
           }
         ]);
 
