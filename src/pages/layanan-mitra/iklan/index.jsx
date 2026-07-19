@@ -130,13 +130,13 @@ export default function AdIndex() {
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Spanduk Paling Atas (Di Bawah Logo)',
-      'Tengah Konten': 'Menyelip di Tengah Daftar Berita',
-      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak)',
-      'Sidebar Bawah': 'Samping Kanan (Bentuk Memanjang ke Bawah)',
-      'Footer': 'Spanduk Paling Bawah Website',
-      'header': 'Spanduk Paling Atas (Di Bawah Logo)',
-      'sidebar': 'Samping Kanan (Bentuk Kotak)',
+      'Header': 'Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)',
+      'Tengah Konten': 'Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)',
+      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)',
+      'Sidebar Bawah': 'Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)',
+      'Footer': 'Spanduk Paling Bawah Website — (Ukuran: 970x250 px)',
+      'header': 'Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)',
+      'sidebar': 'Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)',
     };
     return labels[pos] || pos;
   };
@@ -300,11 +300,11 @@ export default function AdIndex() {
                 <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
                 <select value={position} onChange={e => setPosition(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
-                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
-                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
-                  <option value="Sidebar Bawah">Samping Kanan (Bentuk Memanjang ke Bawah)</option>
-                  <option value="Footer">Spanduk Paling Bawah Website</option>
+                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)</option>
+                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)</option>
+                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)</option>
+                  <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)</option>
+                  <option value="Footer">Spanduk Paling Bawah Website — (Ukuran: 970x250 px)</option>
                 </select>
               </div>
               <div>
@@ -578,11 +578,11 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
-                <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
-                <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
-                <option value="Sidebar Bawah">Samping Kanan (Bentuk Memanjang ke Bawah)</option>
-                <option value="Footer">Spanduk Paling Bawah Website</option>
+                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (Ukuran: 1200x200 px)</option>
+                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (Ukuran: 728x90 px)</option>
+                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (Ukuran: 300x250 px)</option>
+                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (Ukuran: 300x600 px)</option>
+                 <option value="Footer">Spanduk Paling Bawah Website — (Ukuran: 970x250 px)</option>
               </select>
             </div>
             <div>
