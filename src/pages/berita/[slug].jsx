@@ -24,34 +24,19 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (!berita || !berita.slug) return;
-
-    const sessionKey = `viewed_${berita.slug}`;
-    const hasViewed = sessionStorage.getItem(sessionKey);
-
-    if (!hasViewed) {
-      fetch('/api/increment-view', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ slug: berita.slug }),
+    if (!berita?.slug) return;
+    
+    fetch('/api/increment-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: berita.slug }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.views) setRealTimeViews(data.views);
       })
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to increment view');
-          return res.json();
-        })
-        .then((data) => {
-          if (data && typeof data.views === 'number') {
-            setRealTimeViews(data.views);
-            sessionStorage.setItem(sessionKey, 'true');
-          }
-        })
-        .catch((err) => {
-          console.error('Error incrementing view count:', err);
-        });
-    }
-  }, []);
+      .catch((err) => console.error('Gagal update views:', err));
+  }, [berita?.slug]);
 
 
   const images = (() => {
