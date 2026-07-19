@@ -164,7 +164,7 @@ export default function SearchPage() {
 
       {/* Header Ad */}
       {headerAd && headerAd.image && (
-        <div className="w-full max-w-7xl mx-auto my-4 px-2 md:px-4 flex justify-center">
+        <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
             className="w-full" 
@@ -174,7 +174,7 @@ export default function SearchPage() {
       )}
 
       {/* Content Wrapper */}
-      <main className="main-wrapper my-8 pt-0">
+      <main className="main-wrapper mb-8 pt-0 mt-2">
         <div className="container mx-auto px-4">
           {/* Breadcrumb + Search Header */}
           <div className="mb-6">

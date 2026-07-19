@@ -281,7 +281,7 @@ export default function Home({
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Hero) */}
       {headerAd && headerAd.image && (
-        <div className="w-full max-w-7xl mx-auto my-4 px-2 md:px-4 flex justify-center">
+        <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
             className="w-full" 
@@ -290,7 +290,7 @@ export default function Home({
         </div>
       )}
 
-      <main className="main-wrapper my-8 gap-8 flex flex-col pt-0">
+      <main className="main-wrapper mb-8 gap-8 flex flex-col pt-0 mt-2">
         <div className="container">
           {/* 3. Hero Section — Asymmetric Layout Headline */}
           <section className="mb-6">

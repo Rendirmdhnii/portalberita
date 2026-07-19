@@ -257,7 +257,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
       {/* Header Ad Slot */}
       {headerAd && headerAd.image && (
-        <div className="w-full max-w-7xl mx-auto my-4 px-2 md:px-4 flex justify-center overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center overflow-hidden">
           <AdSlot 
             size="970x90" 
             className="w-full" 
@@ -267,7 +267,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       )}
 
       {/* Content Wrapper */}
-      <main className="w-full my-6 md:my-8">
+      <main className="w-full mb-6 md:mb-8 mt-2 md:mt-2">
         <div className="max-w-7xl mx-auto px-2 md:px-4">
           {/* Mobile-first: 1 kolom di HP, 12 kolom di desktop (8 kolom artikel, 4 kolom sidebar) */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

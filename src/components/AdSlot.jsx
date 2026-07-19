@@ -5,7 +5,7 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
 
   const isExternal = ad.link && ad.link.startsWith('http');
   return (
-    <div className={`w-full overflow-hidden flex justify-center items-center rounded-lg ${className}`}>
+    <div className={`w-full h-auto overflow-hidden flex justify-center items-center rounded-lg ${className}`}>
       <a 
         href={ad.link && ad.link !== '-' ? ad.link : '#'} 
         target={isExternal ? "_blank" : "_self"} 
@@ -15,7 +15,7 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
         <img 
           src={ad.image} 
           alt={ad.name || "Iklan PojokTV"} 
-          className="w-full h-auto object-cover block rounded-lg"
+          className="w-full h-auto object-contain block rounded-lg"
         />
       </a>
     </div>
