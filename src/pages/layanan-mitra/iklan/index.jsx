@@ -356,7 +356,7 @@ export default function AdIndex() {
                 <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama / Desktop (Wajib)</label>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
                   <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
                 </div>
@@ -370,10 +370,10 @@ export default function AdIndex() {
                 )}
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Khusus HP / Mobile (Opsional)</label>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Khusus HP (Opsional)</label>
                 <input id="ad-mobile-image-input-modal" type="file" accept="image/*" onChange={handleMobileImageChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
-                <p className="text-[10px] text-gray-500 mt-1">Upload versi kotak (misal 300x250) agar iklan tampil besar dan jelas di HP. Jika dikosongkan, sistem akan memakai gambar Desktop.</p>
+                <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
                 {mobilePreviewUrl && (
                   <div className="mt-3">
                     <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
@@ -646,7 +646,7 @@ export default function AdIndex() {
               <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Banner (Wajib)</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama / Desktop (Wajib)</label>
               <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
                 <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
               </div>
@@ -660,10 +660,10 @@ export default function AdIndex() {
               )}
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Khusus HP / Mobile (Opsional)</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Khusus HP (Opsional)</label>
               <input id="ad-mobile-image-input" type="file" accept="image/*" onChange={handleMobileImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
-              <p className="text-[10px] text-gray-500 mt-1">Upload versi kotak (misal 300x250) agar iklan tampil besar dan jelas di HP. Jika dikosongkan, sistem akan memakai gambar Desktop.</p>
+              <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
               {mobilePreviewUrl && (
                 <div className="mt-3">
                   <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Gambar Mobile:</p>
