@@ -92,7 +92,7 @@ export default function Home({
 
   // Sorotan
   const sorotanNews = useMemo(() => {
-    return sorotan?.slice(0, 4) || [];
+    return sorotan || [];
   }, [sorotan]);
 
   // Berita reguler untuk Berita Terbaru
@@ -122,42 +122,6 @@ export default function Home({
     const timer = setInterval(updateDateTime, 1000);
     updateDateTime();
     return () => clearInterval(timer);
-  }, []);
-
-  // Auto-scroll pelan seksi Sorotan (Carousel)
-  useEffect(() => {
-    const element = sorotanScrollRef.current;
-    if (!element) return;
-
-    let isPaused = false;
-
-    const scrollInterval = setInterval(() => {
-      if (isPaused) return;
-      // Geser pelan 1 pixel setiap 30ms
-      element.scrollLeft += 1;
-      
-      // Jika sudah mentok di kanan, kembalikan ke kiri
-      if (element.scrollLeft + element.clientWidth >= element.scrollWidth - 1) {
-        element.scrollLeft = 0; 
-      }
-    }, 30); // Atur angka 30 ini untuk kecepatan (makin kecil makin cepat)
-
-    // Pause saat disentuh/di-hover
-    const handlePause = () => { isPaused = true; };
-    const handleResume = () => { isPaused = false; };
-
-    element.addEventListener('mouseenter', handlePause);
-    element.addEventListener('mouseleave', handleResume);
-    element.addEventListener('touchstart', handlePause);
-    element.addEventListener('touchend', handleResume);
-
-    return () => {
-      clearInterval(scrollInterval);
-      element.removeEventListener('mouseenter', handlePause);
-      element.removeEventListener('mouseleave', handleResume);
-      element.removeEventListener('touchstart', handlePause);
-      element.removeEventListener('touchend', handleResume);
-    };
   }, []);
 
 
@@ -657,9 +621,9 @@ export default function Home({
               </h2>
             </div>
 
-            <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x">
+            <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 hide-scrollbar cursor-pointer">
               {sorotanNews.map((berita) => (
-                <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] snap-start bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="w-full bg-gray-200">
                      <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="w-full aspect-[16/9] object-cover object-center" />
                   </div>
