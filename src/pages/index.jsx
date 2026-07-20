@@ -659,13 +659,13 @@ export default function Home({
 
             <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x">
               {sorotanNews.map((berita) => (
-                <div key={berita.id} className="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-start bg-white border border-gray-250 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] snap-start bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="w-full bg-gray-200">
                      <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="w-full aspect-[16/9] object-cover object-center" />
                   </div>
-                  <div className="p-4">
+                  <div className="p-3 md:p-4">
                      <span className="text-xs font-bold text-red-600 uppercase">{berita.category || berita.kategori}</span>
-                     <h3 className="text-sm font-bold mt-2 text-gray-900 line-clamp-3 hover:text-[#E30A17] transition-colors">
+                     <h3 className="text-sm md:text-base font-bold text-gray-900 leading-snug line-clamp-2 mt-2">
                        <Link href={`/berita/${berita.slug}`}>{berita.title}</Link>
                      </h3>
                   </div>
