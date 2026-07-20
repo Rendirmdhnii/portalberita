@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -60,6 +60,7 @@ export default function Home({
   initialVideos = []
 }) {
   const router = useRouter();
+  const sorotanScrollRef = useRef(null);
   const [currentDate, setCurrentDate] = useState('Kamis, 9 Juli 2026');
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -123,6 +124,43 @@ export default function Home({
     return () => clearInterval(timer);
   }, []);
 
+  // Auto-scroll pelan seksi Sorotan (Carousel)
+  useEffect(() => {
+    const element = sorotanScrollRef.current;
+    if (!element) return;
+
+    let isPaused = false;
+
+    const scrollInterval = setInterval(() => {
+      if (isPaused) return;
+      // Geser pelan 1 pixel setiap 30ms
+      element.scrollLeft += 1;
+      
+      // Jika sudah mentok di kanan, kembalikan ke kiri
+      if (element.scrollLeft + element.clientWidth >= element.scrollWidth - 1) {
+        element.scrollLeft = 0; 
+      }
+    }, 30); // Atur angka 30 ini untuk kecepatan (makin kecil makin cepat)
+
+    // Pause saat disentuh/di-hover
+    const handlePause = () => { isPaused = true; };
+    const handleResume = () => { isPaused = false; };
+
+    element.addEventListener('mouseenter', handlePause);
+    element.addEventListener('mouseleave', handleResume);
+    element.addEventListener('touchstart', handlePause);
+    element.addEventListener('touchend', handleResume);
+
+    return () => {
+      clearInterval(scrollInterval);
+      element.removeEventListener('mouseenter', handlePause);
+      element.removeEventListener('mouseleave', handleResume);
+      element.removeEventListener('touchstart', handlePause);
+      element.removeEventListener('touchend', handleResume);
+    };
+  }, []);
+
+
   // Fetch data on load
   const fetchData = async () => {
     try {
@@ -138,7 +176,7 @@ export default function Home({
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(15),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
@@ -619,9 +657,9 @@ export default function Home({
               </h2>
             </div>
 
-            <div className="flex overflow-x-auto gap-5 pb-6 hide-scrollbar snap-x" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 scroll-smooth hide-scrollbar snap-x">
               {sorotanNews.map((berita) => (
-                <div key={berita.id} className="flex-none w-[280px] md:w-[320px] snap-start bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div key={berita.id} className="min-w-[280px] md:min-w-[320px] flex-shrink-0 snap-start bg-white border border-gray-250 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div className="relative w-full h-48 bg-gray-200">
                      <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="absolute inset-0 w-full h-full object-cover" />
                   </div>
@@ -658,7 +696,7 @@ export async function getServerSideProps() {
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(15),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);

@@ -2398,4 +2398,14 @@ button, input {
   color: #1d4ed8 !important;
 }
 
+/* Scrollbar Hiding Utilities */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+
 
