@@ -80,48 +80,30 @@ export default function Home({
   const [isDragging, setIsDragging] = useState(false);
 
   // ── News bucketing (declared at the top to prevent Temporal Dead Zone ReferenceErrors) ──
-  // Headline slider: berita dengan posisi_tampilan === 'HEADLINE'
+  // Headline slider
   const headlineSlides = useMemo(() => {
-    if (headlines && headlines.length > 0) return headlines;
-    // Fallback: legacy positions
-    const legacyHeadlines = berita?.filter(n => n.posisi_tampilan === 'HEADLINE' || n.posisi_layout === 'headline') || [];
-    return legacyHeadlines.length > 0 ? legacyHeadlines : berita?.slice(0, 3) || [];
-  }, [headlines, berita]);
+    return headlines || [];
+  }, [headlines]);
 
   const sideHeadlines = useMemo(() => {
     return headlineSlides.slice(1, 3);
   }, [headlineSlides]);
 
-  // Sorotan: berita dengan posisi_tampilan === 'SOROTAN'
+  // Sorotan
   const sorotanNews = useMemo(() => {
-    if (sorotan && sorotan.length > 0) return sorotan.slice(0, 4);
-    // Fallback: legacy positions
-    const legacySorotan = berita?.filter(n => n.posisi_tampilan === 'SOROTAN' || n.posisi_layout === 'sorotan') || [];
-    if (legacySorotan.length > 0) return legacySorotan.slice(0, 4);
-    
-    // Ultimate Fallback: berita terbaru yang bukan headline
-    const headlineIds = new Set(headlineSlides.map(n => n.id));
-    return (berita?.filter(n => !headlineIds.has(n.id)) || []).slice(0, 4);
-  }, [sorotan, berita, headlineSlides]);
+    return sorotan?.slice(0, 4) || [];
+  }, [sorotan]);
 
-  // Global deduplication: semua ID yang sudah tampil di atas
-  const displayedNewsIds = useMemo(() => {
-    return new Set([
-      ...headlineSlides.map(n => n.id),
-      ...sorotanNews.map(n => n.id)
-    ]);
-  }, [headlineSlides, sorotanNews]);
-
-  // Berita reguler untuk Berita Terbaru (deduplikasi)
+  // Berita reguler untuk Berita Terbaru
   const feedBerita = useMemo(() => {
-    return berita?.filter(n => !displayedNewsIds.has(n.id)) || [];
-  }, [berita, displayedNewsIds]);
+    return berita || [];
+  }, [berita]);
 
-  // Filter Kriminal (deduplikasi)
+  // Filter Kriminal (combining all news categories)
   const kriminalNews = useMemo(() => {
-    return (berita?.filter(b => b.category?.toLowerCase() === 'kriminal') || [])
-      .filter(p => !displayedNewsIds.has(p.id));
-  }, [berita, displayedNewsIds]);
+    const allNews = [...(headlines || []), ...(sorotan || []), ...(berita || [])];
+    return allNews.filter(b => b.category?.toLowerCase() === 'kriminal');
+  }, [headlines, sorotan, berita]);
 
   useEffect(() => {
     // Realtime Clock
@@ -154,9 +136,9 @@ export default function Home({
         { data: videosData }
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-        supabase.from('berita').select('*').eq('status', 'Published').neq('posisi_layout', 'headline').order('created_at', { ascending: false }),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
@@ -266,8 +248,11 @@ export default function Home({
 
   // Bucketed lists processed above to prevent TDZ
 
-  // Sorted by views
-  const popularNews = berita ? [...berita].sort((a, b) => (b.views || 0) - (a.views || 0)) : [];
+  // Sorted by views (combining all news categories)
+  const popularNews = useMemo(() => {
+    const allNews = [...(headlines || []), ...(sorotan || []), ...(berita || [])];
+    return allNews.sort((a, b) => (b.views || 0) - (a.views || 0));
+  }, [headlines, sorotan, berita]);
 
   return (
     <Layout>
@@ -660,7 +645,7 @@ export default function Home({
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   try {
     const [
       { data: catData },
@@ -671,9 +656,9 @@ export async function getStaticProps() {
       { data: videosData }
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-      supabase.from('berita').select('*').eq('status', 'Published').neq('posisi_layout', 'headline').order('created_at', { ascending: false }),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);
@@ -686,19 +671,17 @@ export async function getStaticProps() {
         initialSorotan: sorotanData || [],
         initialAds: adsData || [],
         initialVideos: videosData || [],
-      },
-      revalidate: 10,
+      }
     };
   } catch (err) {
-    console.error('Error in getStaticProps:', err);
+    console.error('Error in getServerSideProps:', err);
     return {
       props: {
         initialCategories: [],
         initialBerita: [],
         initialAds: [],
         initialVideos: [],
-      },
-      revalidate: 10,
+      }
     };
   }
 }

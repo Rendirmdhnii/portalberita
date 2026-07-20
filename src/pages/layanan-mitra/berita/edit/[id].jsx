@@ -49,7 +49,7 @@ export default function BeritaEdit() {
   
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
-  const [posisiTampilan, setPosisiTampilan] = useState('REGULER');
+  const [posisiTampilan, setPosisiTampilan] = useState('berita_terbaru');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   
   const [loading, setLoading] = useState(true);
@@ -95,7 +95,7 @@ export default function BeritaEdit() {
       setCategory(data.category || '');
       setContent(data.content || '');
       setStatus(data.status || 'Published');
-      setPosisiTampilan(data.posisi_tampilan || (data.posisi_layout === 'headline' ? 'HEADLINE' : data.posisi_layout === 'sorotan' ? 'SOROTAN' : 'REGULER'));
+      setPosisiTampilan(data.posisi || (data.posisi_tampilan === 'HEADLINE' ? 'headline' : data.posisi_tampilan === 'SOROTAN' ? 'sorotan' : 'berita_terbaru'));
       setImageCaption(data.image_caption || '');
       
       // Load images (jsonb) or fallback to image (text)
@@ -326,9 +326,10 @@ export default function BeritaEdit() {
           images: combinedImages, // Simpan sebagai array jsonb
           gambar_utama: finalThumbnailUrl, // Simpan URL publik Foto Utama di kolom baru
           image_caption: imageCaption.trim() || null,
-          posisi_tampilan: posisiTampilan,
-          posisi_layout: posisiTampilan === 'HEADLINE' ? 'headline' : posisiTampilan === 'SOROTAN' ? 'sorotan' : 'biasa',
-          is_headline: posisiTampilan === 'HEADLINE',
+          posisi: posisiTampilan,
+          posisi_tampilan: posisiTampilan === 'headline' ? 'HEADLINE' : posisiTampilan === 'sorotan' ? 'SOROTAN' : 'REGULER',
+          posisi_layout: posisiTampilan === 'headline' ? 'headline' : posisiTampilan === 'sorotan' ? 'sorotan' : 'biasa',
+          is_headline: posisiTampilan === 'headline',
           author: author.trim() || 'Redaksi PojokTV',
           status
         })
@@ -587,8 +588,8 @@ export default function BeritaEdit() {
             
             <div className="flex flex-col gap-3">
               {/* Opsi Headline */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'HEADLINE' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'HEADLINE'} onChange={() => setPosisiTampilan('HEADLINE')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'headline' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'headline'} onChange={() => setPosisiTampilan('headline')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA UTAMA (HEADLINE ATAS)</span>
                   <span className="block text-sm text-gray-600">Berita akan ditampilkan di baris paling atas halaman depan.</span>
@@ -596,8 +597,8 @@ export default function BeritaEdit() {
               </label>
 
               {/* Opsi Sorotan */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'SOROTAN' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'SOROTAN'} onChange={() => setPosisiTampilan('SOROTAN')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'sorotan' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'sorotan'} onChange={() => setPosisiTampilan('sorotan')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">SOROTAN (KOTAK BAWAH)</span>
                   <span className="block text-sm text-gray-600">Berita akan disematkan secara khusus di deretan kartu bagian bawah halaman.</span>
@@ -605,8 +606,8 @@ export default function BeritaEdit() {
               </label>
 
               {/* Opsi Biasa */}
-              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'REGULER' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
-                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'REGULER'} onChange={() => setPosisiTampilan('REGULER')} />
+              <label className={`flex items-start p-4 border rounded cursor-pointer ${posisiTampilan === 'berita_terbaru' ? 'border-blue-600 bg-blue-50' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <input type="radio" name="layout" className="w-5 h-5 mt-0.5 mr-3" checked={posisiTampilan === 'berita_terbaru'} onChange={() => setPosisiTampilan('berita_terbaru')} />
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA TERBARU / REGULER (KOLOM TENGAH)</span>
                   <span className="block text-sm text-gray-600">Berita akan masuk ke daftar urutan waktu terbaru di tengah halaman.</span>
