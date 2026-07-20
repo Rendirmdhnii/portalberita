@@ -154,7 +154,7 @@ export default function Home({
         { data: videosData }
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-        supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').neq('posisi_layout', 'headline').order('created_at', { ascending: false }),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
         supabase.from('ads').select('*').eq('is_active', true),
@@ -421,8 +421,8 @@ export default function Home({
               </div>
 
               <div className="flex flex-col gap-4">
-                {feedBerita && feedBerita.slice(2, 9).length > 0 ? (
-                  feedBerita.slice(2, 9).map((post) => (
+                {feedBerita && feedBerita.slice(0, 9).length > 0 ? (
+                  feedBerita.slice(0, 9).map((post) => (
                     <article key={post.id} className="latest-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition duration-200">
                       <div className="latest-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
@@ -671,7 +671,7 @@ export async function getStaticProps() {
       { data: videosData }
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-      supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').neq('posisi_layout', 'headline').order('created_at', { ascending: false }),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'HEADLINE').order('created_at', { ascending: false }).limit(5),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi_tampilan', 'SOROTAN').order('created_at', { ascending: false }),
       supabase.from('ads').select('*').eq('is_active', true),
@@ -687,7 +687,7 @@ export async function getStaticProps() {
         initialAds: adsData || [],
         initialVideos: videosData || [],
       },
-      revalidate: 5,
+      revalidate: 10,
     };
   } catch (err) {
     console.error('Error in getStaticProps:', err);
@@ -698,7 +698,7 @@ export async function getStaticProps() {
         initialAds: [],
         initialVideos: [],
       },
-      revalidate: 5,
+      revalidate: 10,
     };
   }
 }
