@@ -174,9 +174,9 @@ export default function Home({
         { data: videosData }
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }).limit(20),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(15),
+        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(10),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
@@ -694,9 +694,9 @@ export async function getServerSideProps() {
       { data: videosData }
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }).limit(20),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(15),
+      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(10),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);

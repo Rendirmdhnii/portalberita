@@ -465,6 +465,7 @@ export default function BeritaCreate() {
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA UTAMA (HEADLINE ATAS)</span>
                   <span className="block text-sm text-gray-600">Berita akan ditampilkan di baris paling atas halaman depan.</span>
+                  <div className="mt-1 text-[11px] text-red-500 font-medium">⚠️ Sistem hanya menampilkan maksimal 5 Headline terbaru di spanduk atas.</div>
                 </div>
               </label>
 
@@ -474,6 +475,7 @@ export default function BeritaCreate() {
                 <div>
                   <span className="block font-bold text-base text-gray-900">SOROTAN (KOTAK BAWAH)</span>
                   <span className="block text-sm text-gray-600">Berita akan disematkan secara khusus di deretan kartu bagian bawah halaman.</span>
+                  <div className="mt-1 text-[11px] text-red-500 font-medium">⚠️ Sistem hanya menampilkan maksimal 10 Sorotan terbaru yang bisa digeser (Carousel).</div>
                 </div>
               </label>
 
@@ -483,6 +485,7 @@ export default function BeritaCreate() {
                 <div>
                   <span className="block font-bold text-base text-gray-900">BERITA TERBARU / REGULER (KOLOM TENGAH)</span>
                   <span className="block text-sm text-gray-600">Berita akan masuk ke daftar urutan waktu terbaru di tengah halaman.</span>
+                  <div className="mt-1 text-[11px] text-red-500 font-medium">⚠️ Sistem akan memuat 20 berita terbaru di beranda pembaca.</div>
                 </div>
               </label>
             </div>
