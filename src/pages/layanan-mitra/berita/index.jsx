@@ -120,6 +120,18 @@ export default function BeritaIndex() {
     ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-150 text-green-800 border border-green-300">TAYANG</span>
     : <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-850 border border-orange-350">DRAFT (BELUM TAYANG)</span>;
 
+  const renderPosisiBadge = (posisi) => {
+    switch (posisi) {
+      case 'headline':
+        return <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-750 text-[10px] font-bold rounded uppercase border border-blue-200 mr-2">Headline Utama</span>;
+      case 'sorotan':
+        return <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold rounded uppercase border border-amber-200 mr-2">Sorotan</span>;
+      case 'berita_terbaru':
+      default:
+        return <span className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-bold rounded uppercase border border-gray-200 mr-2">Berita Terbaru</span>;
+    }
+  };
+
   return (
     <AdminLayout>
       <Head><title>Kelola Berita Redaksi - PojokTV</title></Head>
@@ -186,17 +198,15 @@ export default function BeritaIndex() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex-1">
                       <p className="font-bold text-gray-900 text-sm line-clamp-2">{post.title}</p>
-                      {post.is_headline && (
-                        <span className="inline-block mt-1 bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-300">
-                          HEADLINE UTAMA
-                        </span>
-                      )}
                     </div>
                     {statusBadge(post.status)}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
                     <span className="bg-gray-100 px-2 py-0.5 rounded-full font-semibold">{post.category}</span>
-                    <span>· {post.author}</span>
+                  </div>
+                  <div className="flex items-center mt-2 mb-3">
+                     {renderPosisiBadge(post.posisi)}
+                     <span className="text-xs text-gray-500">{post.author || 'Redaksi'}</span>
                   </div>
                   <div className="flex gap-4">
                     <Link
@@ -232,12 +242,10 @@ export default function BeritaIndex() {
                     <tr key={post.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-6 py-5">
                         <p className="font-bold text-gray-900 line-clamp-2 max-w-md">{post.title}</p>
-                        {post.is_headline && (
-                          <span className="inline-block mt-1 bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded border border-blue-300">
-                            HEADLINE UTAMA
-                          </span>
-                        )}
-                        <p className="text-xs text-gray-500 mt-1">{post.author}</p>
+                        <div className="flex items-center mt-2">
+                           {renderPosisiBadge(post.posisi)}
+                           <span className="text-xs text-gray-500">{post.author || 'Redaksi'}</span>
+                        </div>
                       </td>
                       <td className="px-6 py-5">
                         <span className="bg-gray-100 text-gray-800 text-xs px-2.5 py-1 rounded-full font-semibold border border-gray-200">
