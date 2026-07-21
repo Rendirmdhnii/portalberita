@@ -51,7 +51,7 @@ export default function Footer({ categories = [] }) {
             <div className="space-y-3 text-sm text-gray-300">
               <div className="flex items-start gap-2">
                 <i className="fa-solid fa-building text-gray-400 mt-1 shrink-0"></i>
-                <span className="font-bold text-white uppercase">P.T. SARANA PERDANA MEDIA</span>
+                <span className="font-bold text-white uppercase">PT SARANA PERDANA MEDIA</span>
               </div>
               <div className="flex items-start gap-2">
                 <i className="fa-solid fa-location-dot text-gray-400 mt-1 shrink-0"></i>
