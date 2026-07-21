@@ -127,8 +127,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       <Layout>
         <Head>
           <title>Berita Tidak Ditemukan - PojokTV</title>
-          <link rel="icon" type="image/png" href="/favicon.png" />
-          <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+
         </Head>
         
         {/* Empty State Tampilan Utama */}
@@ -241,9 +240,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <meta name="twitter:site" content="@PojokTV" />
         <meta name="twitter:creator" content="@PojokTV" />
 
-        {/* SEO Icons & Fallbacks */}
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+
 
         {/* JSON-LD Schemas */}
         <script

@@ -154,8 +154,7 @@ export default function SearchPage() {
       <Head>
         <title>{q ? `Hasil Pencarian: "${q}" - PojokTV.com` : 'Pencarian Berita - PojokTV.com'}</title>
         <meta name="description" content="Hasil pencarian berita terkini dan terpercaya di PojokTV.com." />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-        <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+
       </Head>
 
       {/* 1. Header & Navigasi */}
