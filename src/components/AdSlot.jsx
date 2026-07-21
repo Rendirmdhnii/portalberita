@@ -19,13 +19,13 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
             {/* Tampil HANYA di HP */}
             <img 
               src={ad.image_mobile_url} 
-              className="block md:hidden w-full h-[130px] object-cover object-top rounded-lg shadow-sm" 
+              className="block md:hidden w-full h-auto object-contain rounded-lg shadow-sm mx-auto" 
               alt={ad.name || "Iklan Mobile"} 
             />
             {/* Tampil HANYA di Desktop */}
             <img 
               src={ad.image} 
-              className="hidden md:block w-full h-auto object-contain rounded-lg" 
+              className="hidden md:block w-full h-auto object-contain rounded-lg mx-auto" 
               alt={ad.name || "Iklan Desktop"} 
             />
           </>
@@ -33,7 +33,7 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
           <img 
             src={ad.image} 
             alt={ad.name || "Iklan Universal"} 
-            className={imgClass}
+            className={`${imgClass} mx-auto`}
           />
         )}
       </a>

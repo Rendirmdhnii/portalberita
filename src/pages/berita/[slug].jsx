@@ -116,6 +116,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const sidebarTopAd = ads?.find(a => a.position === 'Sidebar Atas' || a.position === 'sidebar');
   const sidebarBottomAd = ads?.find(a => a.position === 'Sidebar Bawah');
   const footerAd = ads?.find(a => a.position === 'Footer');
+  const middleAd = ads?.find(a => a.position === 'Tengah Konten');
 
   const cleanHTML = berita && (berita.content || berita.isi)
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
@@ -310,6 +311,13 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                     className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
                     dangerouslySetInnerHTML={{ __html: cleanHTML }} 
                   />
+
+                  {/* Iklan Tengah Konten (Tampil jika ada) */}
+                  {middleAd && middleAd.image && (
+                    <div className="my-6 w-full flex justify-center overflow-hidden">
+                      <AdSlot size="728x90" className="w-full h-auto" ad={middleAd} />
+                    </div>
+                  )}
 
                   {/* Share / Tags section */}
                   <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4 w-full">
