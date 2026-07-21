@@ -60,8 +60,8 @@ export default function Footer({ categories = [] }) {
               <div className="flex items-start gap-2">
                 <i className="fa-brands fa-whatsapp text-gray-400 mt-1 shrink-0"></i>
                 <div>
-                  <span className="block text-gray-300 font-medium">Mujianto Primadi</span>
-                  <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="block font-bold text-white hover:text-red-400 underline">+62 813-3116-0799</a>
+                  <span className="block text-gray-300">Mujianto Primadi</span>
+                  <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="block text-gray-300 no-underline font-normal hover:text-red-400">+62 813-3116-0799</a>
                 </div>
               </div>
               <div className="flex items-center gap-2">
