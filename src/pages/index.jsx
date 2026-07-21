@@ -241,6 +241,16 @@ export default function Home({
     alert(`Memutar Video: "${title}" (Simulasi Video Player Overlay)`);
   };
 
+  const scrollSorotan = (direction) => {
+    if (sorotanScrollRef.current) {
+      const scrollAmount = 320;
+      sorotanScrollRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   // Find Ads by Position
   const headerAd = ads?.find(a => a.position === 'Header' || a.position === 'header');
   const sidebarTopAd = ads?.find(a => a.position === 'Sidebar Atas' || a.position === 'sidebar');
@@ -619,9 +629,29 @@ export default function Home({
               <h2 className="section-title text-xl font-black text-slate-900 uppercase tracking-tight">
                 <span className="border-b-4 border-red-650 pb-2">SOROTAN</span>
               </h2>
+
+              {/* Tombol Navigasi (Tampil di Desktop) */}
+              <div className="hidden md:flex gap-2 pb-2">
+                <button 
+                  type="button"
+                  onClick={() => scrollSorotan('left')} 
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 shadow-sm transition-all cursor-pointer" 
+                  aria-label="Geser Kiri"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => scrollSorotan('right')} 
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 shadow-sm transition-all cursor-pointer" 
+                  aria-label="Geser Kanan"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+              </div>
             </div>
 
-            <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 hide-scrollbar cursor-pointer">
+            <div ref={sorotanScrollRef} className="flex flex-row overflow-x-auto gap-4 pb-4 hide-scrollbar cursor-pointer scroll-smooth">
               {sorotanNews.map((berita) => (
                 <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="w-full bg-gray-200">
