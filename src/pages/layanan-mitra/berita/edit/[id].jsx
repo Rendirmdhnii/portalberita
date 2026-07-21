@@ -23,6 +23,35 @@ const ReactQuill = dynamic(
   }
 );
 import 'react-quill-new/dist/quill.snow.css';
+import Cropper from 'react-easy-crop';
+
+// Canvas Cropping Helpers
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    if (url && !url.startsWith('data:')) {
+      image.setAttribute('crossOrigin', 'anonymous');
+    }
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) { reject(new Error('Canvas is empty')); return; }
+      resolve(blob);
+    }, 'image/jpeg', 0.95);
+  });
+}
 
 export default function BeritaEdit() {
   const router = useRouter();
@@ -55,6 +84,14 @@ export default function BeritaEdit() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+
+  // Cropper states
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [originalFileName, setOriginalFileName] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -137,14 +174,56 @@ export default function BeritaEdit() {
   const handleThumbnailChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setNewThumbnailFile(file);
-      setNewThumbnailPreviewUrl(URL.createObjectURL(file));
+      setOriginalFileName(file.name);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setCropImageSrc(reader.result);
+        setIsCropModalOpen(true);
+      });
+      reader.readAsDataURL(file);
     }
   };
 
+  const onCropComplete = (_, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleSaveCrop = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+      if (!croppedBlob) return;
+      const fileExt = originalFileName.split('.').pop() || 'jpg';
+      const file = new File([croppedBlob], `thumbnail_${Date.now()}.${fileExt}`, { type: croppedBlob.type || 'image/jpeg' });
+
+      if (newThumbnailPreviewUrl && newThumbnailPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(newThumbnailPreviewUrl);
+      }
+
+      setNewThumbnailFile(file);
+      setNewThumbnailPreviewUrl(URL.createObjectURL(croppedBlob));
+      setIsCropModalOpen(false);
+    } catch (err) {
+      alert('Gagal memotong gambar: ' + err.message);
+    }
+  };
+
+  const handleCancelCrop = () => {
+    setIsCropModalOpen(false);
+    const input = document.getElementById('berita-thumbnail-input-edit');
+    if (input) input.value = '';
+  };
+
   const handleRemoveNewThumbnail = () => {
+    if (newThumbnailPreviewUrl && newThumbnailPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(newThumbnailPreviewUrl);
+    }
     setNewThumbnailFile(null);
     setNewThumbnailPreviewUrl('');
+    const input = document.getElementById('berita-thumbnail-input-edit');
+    if (input) input.value = '';
   };
 
   const handleRemoveExistingThumbnail = () => {
@@ -430,7 +509,7 @@ export default function BeritaEdit() {
               <div className="mb-4 max-w-xs">
                 <p className="text-xs text-gray-500 mb-2 font-bold">Foto Utama Saat Ini:</p>
                 <div className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
-                  <img src={existingThumbnail} alt="Existing Thumbnail" className="w-full h-40 object-cover rounded" />
+                  <img src={existingThumbnail} alt="Existing Thumbnail" className="w-full aspect-video object-cover rounded" />
                   <button
                     type="button"
                     onClick={handleRemoveExistingThumbnail}
@@ -445,9 +524,9 @@ export default function BeritaEdit() {
             {/* New Thumbnail Preview */}
             {newThumbnailPreviewUrl && (
               <div className="mb-4 max-w-xs">
-                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Utama Baru:</p>
+                <p className="text-xs text-slate-500 mb-2 font-bold">Pratinjau Foto Utama Baru (Rasio 16:9):</p>
                 <div className="relative border rounded p-1 bg-gray-50 flex flex-col justify-between">
-                  <img src={newThumbnailPreviewUrl} alt="New Thumbnail Preview" className="w-full h-40 object-cover rounded" />
+                  <img src={newThumbnailPreviewUrl} alt="New Thumbnail Preview" className="w-full aspect-video object-cover rounded" />
                   <button
                     type="button"
                     onClick={handleRemoveNewThumbnail}
@@ -462,6 +541,7 @@ export default function BeritaEdit() {
             {!existingThumbnail && !newThumbnailPreviewUrl && (
               <div className="border-2 border-dashed border-gray-300 hover:border-blue-400 rounded-lg p-6 bg-gray-50 text-center transition-colors cursor-pointer relative">
                 <input
+                  id="berita-thumbnail-input-edit"
                   type="file"
                   accept="image/*"
                   onChange={handleThumbnailChange}
@@ -807,6 +887,42 @@ export default function BeritaEdit() {
           </div>
         </div>
       )}
+      {/* Crop Modal (always on top) */}
+      {isCropModalOpen && cropImageSrc && (
+        <div className="fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <i className="fa-solid fa-crop-simple text-red-500"></i>
+                Sesuaikan Thumbnail Berita (Rasio 16:9)
+              </h3>
+              <button type="button" onClick={handleCancelCrop}
+                className="text-gray-400 hover:text-white text-sm">Batal</button>
+            </div>
+            <div className="relative flex-1 bg-slate-950 min-h-[280px] sm:min-h-[380px]">
+              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={16 / 9}
+                onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
+            </div>
+            <div className="px-6 py-5 bg-slate-900 border-t border-slate-800 flex flex-col gap-4 text-white">
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-semibold text-slate-400">Zoom</span>
+                <input type="range" value={zoom} min={1} max={3} step={0.1} aria-label="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-red-600 cursor-pointer" />
+                <span className="text-xs text-slate-300 font-bold">{zoom.toFixed(1)}x</span>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button type="button" onClick={handleCancelCrop}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">Batal</button>
+                <button type="button" onClick={handleSaveCrop}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors shadow cursor-pointer">
+                  Potong &amp; Gunakan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PinAuthModal 
         isOpen={isPinModalOpen} 
         onClose={() => setIsPinModalOpen(false)} 
