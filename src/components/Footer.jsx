@@ -48,21 +48,24 @@ export default function Footer({ categories = [] }) {
           {/* Kolom 3: Hubungi Kami */}
           <div>
             <h4 className="text-white font-extrabold text-lg border-b-2 border-slate-700 pb-2 mb-4 uppercase tracking-wider">Hubungi Kami</h4>
-            <div className="space-y-2 text-sm text-gray-300">
-              <div className="flex gap-2">
-                <i className="fa-solid fa-user text-gray-400 mt-1 shrink-0"></i>
-                <span>Mujianto Primadi</span>
+            <div className="space-y-3 text-sm text-gray-300">
+              <div className="flex items-start gap-2">
+                <i className="fa-solid fa-building text-gray-400 mt-1 shrink-0"></i>
+                <span className="font-bold text-white uppercase">P.T. SARANA PERDANA MEDIA</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-start gap-2">
                 <i className="fa-solid fa-location-dot text-gray-400 mt-1 shrink-0"></i>
-                <span>Perum Citra Oma Pesona Blok E3/25 RT 37 RW 07, Desa Sidokepung, Kecamatan Buduran, Sidoarjo, Jatim</span>
+                <span>PERUM MAGERSARI PERMAI BLOK CA No 13 Kota SIDOARJO</span>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-start gap-2">
                 <i className="fa-brands fa-whatsapp text-gray-400 mt-1 shrink-0"></i>
-                <span>Info Iklan &amp; Kemitraan: <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="hover:text-red-400 underline font-semibold whitespace-nowrap">+62 813-3116-0799</a></span>
+                <div>
+                  <span className="block text-gray-300 font-medium">Mujianto Primadi</span>
+                  <a href="https://wa.me/6281331160799" target="_blank" rel="noreferrer" className="block font-bold text-white hover:text-red-400 underline">+62 813-3116-0799</a>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <i className="fa-solid fa-envelope text-gray-400 mt-1 shrink-0"></i>
+              <div className="flex items-center gap-2">
+                <i className="fa-solid fa-envelope text-gray-400 shrink-0"></i>
                 <span>Email: <a href="mailto:redaksi@pojoktv.com" className="hover:text-red-400 underline">redaksi@pojoktv.com</a></span>
               </div>
             </div>
