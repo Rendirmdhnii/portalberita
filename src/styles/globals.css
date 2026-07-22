@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* Styling untuk Chrome, Safari, Blink, Edge */
+  .scrollbar-custom::-webkit-scrollbar {
+    height: 4px; /* Sangat tipis dan elegan untuk scroll horizontal */
+  }
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent; /* Background transparan agar menyatu dengan header */
+  }
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1; /* Warna abu-abu halus (Tailwind slate-300) */
+    border-radius: 10px; /* Ujung scrollbar membulat/rounded */
+  }
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8; /* Sedikit lebih gelap saat kursor mendekat */
+  }
+  
+  /* Standar spesifikasi Firefox */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+}
+
+
 /* style.css - pojoktv.com UI Design System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Oswald:wght@400;500;600;700&display=swap');
 

@@ -106,7 +106,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
       )}
 
       {/* Mobile Header Baris Kategori (Menu Geser) */}
-      <nav className="flex md:hidden overflow-x-auto whitespace-nowrap scrollbar-none border-b border-gray-200 py-2 px-4 gap-4 text-sm font-semibold uppercase bg-white">
+      <nav className="flex md:hidden overflow-x-auto whitespace-nowrap scrollbar-custom pb-2 border-b border-gray-200 py-2 px-4 gap-4 text-sm font-semibold uppercase bg-white">
         <Link 
           href="/" 
           className={`text-[15px] font-bold px-4 py-2 border-b-2 hover:text-[#E30A17] transition-colors ${isHomeActive ? 'text-[#E30A17] border-[#E30A17]' : 'text-[#001746] border-transparent'}`}
@@ -144,7 +144,7 @@ export default function Header({ activeSlug, activeCategoryName }) {
         </div>
 
         {/* Middle: Scrollable Rubrik Menu */}
-        <nav className="overflow-x-auto whitespace-nowrap scrollbar-none flex-1 max-w-full mx-2 md:mx-4 py-2">
+        <nav className="overflow-x-auto whitespace-nowrap scrollbar-custom pb-2 flex-1 max-w-full mx-2 md:mx-4 py-2">
           <ul className="flex items-center gap-4 text-[13px] md:text-[14px] font-bold text-[#001746] uppercase">
             <li>
               <Link 
