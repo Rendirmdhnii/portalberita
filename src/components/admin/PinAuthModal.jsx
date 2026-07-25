@@ -17,12 +17,15 @@ export default function PinAuthModal({ isOpen, onClose, onSuccess }) {
 
   if (!isOpen) return null;
 
+  const validatePin = (inputPin) => {
+    return inputPin === '8910';
+  };
+
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
     if (authStatus !== 'idle') return;
 
-    const correctPin = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
-    if (pin === correctPin) {
+    if (validatePin(pin)) {
       setAuthStatus('success');
       setTimeout(() => {
         setAuthStatus('idle');
@@ -43,12 +46,11 @@ export default function PinAuthModal({ isOpen, onClose, onSuccess }) {
 
   const handleInputChange = (e) => {
     if (authStatus !== 'idle') return;
-    const val = e.target.value.replace(/[^0-9]/g, '');
+    const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 4);
     setPin(val);
 
     if (val.length === 4) {
-      const correctPin = process.env.NEXT_PUBLIC_ADMIN_PIN || '1234';
-      if (val === correctPin) {
+      if (validatePin(val)) {
         setAuthStatus('success');
         setTimeout(() => {
           setAuthStatus('idle');
@@ -77,7 +79,7 @@ export default function PinAuthModal({ isOpen, onClose, onSuccess }) {
   const getDescription = () => {
     if (authStatus === 'success') return 'Sistem memverifikasi identitas Anda dan melanjutkan tindakan...';
     if (authStatus === 'error') return 'PIN Keamanan Salah! Mengosongkan data otorisasi...';
-    return 'PIN Otorisasi Redaksi diperlukan untuk memodifikasi database.';
+    return 'Masukkan 4-digit PIN Otorisasi Redaksi untuk memodifikasi database.';
   };
 
   const isTransitioning = authStatus !== 'idle';
@@ -145,6 +147,14 @@ export default function PinAuthModal({ isOpen, onClose, onSuccess }) {
               value={pin}
               disabled={isTransitioning}
               onChange={handleInputChange}
+              onKeyDown={(e) => {
+                if (
+                  !/^[0-9]$/.test(e.key) &&
+                  !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)
+                ) {
+                  e.preventDefault();
+                }
+              }}
               className={`w-40 text-center tracking-[1.5em] text-3xl font-black bg-[#0f172a] border rounded-xl px-4 py-3 text-white transition-all font-mono ${
                 authStatus === 'error' 
                   ? 'border-red-500 text-red-500 shadow-inner' 
@@ -168,7 +178,7 @@ export default function PinAuthModal({ isOpen, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={isTransitioning}
+              disabled={isTransitioning || pin.length < 4}
               className="w-1/2 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Konfirmasi
