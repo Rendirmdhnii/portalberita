@@ -513,7 +513,7 @@ export default function AdIndex() {
           </div>
 
           {/* Main Preview Container */}
-          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+          <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center pointer-events-none select-none">
             {previewDevice === 'desktop' ? (
               /* Desktop Mockup Layout */
               <div className="w-full max-w-5xl mx-auto p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 text-white overflow-y-auto max-h-[85vh] flex flex-col gap-6">
@@ -800,12 +800,16 @@ export default function AdIndex() {
 
                 {livePreviewMode === 'mobile' ? (
                   /* Frame Mobile Simulated Box */
-                  <div className="w-full max-w-[340px] border-4 border-slate-800 rounded-2xl p-2 bg-white shadow-lg">
+                  <div 
+                    className="w-full max-w-[340px] border-4 border-slate-800 rounded-2xl p-2 bg-white shadow-lg pointer-events-none select-none"
+                    onClick={(e) => e.preventDefault()}
+                  >
                     <a
                       href={link || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block w-full text-center"
+                      className="block w-full text-center pointer-events-none"
+                      onClick={(e) => e.preventDefault()}
                     >
                       <img
                         src={mobilePreviewUrl || previewUrl}
@@ -816,7 +820,10 @@ export default function AdIndex() {
                   </div>
                 ) : (
                   /* Standard ResponsiveAd Component */
-                  <div className="w-full p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+                  <div 
+                    className="w-full p-2 bg-white rounded-xl border border-gray-200 shadow-sm pointer-events-none select-none"
+                    onClick={(e) => e.preventDefault()}
+                  >
                     <ResponsiveAd
                       linkTujuan={link}
                       imageDesktop={previewUrl}
