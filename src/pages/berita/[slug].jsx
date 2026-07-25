@@ -255,7 +255,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
       {/* Header Ad Slot */}
       {headerAd && headerAd.image && (
-        <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
             className="w-full" 
@@ -311,7 +311,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                   {/* Iklan Tengah Konten (Tampil jika ada) */}
                   {middleAd && middleAd.image && (
-                    <div className="my-6 w-full flex justify-center overflow-hidden">
+                    <div className="my-6 w-full flex justify-center">
                       <AdSlot size="728x90" className="w-full h-auto" ad={middleAd} />
                     </div>
                   )}
@@ -421,7 +421,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
               <div className="flex flex-col gap-6">
 
                 {/* Iklan Sidebar Atas */}
-                <div className="w-full overflow-hidden">
+                <div className="w-full">
                   <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
                 </div>
 
@@ -454,7 +454,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                 </div>
 
                 {/* Iklan Sidebar Bawah */}
-                <div className="w-full overflow-hidden">
+                <div className="w-full">
                   <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
                 </div>
 
