@@ -4,6 +4,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import Cropper from 'react-easy-crop';
 import PinAuthModal from '@/components/admin/PinAuthModal';
+import ResponsiveAd from '@/components/ResponsiveAd';
 
 // ============================================================
 // Canvas Cropping Helpers
@@ -87,6 +88,7 @@ export default function AdIndex() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
+  const [livePreviewMode, setLivePreviewMode] = useState('desktop');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
@@ -104,7 +106,7 @@ export default function AdIndex() {
   const [editingId, setEditingId] = useState(null);
 
   const handleOpenPreview = () => {
-    if (!previewUrl) {
+    if (!previewUrl && !mobilePreviewUrl) {
       alert('Pilih berkas gambar iklan terlebih dahulu!');
       return;
     }
@@ -171,6 +173,7 @@ export default function AdIndex() {
       const file = e.target.files[0];
       setOriginalFileName(file.name);
       setCroppingType('desktop');
+      setPreviewUrl(URL.createObjectURL(file));
       const reader = new FileReader();
       reader.addEventListener('load', () => { setCropImageSrc(reader.result); setIsCropModalOpen(true); });
       reader.readAsDataURL(file);
@@ -182,6 +185,7 @@ export default function AdIndex() {
       const file = e.target.files[0];
       setMobileOriginalFileName(file.name);
       setCroppingType('mobile');
+      setMobilePreviewUrl(URL.createObjectURL(file));
       const reader = new FileReader();
       reader.addEventListener('load', () => { setCropImageSrc(reader.result); setIsCropModalOpen(true); });
       reader.readAsDataURL(file);
@@ -456,7 +460,7 @@ export default function AdIndex() {
               <div className="flex flex-col gap-2.5 mt-4">
                 <button type="button" onClick={handleOpenPreview}
                   className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
-                  Lihat Pratinjau
+                  Lihat Pratinjau Full Mockup
                 </button>
                 {editingId && (
                   <button type="button" onClick={handleCancelEdit}
@@ -474,7 +478,7 @@ export default function AdIndex() {
         </div>
       )}
 
-      {/* Modal Pratinjau Iklan */}
+      {/* Modal Pratinjau Iklan (Full Layout) */}
       {showPreview && (
         <div className="fixed inset-0 z-[120] flex flex-col bg-black/80 backdrop-blur-sm overflow-hidden">
           {/* Header Modal */}
@@ -502,7 +506,7 @@ export default function AdIndex() {
             </div>
             <button
               onClick={() => setShowPreview(false)}
-              className="bg-red-655 hover:bg-red-755 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
             >
               ❌ Tutup Pratinjau
             </button>
@@ -526,7 +530,7 @@ export default function AdIndex() {
                   {position === 'Header' && (
                     <div className="w-full flex flex-col items-center justify-center mb-6 bg-gray-100 p-2 border rounded-lg">
                       <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN HEADER ATAS (728x90) ]</span>
-                      <img src={previewUrl} alt="Ad Header" className="max-w-full h-auto max-h-20 object-contain shadow-sm" />
+                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
 
@@ -534,7 +538,6 @@ export default function AdIndex() {
                   <div className="grid grid-cols-3 gap-6">
                     {/* Content Area */}
                     <div className="col-span-2 space-y-6">
-                      {/* Article Title */}
                       <div className="p-4 bg-slate-50 border rounded-lg">
                         <div className="w-20 h-4 bg-slate-200 rounded mb-2"></div>
                         <div className="h-6 bg-slate-300 rounded mb-2 w-3/4"></div>
@@ -545,11 +548,10 @@ export default function AdIndex() {
                       {position === 'Tengah Konten' && (
                         <div className="w-full flex flex-col items-center justify-center my-6 bg-gray-100 p-2 border rounded-lg">
                           <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN TENGAH KONTEN (728x90) ]</span>
-                          <img src={previewUrl} alt="Ad Content" className="max-w-full h-auto max-h-20 object-contain shadow-sm" />
+                          <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                         </div>
                       )}
 
-                      {/* Article Paragraphs */}
                       <div className="space-y-3">
                         <div className="h-4 bg-slate-200 rounded w-full"></div>
                         <div className="h-4 bg-slate-200 rounded w-full"></div>
@@ -559,24 +561,22 @@ export default function AdIndex() {
 
                     {/* Sidebar Area */}
                     <div className="space-y-6">
-                      {/* Slot Sidebar Atas (300x250) */}
                       <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[150px]">
                         {position === 'Sidebar Atas' ? (
                           <>
                             <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR ATAS (300x250) ]</span>
-                            <img src={previewUrl} alt="Ad Sidebar Top" className="w-full max-h-44 object-contain shadow-sm rounded" />
+                            <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                           </>
                         ) : (
                           <span className="text-[10px] text-gray-400">Slot Sidebar Atas (Kosong)</span>
                         )}
                       </div>
 
-                      {/* Slot Sidebar Bawah (300x600) */}
                       <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[250px]">
                         {position === 'Sidebar Bawah' ? (
                           <>
                             <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR BAWAH (300x600) ]</span>
-                            <img src={previewUrl} alt="Ad Sidebar Bottom" className="w-full max-h-72 object-contain shadow-sm rounded" />
+                            <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                           </>
                         ) : (
                           <span className="text-[10px] text-gray-400">Slot Sidebar Bawah (Kosong)</span>
@@ -589,16 +589,15 @@ export default function AdIndex() {
                   {position === 'Footer' && (
                     <div className="w-full flex flex-col items-center justify-center mt-6 bg-gray-100 p-2 border rounded-lg">
                       <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN FOOTER (970x250) ]</span>
-                      <img src={previewUrl} alt="Ad Footer" className="max-w-full h-auto max-h-36 object-contain shadow-sm" />
+                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
                 </div>
               </div>
             ) : (
               /* Mobile Mockup Layout */
-              <div className="w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-white mt-4 text-slate-955 flex flex-col">
+              <div className="w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-white mt-4 text-slate-950 flex flex-col">
                 <div className="overflow-y-auto h-full p-4 flex flex-col gap-4">
-                  {/* Logo / Header Row */}
                   <div className="flex items-center justify-between border-b pb-2">
                     <div className="text-lg font-black tracking-tighter text-slate-900">
                       Pojok<span className="text-red-600">TV</span>
@@ -606,15 +605,13 @@ export default function AdIndex() {
                     <div className="text-[9px] text-gray-400 font-mono">MOBILE PREVIEW</div>
                   </div>
 
-                  {/* Slot Header Atas (728x90) on Mobile */}
                   {position === 'Header' && (
                     <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
                       <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ HEADER SLIDER (Mobile Fit) ]</span>
-                      <img src={previewUrl} alt="Ad Header Mobile" className="max-w-full h-auto max-h-12 object-contain shadow-sm" />
+                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
 
-                  {/* Article Content Area */}
                   <div className="space-y-4">
                     <div className="p-3 bg-slate-50 border rounded-lg">
                       <div className="w-12 h-3 bg-slate-200 rounded mb-1"></div>
@@ -622,41 +619,36 @@ export default function AdIndex() {
                       <div className="h-3 bg-slate-200 rounded w-1/2"></div>
                     </div>
 
-                    {/* Slot Tengah Konten (728x90) on Mobile */}
                     {position === 'Tengah Konten' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ IN-FEED SLIDER (Mobile Fit) ]</span>
-                        <img src={previewUrl} alt="Ad Content Mobile" className="max-w-full h-auto max-h-12 object-contain shadow-sm" />
+                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
-                    {/* Text Mockup */}
                     <div className="space-y-2">
                       <div className="h-3 bg-slate-200 rounded w-full"></div>
                       <div className="h-3 bg-slate-200 rounded w-full"></div>
                     </div>
 
-                    {/* Slot Sidebar Atas (300x250) on Mobile */}
                     {position === 'Sidebar Atas' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR ATAS (300x250) ]</span>
-                        <img src={previewUrl} alt="Ad Sidebar Top Mobile" className="w-full max-h-40 object-contain shadow-sm rounded" />
+                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
-                    {/* Slot Sidebar Bawah (300x600) on Mobile */}
                     {position === 'Sidebar Bawah' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR BAWAH (300x600) ]</span>
-                        <img src={previewUrl} alt="Ad Sidebar Bottom Mobile" className="w-full max-h-60 object-contain shadow-sm rounded" />
+                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
-                    {/* Slot Footer (970x250) on Mobile */}
                     {position === 'Footer' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ FOOTER SLIDER (Mobile Fit) ]</span>
-                        <img src={previewUrl} alt="Ad Footer Mobile" className="max-w-full h-auto max-h-16 object-contain shadow-sm" />
+                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
                   </div>
@@ -676,22 +668,29 @@ export default function AdIndex() {
           <p className="text-sm text-gray-500 mt-0.5">{ads.length} iklan terdaftar</p>
         </div>
         <button onClick={() => setShowFormModal(true)}
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors">
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors lg:hidden">
           <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Pasang Iklan Baru</span>
-          <span className="sm:hidden">Pasang</span>
+          <span>Pasang Iklan Baru</span>
         </button>
       </div>
 
       <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Klik <strong>Pasang Iklan Baru</strong> → isi nama klien, pilih posisi slot, upload foto → sistem akan melakukan <strong>Auto-Scale</strong> secara responsif menyesuaikan layar pembaca tanpa memotong gambar. Iklan yang aktif dapat dihapus kapan saja dari daftar di bawah.</p>
+        <p>Isi formulir di sebelah kiri dan upload gambar → pratinjau iklan responsif akan tampil secara real-time di kolom kanan secara otomatis. Sistem akan memuat gambar dengan rasio utuh tanpa terpotong untuk layar Desktop maupun HP.</p>
       </GuideBox>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Desktop Form (sidebar kiri) */}
-        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Main Grid Section: 2 Columns (Form Left, Live Preview Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Kolom Kiri: Form Input Iklan */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
+          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2 flex items-center justify-between">
+            <span>{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</span>
+            {editingId && (
+              <button type="button" onClick={handleCancelEdit} className="text-xs text-red-600 hover:underline font-semibold">
+                Batal Edit
+              </button>
+            )}
+          </h3>
+          <form onSubmit={(e) => { e.preventDefault(); setPendingAction(() => handleSubmit); setIsPinModalOpen(true); }} className="space-y-4">
             {error && <div className="p-3 bg-red-100 border border-red-300 rounded-lg text-red-800 text-sm font-bold">{error}</div>}
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-1">Nama Iklan / Klien</label>
@@ -730,33 +729,21 @@ export default function AdIndex() {
               </div>
               <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
-              {previewUrl && (
-                <div className="mt-3">
-                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Hasil Crop:</p>
-                  <img src={previewUrl} alt="Preview Iklan" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
-                </div>
-              )}
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Khusus HP (Opsional)</label>
               <input id="ad-mobile-image-input" type="file" accept="image/*" onChange={handleMobileImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
               <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
-              {mobilePreviewUrl && (
-                <div className="mt-3">
-                  <p className="text-xs font-bold text-gray-600 mb-1">Pratinjau Layar HP:</p>
-                  <img src={mobilePreviewUrl} alt="Preview Iklan Mobile" className="w-full max-h-36 object-contain border rounded-lg shadow-sm" />
-                </div>
-              )}
             </div>
-            <div className="flex flex-col gap-2.5 mt-4">
+            <div className="flex flex-col gap-2.5 pt-2">
               <button type="button" onClick={handleOpenPreview}
-                className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
-                Lihat Pratinjau
+                className="w-full px-6 py-2.5 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center text-sm">
+                Lihat Pratinjau Full Mockup
               </button>
               {editingId && (
                 <button type="button" onClick={handleCancelEdit}
-                  className="w-full px-6 py-3 bg-gray-100 border border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-200 shadow-sm transition-all cursor-pointer text-center">
+                  className="w-full px-6 py-2.5 bg-gray-100 border border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-200 shadow-sm transition-all cursor-pointer text-center text-sm">
                   Batal Edit
                 </button>
               )}
@@ -768,115 +755,204 @@ export default function AdIndex() {
           </form>
         </div>
 
-        {/* Daftar Iklan */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Search */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="relative">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-              <input type="text" placeholder="Cari nama iklan atau posisi..."
-                value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+        {/* Kolom Kanan: Pratinjau Iklan (Live) */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+          <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></div>
+              <h3 className="font-bold text-base text-gray-900">Pratinjau Iklan (Live)</h3>
+            </div>
+            <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-lg border border-gray-200">
+              <button
+                type="button"
+                onClick={() => setLivePreviewMode('desktop')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                  livePreviewMode === 'desktop'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                💻 Desktop
+              </button>
+              <button
+                type="button"
+                onClick={() => setLivePreviewMode('mobile')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
+                  livePreviewMode === 'mobile'
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                📱 Mobile
+              </button>
             </div>
           </div>
 
-          {loading ? (
-            <div className="text-center py-12 text-gray-400 font-bold"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat iklan...</div>
-          ) : paginated.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 font-bold text-sm">
-              {searchQuery ? `Tidak ada iklan "${searchQuery}"` : 'Belum ada iklan terdaftar.'}
-            </div>
-          ) : (
-            <>
-              {/* Mobile Cards */}
-              <div className="md:hidden divide-y divide-gray-100">
-                {paginated.map(ad => (
-                  <div key={ad.id} className="p-4 flex gap-3 items-start">
-                    <img src={ad.image} alt={ad.name}
-                      className="w-16 h-12 object-cover rounded-lg border border-gray-200 shrink-0 bg-gray-100"
-                      onError={e => { e.target.src = ''; e.target.className = 'w-16 h-12 bg-gray-200 rounded-lg shrink-0'; }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 text-sm line-clamp-1">{ad.name}</p>
-                      <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${positionBadgeColor(ad.position)}`}>
-                        {positionLabel(ad.position)}
-                      </span>
-                      {ad.link && ad.link !== '-' && (
-                        <p className="text-xs text-blue-600 truncate mt-0.5">{ad.link}</p>
-                      )}
-                      <div className="flex gap-2 mt-2">
-                        <button onClick={() => handleEdit(ad)}
-                          className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
-                          <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
-                        </button>
-                        <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
-                          className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
-                          <i className="fa-solid fa-trash mr-1"></i>Hapus
-                        </button>
-                      </div>
-                    </div>
+          <div className="flex-1 flex flex-col justify-center items-center p-4 bg-slate-50 border border-dashed border-gray-300 rounded-xl min-h-[320px]">
+            {previewUrl || mobilePreviewUrl ? (
+              <div className="w-full flex flex-col items-center">
+                <div className="w-full flex items-center justify-between text-xs text-gray-500 font-semibold mb-3 px-1">
+                  <span>{livePreviewMode === 'mobile' ? '📱 Mode Tampilan Mobile (Simulasi Screen)' : '💻 Mode Tampilan Desktop (Anti-Crop)'}</span>
+                  <span className="px-2 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded-md font-bold text-[10px]">
+                    {positionLabel(position).split('—')[0].trim()}
+                  </span>
+                </div>
+
+                {livePreviewMode === 'mobile' ? (
+                  /* Frame Mobile Simulated Box */
+                  <div className="w-full max-w-[340px] border-4 border-slate-800 rounded-2xl p-2 bg-white shadow-lg">
+                    <a
+                      href={link || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full text-center"
+                    >
+                      <img
+                        src={mobilePreviewUrl || previewUrl}
+                        alt={name || 'Pratinjau Iklan Mobile'}
+                        className="w-full h-auto object-contain block mx-auto rounded-lg"
+                      />
+                    </a>
                   </div>
-                ))}
+                ) : (
+                  /* Standard ResponsiveAd Component */
+                  <div className="w-full p-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+                    <ResponsiveAd
+                      linkTujuan={link}
+                      imageDesktop={previewUrl}
+                      imageMobile={mobilePreviewUrl}
+                      altText={name || 'Pratinjau Iklan'}
+                    />
+                  </div>
+                )}
               </div>
-
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
-                    <tr>
-                      <th className="px-5 py-3">Preview</th>
-                      <th className="px-5 py-3">Nama Iklan</th>
-                      <th className="px-5 py-3">Posisi</th>
-                      <th className="px-5 py-3">Link Tujuan</th>
-                      <th className="px-5 py-3 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {paginated.map(ad => (
-                      <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
-                        <td className="px-5 py-3">
-                          <img src={ad.image} alt={ad.name}
-                            className="h-10 w-20 object-cover rounded-md border border-gray-200 bg-gray-100"
-                            onError={e => { e.target.src = ''; e.target.className = 'h-10 w-20 bg-gray-200 rounded-md'; }} />
-                        </td>
-                        <td className="px-5 py-3 font-bold text-gray-900 max-w-[160px]">
-                          <p className="line-clamp-2">{ad.name}</p>
-                        </td>
-                        <td className="px-5 py-3">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${positionBadgeColor(ad.position)}`}>
-                            {positionLabel(ad.position)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3">
-                          {ad.link && ad.link !== '-' ? (
-                            <a href={ad.link} target="_blank" rel="noreferrer"
-                              className="text-blue-700 hover:underline text-xs font-semibold truncate max-w-[100px] block">
-                              {ad.link}
-                            </a>
-                          ) : <span className="text-gray-400 text-xs">—</span>}
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => handleEdit(ad)}
-                              className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
-                              Edit
-                            </button>
-                            <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
-                              className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
-                              Hapus
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            ) : (
+              <div className="text-center p-6 max-w-sm">
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                  <i className="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <h4 className="font-bold text-gray-800 text-sm mb-1">Pratinjau Siap Divalidasi</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">
+                  Silakan upload gambar untuk melihat pratinjau iklan tanpa terpotong.
+                </p>
               </div>
-
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Daftar Iklan Terdaftar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3 bg-gray-50">
+          <h2 className="font-bold text-base text-gray-900 flex items-center gap-2">
+            <i className="fa-solid fa-list-check text-red-600"></i>
+            Daftar Iklan Terdaftar
+          </h2>
+          <div className="relative w-full sm:w-72">
+            <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" placeholder="Cari nama iklan atau posisi..."
+              value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-400 font-bold"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat iklan...</div>
+        ) : paginated.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 font-bold text-sm">
+            {searchQuery ? `Tidak ada iklan "${searchQuery}"` : 'Belum ada iklan terdaftar.'}
+          </div>
+        ) : (
+          <>
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {paginated.map(ad => (
+                <div key={ad.id} className="p-4 flex gap-3 items-start">
+                  <img src={ad.image} alt={ad.name}
+                    className="w-16 h-12 object-cover rounded-lg border border-gray-200 shrink-0 bg-gray-100"
+                    onError={e => { e.target.src = ''; e.target.className = 'w-16 h-12 bg-gray-200 rounded-lg shrink-0'; }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-900 text-sm line-clamp-1">{ad.name}</p>
+                    <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${positionBadgeColor(ad.position)}`}>
+                      {positionLabel(ad.position)}
+                    </span>
+                    {ad.link && ad.link !== '-' && (
+                      <p className="text-xs text-blue-600 truncate mt-0.5">{ad.link}</p>
+                    )}
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => handleEdit(ad)}
+                        className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
+                        <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
+                      </button>
+                      <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
+                        className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                        <i className="fa-solid fa-trash mr-1"></i>Hapus
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
+                  <tr>
+                    <th className="px-5 py-3">Preview</th>
+                    <th className="px-5 py-3">Nama Iklan</th>
+                    <th className="px-5 py-3">Posisi</th>
+                    <th className="px-5 py-3">Link Tujuan</th>
+                    <th className="px-5 py-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {paginated.map(ad => (
+                    <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
+                      <td className="px-5 py-3">
+                        <img src={ad.image} alt={ad.name}
+                          className="h-10 w-20 object-cover rounded-md border border-gray-200 bg-gray-100"
+                          onError={e => { e.target.src = ''; e.target.className = 'h-10 w-20 bg-gray-200 rounded-md'; }} />
+                      </td>
+                      <td className="px-5 py-3 font-bold text-gray-900 max-w-[160px]">
+                        <p className="line-clamp-2">{ad.name}</p>
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${positionBadgeColor(ad.position)}`}>
+                          {positionLabel(ad.position)}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        {ad.link && ad.link !== '-' ? (
+                          <a href={ad.link} target="_blank" rel="noreferrer"
+                            className="text-blue-700 hover:underline text-xs font-semibold truncate max-w-[100px] block">
+                            {ad.link}
+                          </a>
+                        ) : <span className="text-gray-400 text-xs">—</span>}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button onClick={() => handleEdit(ad)}
+                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
+                            Edit
+                          </button>
+                          <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
+                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                            Hapus
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+          </>
+        )}
+      </div>
+
       <PinAuthModal 
         isOpen={isPinModalOpen} 
         onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
