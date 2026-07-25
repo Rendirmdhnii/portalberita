@@ -212,6 +212,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <title>{`${berita?.title} | PojokTV.com - Jaringan Berita Nasional`}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={keywords} />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <link rel="canonical" href={canonicalUrl} />
         
         {/* Open Graph / Facebook */}
