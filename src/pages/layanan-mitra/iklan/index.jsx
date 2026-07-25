@@ -78,7 +78,7 @@ export default function AdIndex() {
   };
 
   const getGuidelineText = (pos) => {
-    return 'Tips: Upload 1 gambar iklan terbaik Anda (WebP, JPG, PNG). Sistem akan otomatis melakukan auto-scale secara proporsional di Desktop maupun HP tanpa terpotong 1 piksel pun.';
+    return 'Tips: Upload 1 file gambar iklan utama (WebP, JPG, PNG). Sistem otomatis menyesuaikan bentuk banner secara proporsional (3.2:1 di HP & 4.8:1 di Laptop) mengisi bingkai secara sempurna tanpa ruang kosong.';
   };
 
   const positionLabel = (pos) => {

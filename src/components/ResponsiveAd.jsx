@@ -21,11 +21,13 @@ export default function ResponsiveAd({
       rel="noopener noreferrer"
       className={`block w-full max-w-[1200px] mx-auto text-center ${className}`}
     >
-      <img
-        src={imgSrc}
-        alt={altText}
-        className="w-full h-auto object-contain max-h-[90px] md:max-h-[100px] mx-auto block rounded-lg shadow-sm"
-      />
+      <div className="w-full aspect-[3.2/1] md:aspect-[4.8/1] overflow-hidden relative mx-auto rounded-lg shadow-sm">
+        <img
+          src={imgSrc}
+          alt={altText}
+          className="w-full h-full object-cover"
+        />
+      </div>
     </a>
   );
 }
