@@ -57,23 +57,20 @@ export default function AdIndex() {
   const [showFormModal, setShowFormModal] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewDevice, setPreviewDevice] = useState('desktop');
-  const [livePreviewMode, setLivePreviewMode] = useState('desktop');
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  // Form states
+  // Form states (Single Image Upload)
   const [name, setName] = useState('');
   const [position, setPosition] = useState('Header');
   const [link, setLink] = useState('');
   const [tanggalBerakhir, setTanggalBerakhir] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
-  const [mobileImageFile, setMobileImageFile] = useState(null);
-  const [mobilePreviewUrl, setMobilePreviewUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
 
   const handleOpenPreview = () => {
-    if (!previewUrl && !mobilePreviewUrl) {
+    if (!previewUrl) {
       alert('Pilih berkas gambar iklan terlebih dahulu!');
       return;
     }
@@ -81,18 +78,18 @@ export default function AdIndex() {
   };
 
   const getGuidelineText = (pos) => {
-    return 'Tips: Upload file gambar asli (WebP, JPG, PNG). Sistem akan otomatis menyesuaikan gambar 100% utuh dengan latar blur profesional tanpa dipotong.';
+    return 'Tips: Upload 1 gambar iklan terbaik Anda (WebP, JPG, PNG). Sistem akan otomatis melakukan auto-scale secara proporsional di Desktop maupun HP tanpa terpotong 1 piksel pun.';
   };
 
   const positionLabel = (pos) => {
     const labels = {
-      'Header': 'Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)',
-      'Tengah Konten': 'Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)',
-      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)',
-      'Sidebar Bawah': 'Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)',
-      'Footer': 'Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)',
-      'header': 'Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)',
-      'sidebar': 'Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)',
+      'Header': 'Spanduk Paling Atas (Di Bawah Logo)',
+      'Tengah Konten': 'Menyelip di Tengah Daftar Berita',
+      'Sidebar Atas': 'Samping Kanan (Bentuk Kotak)',
+      'Sidebar Bawah': 'Samping Kanan (Memanjang ke Bawah)',
+      'Footer': 'Spanduk Paling Bawah Website',
+      'header': 'Spanduk Paling Atas (Di Bawah Logo)',
+      'sidebar': 'Samping Kanan (Bentuk Kotak)',
     };
     return labels[pos] || pos;
   };
@@ -125,27 +122,14 @@ export default function AdIndex() {
     }
   };
 
-  const handleMobileImageChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setMobileImageFile(file);
-      setMobilePreviewUrl(URL.createObjectURL(file));
-    }
-  };
-
   const resetForm = () => {
     setName(''); setPosition('Header'); setLink(''); setTanggalBerakhir('');
     setImageFile(null); setPreviewUrl('');
-    setMobileImageFile(null); setMobilePreviewUrl('');
     setEditingId(null);
     const fileInput = document.getElementById('ad-image-input');
     if (fileInput) fileInput.value = '';
     const fileInputModal = document.getElementById('ad-image-input-modal');
     if (fileInputModal) fileInputModal.value = '';
-    const mobileFileInput = document.getElementById('ad-mobile-image-input');
-    if (mobileFileInput) mobileFileInput.value = '';
-    const mobileFileInputModal = document.getElementById('ad-mobile-image-input-modal');
-    if (mobileFileInputModal) mobileFileInputModal.value = '';
   };
 
   const handleEdit = (iklan) => {
@@ -154,10 +138,8 @@ export default function AdIndex() {
     setPosition(iklan.position || 'Header');
     setLink(iklan.link || '');
     setTanggalBerakhir(iklan.tanggal_berakhir || '');
-    setPreviewUrl(iklan.image || '');
-    setMobilePreviewUrl(iklan.image_mobile_url || '');
+    setPreviewUrl(iklan.image || iklan.image_mobile_url || '');
     setImageFile(null);
-    setMobileImageFile(null);
     setShowFormModal(true);
   };
 
@@ -184,17 +166,6 @@ export default function AdIndex() {
         publicUrl = loadedUrl;
       }
 
-      let mobilePublicUrl = null;
-      if (mobileImageFile) {
-        const mFileExt = mobileImageFile.name.split('.').pop();
-        const mFileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${mFileExt}`;
-        const mFilePath = `ads/${mFileName}`;
-        const { error: mUploadError } = await supabase.storage.from('images').upload(mFilePath, mobileImageFile);
-        if (mUploadError) throw new Error('Gagal mengunggah gambar mobile: ' + mUploadError.message);
-        const { data: { publicUrl: mPublicUrl } } = supabase.storage.from('images').getPublicUrl(mFilePath);
-        mobilePublicUrl = mPublicUrl;
-      }
-
       const payload = {
         name,
         position,
@@ -205,9 +176,7 @@ export default function AdIndex() {
 
       if (imageFile) {
         payload.image = publicUrl;
-      }
-      if (mobileImageFile) {
-        payload.image_mobile_url = mobilePublicUrl;
+        payload.image_mobile_url = publicUrl;
       }
 
       if (editingId) {
@@ -216,7 +185,7 @@ export default function AdIndex() {
         setMessage('Iklan berhasil diperbarui.');
       } else {
         if (!imageFile) {
-          throw new Error('Gambar Utama / Desktop Wajib diisi!');
+          throw new Error('Gambar Iklan Utama Wajib diisi!');
         }
         const { error: insertError } = await supabase.from('ads').insert([payload]);
         if (insertError) throw insertError;
@@ -279,11 +248,11 @@ export default function AdIndex() {
                 <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
                 <select value={position} onChange={e => setPosition(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)</option>
-                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)</option>
-                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)</option>
-                  <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)</option>
-                  <option value="Footer">Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)</option>
+                  <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
+                  <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
+                  <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
+                  <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah)</option>
+                  <option value="Footer">Spanduk Paling Bawah Website</option>
                 </select>
               </div>
               <div>
@@ -299,18 +268,12 @@ export default function AdIndex() {
                 <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama / Desktop (Wajib)</label>
+                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama (Desktop &amp; Mobile)</label>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
                   <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
                 </div>
                 <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Khusus HP (Opsional)</label>
-                <input id="ad-mobile-image-input-modal" type="file" accept="image/*" onChange={handleMobileImageChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
-                <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
               </div>
               <div className="flex flex-col gap-2.5 mt-4">
                 <button type="button" onClick={handleOpenPreview}
@@ -373,7 +336,6 @@ export default function AdIndex() {
               /* Desktop Mockup Layout */
               <div className="w-full max-w-5xl mx-auto p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 text-white overflow-y-auto max-h-[85vh] flex flex-col gap-6">
                 <div className="max-w-4xl mx-auto w-full bg-white text-slate-950 p-6 rounded-xl shadow">
-                  {/* Logo / Header Row */}
                   <div className="flex items-center justify-between border-b pb-4 mb-4">
                     <div className="text-2xl font-black tracking-tighter text-slate-900">
                       Pojok<span className="text-red-600">TV.com</span>
@@ -381,17 +343,14 @@ export default function AdIndex() {
                     <div className="text-xs text-gray-500 font-mono">DUMMY WEBSITE PREVIEW</div>
                   </div>
 
-                  {/* Slot Header Atas */}
                   {position === 'Header' && (
                     <div className="w-full flex flex-col items-center justify-center mb-6 bg-gray-100 p-2 border rounded-lg">
                       <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN HEADER ATAS ]</span>
-                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
 
-                  {/* Core Layout Grid */}
                   <div className="grid grid-cols-3 gap-6">
-                    {/* Content Area */}
                     <div className="col-span-2 space-y-6">
                       <div className="p-4 bg-slate-50 border rounded-lg">
                         <div className="w-20 h-4 bg-slate-200 rounded mb-2"></div>
@@ -399,11 +358,10 @@ export default function AdIndex() {
                         <div className="h-4 bg-slate-200 rounded w-1/2"></div>
                       </div>
 
-                      {/* Slot Tengah Konten */}
                       {position === 'Tengah Konten' && (
                         <div className="w-full flex flex-col items-center justify-center my-6 bg-gray-100 p-2 border rounded-lg">
                           <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN TENGAH KONTEN ]</span>
-                          <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                          <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                         </div>
                       )}
 
@@ -414,13 +372,12 @@ export default function AdIndex() {
                       </div>
                     </div>
 
-                    {/* Sidebar Area */}
                     <div className="space-y-6">
                       <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[150px]">
                         {position === 'Sidebar Atas' ? (
                           <>
                             <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR ATAS ]</span>
-                            <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                            <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                           </>
                         ) : (
                           <span className="text-[10px] text-gray-400">Slot Sidebar Atas (Kosong)</span>
@@ -431,7 +388,7 @@ export default function AdIndex() {
                         {position === 'Sidebar Bawah' ? (
                           <>
                             <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR BAWAH ]</span>
-                            <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                            <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                           </>
                         ) : (
                           <span className="text-[10px] text-gray-400">Slot Sidebar Bawah (Kosong)</span>
@@ -440,11 +397,10 @@ export default function AdIndex() {
                     </div>
                   </div>
 
-                  {/* Slot Footer */}
                   {position === 'Footer' && (
                     <div className="w-full flex flex-col items-center justify-center mt-6 bg-gray-100 p-2 border rounded-lg">
                       <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN FOOTER ]</span>
-                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
                 </div>
@@ -462,8 +418,8 @@ export default function AdIndex() {
 
                   {position === 'Header' && (
                     <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                      <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ HEADER SLIDER (Mobile Fit) ]</span>
-                      <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                      <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ HEADER SLIDER ]</span>
+                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                     </div>
                   )}
 
@@ -476,8 +432,8 @@ export default function AdIndex() {
 
                     {position === 'Tengah Konten' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ IN-FEED SLIDER (Mobile Fit) ]</span>
-                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ IN-FEED SLIDER ]</span>
+                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
@@ -489,21 +445,21 @@ export default function AdIndex() {
                     {position === 'Sidebar Atas' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR ATAS ]</span>
-                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
                     {position === 'Sidebar Bawah' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
                         <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR BAWAH ]</span>
-                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
 
                     {position === 'Footer' && (
                       <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ FOOTER SLIDER (Mobile Fit) ]</span>
-                        <ResponsiveAd linkTujuan={link} imageDesktop={previewUrl} imageMobile={mobilePreviewUrl} altText={name || 'Pratinjau Iklan'} />
+                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ FOOTER SLIDER ]</span>
+                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
                       </div>
                     )}
                   </div>
@@ -530,7 +486,7 @@ export default function AdIndex() {
       </div>
 
       <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Isi formulir di sebelah kiri dan upload gambar → pratinjau iklan responsif dengan efek blur background akan tampil secara real-time di kolom kanan secara otomatis. Sistem akan memuat gambar dengan rasio 100% utuh tanpa terpotong untuk layar Desktop maupun HP.</p>
+        <p>Isi formulir di sebelah kiri dan upload 1 gambar iklan terbaik → pratinjau iklan responsif akan tampil secara real-time di kolom kanan. Gambar akan otomatis melakukan auto-scale secara 100% utuh di Desktop maupun HP tanpa terpotong.</p>
       </GuideBox>
 
       {/* Main Grid Section: 2 Columns (Form Left, Live Preview Right) */}
@@ -558,11 +514,11 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo) — (1200x200 px | Rasio 6:1)</option>
-                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita — (728x90 px | Rasio 8:1)</option>
-                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak) — (300x250 px | Rasio 6:5)</option>
-                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah) — (300x600 px | Rasio 1:2)</option>
-                 <option value="Footer">Spanduk Paling Bawah Website — (970x250 px | Rasio 4:1)</option>
+                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
+                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
+                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
+                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah)</option>
+                 <option value="Footer">Spanduk Paling Bawah Website</option>
               </select>
             </div>
             <div>
@@ -578,18 +534,12 @@ export default function AdIndex() {
               <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama / Desktop (Wajib)</label>
+              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama (Desktop &amp; Mobile)</label>
               <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
                 <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
               </div>
               <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Khusus HP (Opsional)</label>
-              <input id="ad-mobile-image-input" type="file" accept="image/*" onChange={handleMobileImageChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" />
-              <p className="text-[10px] text-gray-500 mt-1">Tips: Upload desain versi kotak (misal 300x250 px) agar iklan tampil gagah dan terbaca jelas di layar HP. Jika Anda mengosongkan ini, sistem akan otomatis menggunakan Gambar Utama.</p>
             </div>
             <div className="flex flex-col gap-2.5 pt-2">
               <button type="button" onClick={handleOpenPreview}
@@ -617,69 +567,19 @@ export default function AdIndex() {
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></div>
               <h3 className="font-bold text-base text-gray-900">Pratinjau Iklan (Live)</h3>
             </div>
-            <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-lg border border-gray-200">
-              <button
-                type="button"
-                onClick={() => setLivePreviewMode('desktop')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
-                  livePreviewMode === 'desktop'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                💻 Desktop
-              </button>
-              <button
-                type="button"
-                onClick={() => setLivePreviewMode('mobile')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
-                  livePreviewMode === 'mobile'
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                📱 Mobile
-              </button>
-            </div>
+            <span className="px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 rounded-md font-bold text-xs">
+              {positionLabel(position)}
+            </span>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center items-center p-4 bg-slate-50 border border-dashed border-gray-300 rounded-xl min-h-[320px]">
-            {previewUrl || mobilePreviewUrl ? (
-              <div className="w-full flex flex-col items-center">
-                <div className="w-full flex items-center justify-between text-xs text-gray-500 font-semibold mb-3 px-1">
-                  <span>{livePreviewMode === 'mobile' ? '📱 Mode Tampilan Mobile (Simulasi Screen)' : '💻 Mode Tampilan Desktop (Blur BG)'}</span>
-                  <span className="px-2 py-0.5 bg-red-50 text-red-600 border border-red-200 rounded-md font-bold text-[10px]">
-                    {positionLabel(position).split('—')[0].trim()}
-                  </span>
-                </div>
-
-                {livePreviewMode === 'mobile' ? (
-                  /* Frame Mobile Simulated Box */
-                  <div 
-                    className="w-full max-w-[340px] border-4 border-slate-800 rounded-2xl p-2 bg-white shadow-lg pointer-events-none select-none"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <ResponsiveAd
-                      linkTujuan={link}
-                      imageDesktop={previewUrl}
-                      imageMobile={mobilePreviewUrl || previewUrl}
-                      altText={name || 'Pratinjau Iklan Mobile'}
-                    />
-                  </div>
-                ) : (
-                  /* Standard ResponsiveAd Component */
-                  <div 
-                    className="w-full p-2 bg-white rounded-xl border border-gray-200 shadow-sm pointer-events-none select-none"
-                    onClick={(e) => e.preventDefault()}
-                  >
-                    <ResponsiveAd
-                      linkTujuan={link}
-                      imageDesktop={previewUrl}
-                      imageMobile={mobilePreviewUrl}
-                      altText={name || 'Pratinjau Iklan'}
-                    />
-                  </div>
-                )}
+          <div className="flex-1 flex flex-col justify-center items-center p-4 bg-slate-50 border border-dashed border-gray-300 rounded-xl min-h-[280px]">
+            {previewUrl ? (
+              <div className="w-full block pointer-events-none select-none">
+                <ResponsiveAd
+                  linkTujuan={link}
+                  image={previewUrl}
+                  altText={name || 'Pratinjau Iklan'}
+                />
               </div>
             ) : (
               <div className="text-center p-6 max-w-sm">
@@ -688,7 +588,7 @@ export default function AdIndex() {
                 </div>
                 <h4 className="font-bold text-gray-800 text-sm mb-1">Pratinjau Siap Divalidasi</h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Silakan upload gambar untuk melihat pratinjau iklan 100% utuh dengan latar blur.
+                  Silakan upload 1 gambar iklan untuk melihat pratinjau auto-scale tanpa terpotong.
                 </p>
               </div>
             )}
@@ -723,8 +623,8 @@ export default function AdIndex() {
             <div className="md:hidden divide-y divide-gray-100">
               {paginated.map(ad => (
                 <div key={ad.id} className="p-4 flex gap-3 items-start">
-                  <img src={ad.image} alt={ad.name}
-                    className="w-16 h-12 object-cover rounded-lg border border-gray-200 shrink-0 bg-gray-100"
+                  <img src={ad.image || ad.image_mobile_url} alt={ad.name}
+                    className="w-16 h-12 object-contain rounded-lg border border-gray-200 shrink-0 bg-gray-100"
                     onError={e => { e.target.src = ''; e.target.className = 'w-16 h-12 bg-gray-200 rounded-lg shrink-0'; }} />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 text-sm line-clamp-1">{ad.name}</p>
@@ -765,8 +665,8 @@ export default function AdIndex() {
                   {paginated.map(ad => (
                     <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-5 py-3">
-                        <img src={ad.image} alt={ad.name}
-                          className="h-10 w-20 object-cover rounded-md border border-gray-200 bg-gray-100"
+                        <img src={ad.image || ad.image_mobile_url} alt={ad.name}
+                          className="h-10 w-20 object-contain rounded-md border border-gray-200 bg-gray-100"
                           onError={e => { e.target.src = ''; e.target.className = 'h-10 w-20 bg-gray-200 rounded-md'; }} />
                       </td>
                       <td className="px-5 py-3 font-bold text-gray-900 max-w-[160px]">

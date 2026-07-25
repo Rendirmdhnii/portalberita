@@ -7,11 +7,10 @@ export default function AdSlot({ size = "728x90", className = "", ad = null }) {
   }
 
   return (
-    <div className={`w-full h-auto flex justify-center items-center ${className}`}>
+    <div className={`w-full block ${className}`}>
       <ResponsiveAd
         linkTujuan={ad.link && ad.link !== '-' ? ad.link : '#'}
-        imageDesktop={ad.image}
-        imageMobile={ad.image_mobile_url || ad.image}
+        image={ad.image || ad.image_mobile_url}
         altText={ad.name || 'Iklan'}
       />
     </div>
