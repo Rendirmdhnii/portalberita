@@ -24,7 +24,7 @@ export default function ResponsiveAd({
       <img
         src={imgSrc}
         alt={altText}
-        className="w-full h-auto object-contain max-h-[300px] mx-auto block"
+        className="w-full h-auto object-contain max-h-[90px] md:max-h-[100px] mx-auto block rounded-lg shadow-sm"
       />
     </a>
   );
