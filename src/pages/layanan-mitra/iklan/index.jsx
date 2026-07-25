@@ -359,15 +359,21 @@ export default function AdIndex() {
               <h3 className="font-bold text-base flex items-center gap-2">
                 <i className="fa-solid fa-crop-simple text-red-500"></i>
                 {croppingType === 'mobile' 
-                  ? 'Potong Gambar Khusus HP (Bentuk Memanjang - 320x130 px)' 
-                  : `Sesuaikan Gambar (${positionLabel(position)})`}
+                  ? 'Potong Gambar Khusus HP (Free Crop / Bebas Potong)' 
+                  : `Sesuaikan Gambar (Free Crop / Bebas Potong — ${positionLabel(position).split('—')[0].trim()})`}
               </h3>
               <button type="button" onClick={handleCancelCrop}
                 className="text-gray-400 hover:text-white text-sm">Batal</button>
             </div>
             <div className="relative flex-1 bg-slate-950 min-h-[280px] sm:min-h-[380px]">
-              <Cropper image={cropImageSrc} crop={crop} zoom={zoom} aspect={croppingType === 'mobile' ? (320 / 130) : getAspectForPosition(position)}
-                onCropChange={setCrop} onCropComplete={onCropComplete} onZoomChange={setZoom} />
+              <Cropper 
+                image={cropImageSrc} 
+                crop={crop} 
+                zoom={zoom} 
+                onCropChange={setCrop} 
+                onCropComplete={onCropComplete} 
+                onZoomChange={setZoom} 
+              />
             </div>
             <div className="px-6 py-5 bg-slate-900 border-t border-slate-800 flex flex-col gap-4 text-white">
               <div className="flex items-center gap-4">
