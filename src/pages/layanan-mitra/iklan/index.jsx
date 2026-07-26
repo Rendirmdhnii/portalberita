@@ -89,25 +89,26 @@ export default function AdIndex() {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
 
-  // Form states (Single Image Upload)
+  // Form states (3 Responsive Banner Uploads)
   const [name, setName] = useState('');
   const [position, setPosition] = useState('Header');
   const [link, setLink] = useState('');
   const [tanggalBerakhir, setTanggalBerakhir] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
   const [editingId, setEditingId] = useState(null);
 
+  const [desktopFile, setDesktopFile] = useState(null);
+  const [desktopPreviewUrl, setDesktopPreviewUrl] = useState('');
+  const [tabletFile, setTabletFile] = useState(null);
+  const [tabletPreviewUrl, setTabletPreviewUrl] = useState('');
+  const [mobileFile, setMobileFile] = useState(null);
+  const [mobilePreviewUrl, setMobilePreviewUrl] = useState('');
+
   const handleOpenPreview = () => {
-    if (!previewUrl) {
-      alert('Pilih berkas gambar iklan terlebih dahulu!');
+    if (!desktopPreviewUrl && !tabletPreviewUrl && !mobilePreviewUrl) {
+      alert('Pilih/upload setidaknya 1 berkas banner iklan terlebih dahulu!');
       return;
     }
     setShowPreview(true);
-  };
-
-  const getGuidelineText = (pos) => {
-    return 'Tips: Upload 1 file gambar iklan utama (WebP, JPG, PNG). Sistem otomatis menyesuaikan bentuk banner secara proporsional (3.2:1 di HP & 4.8:1 di Laptop) mengisi bingkai secara sempurna tanpa ruang kosong.';
   };
 
   const positionLabel = (pos) => {
@@ -151,20 +152,20 @@ export default function AdIndex() {
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [originalFileName, setOriginalFileName] = useState('');
   const [cropAspect, setCropAspect] = useState(4.8 / 1);
+  const [cropTarget, setCropTarget] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
 
-  const getDefaultAspect = (pos) => {
-    if (pos === 'Sidebar Atas' || pos === 'sidebar') return 1 / 1;
-    if (pos === 'Sidebar Bawah') return 3 / 4;
-    return 4.8 / 1;
-  };
-
-  const handleImageChange = (e) => {
+  const handleBannerFileChange = (e, target) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setOriginalFileName(file.name);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
-      setCropAspect(getDefaultAspect(position));
+      setCropTarget(target);
+
+      if (target === 'desktop') setCropAspect(4.8 / 1);
+      else if (target === 'tablet') setCropAspect(4.27 / 1);
+      else if (target === 'mobile') setCropAspect(3.2 / 1);
+
       const reader = new FileReader();
       reader.addEventListener('load', () => {
         setCropImageSrc(reader.result);
@@ -174,12 +175,17 @@ export default function AdIndex() {
     }
   };
 
-  const handleReCrop = () => {
-    if (!previewUrl) return;
+  const handleReCropTarget = (target) => {
+    let url = '';
+    if (target === 'desktop') { url = desktopPreviewUrl; setCropAspect(4.8 / 1); }
+    else if (target === 'tablet') { url = tabletPreviewUrl; setCropAspect(4.27 / 1); }
+    else if (target === 'mobile') { url = mobilePreviewUrl; setCropAspect(3.2 / 1); }
+
+    if (!url) return;
     setCrop({ x: 0, y: 0 });
     setZoom(1);
-    setCropAspect(getDefaultAspect(position));
-    setCropImageSrc(previewUrl);
+    setCropTarget(target);
+    setCropImageSrc(url);
     setIsCropModalOpen(true);
   };
 
@@ -188,19 +194,28 @@ export default function AdIndex() {
   };
 
   const handleSaveCrop = async () => {
-    if (!cropImageSrc || !croppedAreaPixels) return;
+    if (!cropImageSrc || !croppedAreaPixels || !cropTarget) return;
     try {
       const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
       if (!croppedBlob) return;
       const fileExt = originalFileName ? originalFileName.split('.').pop() : 'jpg';
-      const file = new File([croppedBlob], `ad_${Date.now()}.${fileExt}`, { type: croppedBlob.type || 'image/jpeg' });
+      const file = new File([croppedBlob], `ad_${cropTarget}_${Date.now()}.${fileExt}`, { type: croppedBlob.type || 'image/jpeg' });
+      const newUrl = URL.createObjectURL(croppedBlob);
 
-      if (previewUrl && previewUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(previewUrl);
+      if (cropTarget === 'desktop') {
+        if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
+        setDesktopFile(file);
+        setDesktopPreviewUrl(newUrl);
+      } else if (cropTarget === 'tablet') {
+        if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
+        setTabletFile(file);
+        setTabletPreviewUrl(newUrl);
+      } else if (cropTarget === 'mobile') {
+        if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
+        setMobileFile(file);
+        setMobilePreviewUrl(newUrl);
       }
 
-      setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(croppedBlob));
       setIsCropModalOpen(false);
     } catch (err) {
       alert('Gagal memotong gambar: ' + err.message);
@@ -209,22 +224,19 @@ export default function AdIndex() {
 
   const handleCancelCrop = () => {
     setIsCropModalOpen(false);
-    if (!imageFile) {
-      const fileInput = document.getElementById('ad-image-input');
-      if (fileInput) fileInput.value = '';
-      const fileInputModal = document.getElementById('ad-image-input-modal');
-      if (fileInputModal) fileInputModal.value = '';
-    }
   };
 
   const resetForm = () => {
     setName(''); setPosition('Header'); setLink(''); setTanggalBerakhir('');
-    setImageFile(null); setPreviewUrl('');
+    setDesktopFile(null); setDesktopPreviewUrl('');
+    setTabletFile(null); setTabletPreviewUrl('');
+    setMobileFile(null); setMobilePreviewUrl('');
     setEditingId(null);
-    const fileInput = document.getElementById('ad-image-input');
-    if (fileInput) fileInput.value = '';
-    const fileInputModal = document.getElementById('ad-image-input-modal');
-    if (fileInputModal) fileInputModal.value = '';
+
+    ['ad-desktop-input', 'ad-tablet-input', 'ad-mobile-input', 'ad-desktop-input-modal', 'ad-tablet-input-modal', 'ad-mobile-input-modal'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
   };
 
   const handleEdit = (iklan) => {
@@ -233,8 +245,12 @@ export default function AdIndex() {
     setPosition(iklan.position || 'Header');
     setLink(iklan.link || '');
     setTanggalBerakhir(iklan.tanggal_berakhir || '');
-    setPreviewUrl(iklan.image || iklan.image_mobile_url || '');
-    setImageFile(null);
+
+    setDesktopPreviewUrl(iklan.desktop_image_url || iklan.image || '');
+    setTabletPreviewUrl(iklan.tablet_image_url || iklan.image || '');
+    setMobilePreviewUrl(iklan.mobile_image_url || iklan.image_mobile_url || iklan.image || '');
+    setDesktopFile(null); setTabletFile(null); setMobileFile(null);
+
     setShowFormModal(true);
   };
 
@@ -246,19 +262,48 @@ export default function AdIndex() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    
+
     setProcessing(true);
     setError('');
     try {
-      let publicUrl = null;
-      if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      let uploadedDesktopUrl = desktopPreviewUrl;
+      let uploadedTabletUrl = tabletPreviewUrl;
+      let uploadedMobileUrl = mobilePreviewUrl;
+
+      if (desktopFile) {
+        const fileExt = desktopFile.name.split('.').pop();
+        const fileName = `desktop_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `ads/${fileName}`;
-        const { error: uploadError } = await supabase.storage.from('images').upload(filePath, imageFile);
-        if (uploadError) throw new Error('Gagal mengunggah gambar: ' + uploadError.message);
-        const { data: { publicUrl: loadedUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-        publicUrl = loadedUrl;
+        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
+        if (uploadErr) throw new Error('Gagal mengunggah banner desktop: ' + uploadErr.message);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        uploadedDesktopUrl = publicUrl;
+      }
+
+      if (tabletFile) {
+        const fileExt = tabletFile.name.split('.').pop();
+        const fileName = `tablet_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `ads/${fileName}`;
+        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, tabletFile);
+        if (uploadErr) throw new Error('Gagal mengunggah banner tablet: ' + uploadErr.message);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        uploadedTabletUrl = publicUrl;
+      }
+
+      if (mobileFile) {
+        const fileExt = mobileFile.name.split('.').pop();
+        const fileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `ads/${fileName}`;
+        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, mobileFile);
+        if (uploadErr) throw new Error('Gagal mengunggah banner mobile: ' + uploadErr.message);
+        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+        uploadedMobileUrl = publicUrl;
+      }
+
+      if (!editingId) {
+        if (!uploadedDesktopUrl || !uploadedTabletUrl || !uploadedMobileUrl) {
+          throw new Error('Semua 3 file banner (Desktop, Tablet, Mobile) wajib diunggah!');
+        }
       }
 
       const payload = {
@@ -266,25 +311,22 @@ export default function AdIndex() {
         position,
         link: link || '-',
         tanggal_berakhir: tanggalBerakhir || null,
-        is_active: true
+        is_active: true,
+        desktop_image_url: uploadedDesktopUrl,
+        tablet_image_url: uploadedTabletUrl,
+        mobile_image_url: uploadedMobileUrl,
+        image: uploadedDesktopUrl || uploadedMobileUrl,
+        image_mobile_url: uploadedMobileUrl || uploadedDesktopUrl,
       };
-
-      if (imageFile) {
-        payload.image = publicUrl;
-        payload.image_mobile_url = publicUrl;
-      }
 
       if (editingId) {
         const { error: updateError } = await supabase.from('ads').update(payload).eq('id', editingId);
         if (updateError) throw updateError;
         setMessage('Iklan berhasil diperbarui.');
       } else {
-        if (!imageFile) {
-          throw new Error('Gambar Iklan Utama Wajib diisi!');
-        }
         const { error: insertError } = await supabase.from('ads').insert([payload]);
         if (insertError) throw insertError;
-        setMessage('Iklan berhasil ditambahkan dan ditayangkan.');
+        setMessage('Iklan 3 banner responsif berhasil ditayangkan.');
       }
 
       resetForm();
@@ -316,16 +358,88 @@ export default function AdIndex() {
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   useEffect(() => { setCurrentPage(1); }, [searchQuery]);
 
+  const renderFileInputSection = (isModal = false) => {
+    const suffix = isModal ? '-modal' : '';
+    return (
+      <div className="space-y-4 pt-2 border-t border-gray-100">
+        <p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+          <i className="fa-solid fa-layer-group text-red-600"></i>
+          3 File Banner Responsif (Wajib Upload)
+        </p>
+
+        {/* Input 1: Banner Desktop */}
+        <div>
+          <label className="block text-xs font-bold text-gray-800 mb-1">
+            Upload Banner Desktop <span className="text-gray-500 font-normal">(Rekomendasi: 1440x300 px | Rasio 4.8:1)</span> *
+          </label>
+          <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
+          {desktopPreviewUrl && (
+            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                <img src={desktopPreviewUrl} alt="Desktop" className="h-8 w-20 object-contain rounded border bg-white" />
+                <span className="text-[11px] text-green-700 font-bold">✓ Banner Desktop Siap</span>
+              </div>
+              <button type="button" onClick={() => handleReCropTarget('desktop')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                Potong Lagi
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Input 2: Banner Tablet */}
+        <div>
+          <label className="block text-xs font-bold text-gray-800 mb-1">
+            Upload Banner Tablet <span className="text-gray-500 font-normal">(Rekomendasi: 768x180 px | Rasio 4.27:1)</span> *
+          </label>
+          <input id={`ad-tablet-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'tablet')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !tabletPreviewUrl} />
+          {tabletPreviewUrl && (
+            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                <img src={tabletPreviewUrl} alt="Tablet" className="h-8 w-20 object-contain rounded border bg-white" />
+                <span className="text-[11px] text-green-700 font-bold">✓ Banner Tablet Siap</span>
+              </div>
+              <button type="button" onClick={() => handleReCropTarget('tablet')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                Potong Lagi
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Input 3: Banner Mobile */}
+        <div>
+          <label className="block text-xs font-bold text-gray-800 mb-1">
+            Upload Banner Mobile <span className="text-gray-500 font-normal">(Rekomendasi: 640x200 px | Rasio 3.2:1)</span> *
+          </label>
+          <input id={`ad-mobile-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'mobile')}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !mobilePreviewUrl} />
+          {mobilePreviewUrl && (
+            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+              <div className="flex items-center gap-2">
+                <img src={mobilePreviewUrl} alt="Mobile" className="h-8 w-16 object-contain rounded border bg-white" />
+                <span className="text-[11px] text-green-700 font-bold">✓ Banner Mobile Siap</span>
+              </div>
+              <button type="button" onClick={() => handleReCropTarget('mobile')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                Potong Lagi
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
-      <Head><title>Kelola Iklan - PojokTV</title></Head>
+      <Head><title>Kelola Iklan 3 Banner Responsif - PojokTV</title></Head>
 
       {/* Form Modal (Mobile Slide-Up) */}
       {showFormModal && (
         <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/50 px-4" onClick={() => setShowFormModal(false)}>
           <div className="bg-white rounded-2xl rounded-b-none sm:rounded-2xl w-full max-w-lg p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-gray-900">{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</h3>
+              <h3 className="font-bold text-lg text-gray-900">{editingId ? 'Edit Data Iklan 3 Banner' : 'Pasang Iklan 3 Banner Baru'}</h3>
               <button onClick={handleCancelEdit} className="text-gray-400 hover:text-gray-700 text-xl">
                 <i className="fa-solid fa-xmark"></i>
               </button>
@@ -362,20 +476,9 @@ export default function AdIndex() {
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 text-slate-700" />
                 <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama (Desktop &amp; Mobile)</label>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
-                  <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
-                </div>
-                <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
-                {previewUrl && (
-                  <button type="button" onClick={handleReCrop}
-                    className="w-full mt-2 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-3 py-2 rounded-lg border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
-                    <i className="fa-solid fa-crop-simple"></i> Atur Ulang / Potong Lagi Gambar
-                  </button>
-                )}
-              </div>
+
+              {renderFileInputSection(true)}
+
               <div className="flex flex-col gap-2.5 mt-4">
                 <button type="button" onClick={handleOpenPreview}
                   className="w-full px-6 py-3 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center">
@@ -400,54 +503,41 @@ export default function AdIndex() {
       {/* Modal Pratinjau Iklan (Full Layout) */}
       {showPreview && (
         <div className="fixed inset-0 z-[120] flex flex-col bg-black/80 backdrop-blur-sm overflow-hidden">
-          {/* Header Modal */}
           <div className="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-white font-bold text-base">Pratinjau Letak Iklan</span>
+              <span className="text-white font-bold text-base">Pratinjau Letak Iklan Responsif</span>
               <div className="flex bg-slate-800 rounded-lg p-0.5 border border-slate-700">
-                <button
-                  onClick={() => setPreviewDevice('desktop')}
-                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
-                    previewDevice === 'desktop' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  💻 Tampilan PC
+                <button onClick={() => setPreviewDevice('desktop')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${previewDevice === 'desktop' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+                  💻 PC (Desktop)
                 </button>
-                <button
-                  onClick={() => setPreviewDevice('mobile')}
-                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${
-                    previewDevice === 'mobile' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  📱 Tampilan HP
+                <button onClick={() => setPreviewDevice('mobile')}
+                  className={`px-3 py-1.5 rounded-md font-bold text-xs transition-colors ${previewDevice === 'mobile' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}>
+                  📱 HP (Mobile)
                 </button>
               </div>
             </div>
-            <button
-              onClick={() => setShowPreview(false)}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors"
-            >
+            <button onClick={() => setShowPreview(false)}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition-colors">
               ❌ Tutup Pratinjau
             </button>
           </div>
 
-          {/* Main Preview Container */}
           <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center pointer-events-none select-none">
             {previewDevice === 'desktop' ? (
-              /* Desktop Mockup Layout */
               <div className="w-full max-w-5xl mx-auto p-6 bg-slate-900 rounded-2xl shadow-sm border border-slate-800 text-white overflow-y-auto max-h-[85vh] flex flex-col gap-6">
                 <div className="max-w-4xl mx-auto w-full bg-white text-slate-950 p-6 rounded-xl shadow">
                   <div className="flex items-center justify-between border-b pb-4 mb-4">
                     <div className="text-2xl font-black tracking-tighter text-slate-900">
                       Pojok<span className="text-red-600">TV.com</span>
                     </div>
-                    <div className="text-xs text-gray-500 font-mono">DUMMY WEBSITE PREVIEW</div>
+                    <div className="text-xs text-gray-500 font-mono">DESKTOP PREVIEW</div>
                   </div>
 
                   {position === 'Header' && (
                     <div className="w-full flex flex-col items-center justify-center mb-6 bg-gray-100 p-2 border rounded-lg">
-                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN HEADER ATAS ]</span>
-                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
+                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ BANNER HEADER DESKTOP ]</span>
+                      <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
                     </div>
                   )}
 
@@ -456,58 +546,34 @@ export default function AdIndex() {
                       <div className="p-4 bg-slate-50 border rounded-lg">
                         <div className="w-20 h-4 bg-slate-200 rounded mb-2"></div>
                         <div className="h-6 bg-slate-300 rounded mb-2 w-3/4"></div>
-                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
                       </div>
 
                       {position === 'Tengah Konten' && (
                         <div className="w-full flex flex-col items-center justify-center my-6 bg-gray-100 p-2 border rounded-lg">
-                          <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN TENGAH KONTEN ]</span>
-                          <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
+                          <span className="text-[10px] text-gray-400 font-bold mb-1">[ BANNER TENGAH KONTEN DESKTOP ]</span>
+                          <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
                         </div>
                       )}
-
-                      <div className="space-y-3">
-                        <div className="h-4 bg-slate-200 rounded w-full"></div>
-                        <div className="h-4 bg-slate-200 rounded w-full"></div>
-                        <div className="h-4 bg-slate-200 rounded w-5/6"></div>
-                      </div>
                     </div>
-
                     <div className="space-y-6">
-                      <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[150px]">
-                        {position === 'Sidebar Atas' ? (
-                          <>
-                            <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR ATAS ]</span>
-                            <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                          </>
-                        ) : (
-                          <span className="text-[10px] text-gray-400">Slot Sidebar Atas (Kosong)</span>
-                        )}
-                      </div>
-
-                      <div className="p-4 bg-slate-50 border rounded-lg flex flex-col items-center justify-center min-h-[250px]">
-                        {position === 'Sidebar Bawah' ? (
-                          <>
-                            <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT SIDEBAR BAWAH ]</span>
-                            <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                          </>
-                        ) : (
-                          <span className="text-[10px] text-gray-400">Slot Sidebar Bawah (Kosong)</span>
-                        )}
-                      </div>
+                      {position === 'Sidebar Atas' && (
+                        <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
+                      )}
+                      {position === 'Sidebar Bawah' && (
+                        <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
+                      )}
                     </div>
                   </div>
 
                   {position === 'Footer' && (
                     <div className="w-full flex flex-col items-center justify-center mt-6 bg-gray-100 p-2 border rounded-lg">
-                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ SLOT IKLAN FOOTER ]</span>
-                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
+                      <span className="text-[10px] text-gray-400 font-bold mb-1">[ BANNER FOOTER DESKTOP ]</span>
+                      <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              /* Mobile Mockup Layout */
               <div className="w-[375px] h-[700px] border-[14px] border-gray-900 rounded-[3rem] mx-auto overflow-hidden relative shadow-2xl bg-white mt-4 text-slate-950 flex flex-col">
                 <div className="overflow-y-auto h-full p-4 flex flex-col gap-4">
                   <div className="flex items-center justify-between border-b pb-2">
@@ -517,53 +583,7 @@ export default function AdIndex() {
                     <div className="text-[9px] text-gray-400 font-mono">MOBILE PREVIEW</div>
                   </div>
 
-                  {position === 'Header' && (
-                    <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                      <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ HEADER SLIDER ]</span>
-                      <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="p-3 bg-slate-50 border rounded-lg">
-                      <div className="w-12 h-3 bg-slate-200 rounded mb-1"></div>
-                      <div className="h-4 bg-slate-300 rounded mb-1 w-5/6"></div>
-                      <div className="h-3 bg-slate-200 rounded w-1/2"></div>
-                    </div>
-
-                    {position === 'Tengah Konten' && (
-                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ IN-FEED SLIDER ]</span>
-                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <div className="h-3 bg-slate-200 rounded w-full"></div>
-                      <div className="h-3 bg-slate-200 rounded w-full"></div>
-                    </div>
-
-                    {position === 'Sidebar Atas' && (
-                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR ATAS ]</span>
-                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                      </div>
-                    )}
-
-                    {position === 'Sidebar Bawah' && (
-                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-2 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-1">[ SIDEBAR BAWAH ]</span>
-                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                      </div>
-                    )}
-
-                    {position === 'Footer' && (
-                      <div className="w-full flex flex-col items-center justify-center bg-gray-100 p-1 border rounded-lg">
-                        <span className="text-[9px] text-gray-400 font-bold mb-0.5">[ FOOTER SLIDER ]</span>
-                        <ResponsiveAd linkTujuan={link} image={previewUrl} altText={name || 'Pratinjau Iklan'} />
-                      </div>
-                    )}
-                  </div>
+                  <ResponsiveAd linkTujuan={link} desktopImageUrl={desktopPreviewUrl} tabletImageUrl={tabletPreviewUrl} mobileImageUrl={mobilePreviewUrl} altText={name || 'Pratinjau'} />
                 </div>
               </div>
             )}
@@ -576,7 +596,7 @@ export default function AdIndex() {
       {/* Page Header */}
       <div className="flex items-center justify-between gap-3 mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Kelola Pemasangan Iklan</h1>
+          <h1 className="text-xl font-bold text-gray-900">Kelola Pemasangan Iklan (3 Banner Responsif)</h1>
           <p className="text-sm text-gray-500 mt-0.5">{ads.length} iklan terdaftar</p>
         </div>
         <button onClick={() => setShowFormModal(true)}
@@ -586,16 +606,16 @@ export default function AdIndex() {
         </button>
       </div>
 
-      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Isi formulir di sebelah kiri dan upload 1 gambar iklan terbaik → pratinjau iklan responsif akan tampil secara real-time di kolom kanan. Gambar akan otomatis melakukan auto-scale secara 100% utuh di Desktop maupun HP tanpa terpotong.</p>
+      <GuideBox title="💡 Sistem 3 Banner Responsif (Desktop, Tablet, Mobile)">
+        <p>Setiap pasang iklan membutuhkan 3 berkas gambar terpisah (Desktop 4.8:1, Tablet 4.27:1, Mobile 3.2:1). Dengan teknologi HTML5 &lt;picture&gt;, browser pengunjung akan memilih gambar secara otomatis sesuai perangkat yang digunakan tanpa perlu melakukan crop atau kompresi paksa.</p>
       </GuideBox>
 
-      {/* Main Grid Section: 2 Columns (Form Left, Live Preview Right) */}
+      {/* Main Grid Section: 2 Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Kolom Kiri: Form Input Iklan */}
+        {/* Form Left */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit">
           <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2 flex items-center justify-between">
-            <span>{editingId ? 'Edit Data Iklan' : 'Pasang Iklan Baru'}</span>
+            <span>{editingId ? 'Edit Data Iklan 3 Banner' : 'Pasang Iklan 3 Banner Baru'}</span>
             {editingId && (
               <button type="button" onClick={handleCancelEdit} className="text-xs text-red-600 hover:underline font-semibold">
                 Batal Edit
@@ -634,20 +654,9 @@ export default function AdIndex() {
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 text-slate-700" />
               <p className="text-xs text-gray-500 mt-1">*Kosongkan jika iklan tayang permanen.</p>
             </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-800 mb-1">Gambar Iklan Utama (Desktop &amp; Mobile)</label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs text-blue-700 font-semibold mb-2">
-                <i className="fa-solid fa-circle-info mr-1"></i>{getGuidelineText(position)}
-              </div>
-              <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
-              {previewUrl && (
-                <button type="button" onClick={handleReCrop}
-                  className="w-full mt-2 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-3 py-2 rounded-lg border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
-                  <i className="fa-solid fa-crop-simple"></i> Atur Ulang / Potong Lagi Gambar
-                </button>
-              )}
-            </div>
+
+            {renderFileInputSection(false)}
+
             <div className="flex flex-col gap-2.5 pt-2">
               <button type="button" onClick={handleOpenPreview}
                 className="w-full px-6 py-2.5 bg-white border-2 border-gray-300 text-gray-800 font-bold rounded-xl hover:bg-gray-100 shadow-sm transition-all cursor-pointer text-center text-sm">
@@ -667,12 +676,12 @@ export default function AdIndex() {
           </form>
         </div>
 
-        {/* Kolom Kanan: Pratinjau Iklan (Live) */}
+        {/* Live Preview Right */}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
           <div className="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
             <div className="flex items-center gap-2">
               <div className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></div>
-              <h3 className="font-bold text-base text-gray-900">Pratinjau Iklan (Live)</h3>
+              <h3 className="font-bold text-base text-gray-900">Pratinjau HTML5 &lt;picture&gt; (Live)</h3>
             </div>
             <span className="px-2.5 py-1 bg-red-50 text-red-600 border border-red-200 rounded-md font-bold text-xs">
               {positionLabel(position)}
@@ -680,22 +689,24 @@ export default function AdIndex() {
           </div>
 
           <div className="flex-1 flex flex-col justify-center items-center p-4 bg-slate-50 border border-dashed border-gray-300 rounded-xl min-h-[280px]">
-            {previewUrl ? (
+            {desktopPreviewUrl || tabletPreviewUrl || mobilePreviewUrl ? (
               <div className="w-full block pointer-events-none select-none">
                 <ResponsiveAd
                   linkTujuan={link}
-                  image={previewUrl}
+                  desktopImageUrl={desktopPreviewUrl}
+                  tabletImageUrl={tabletPreviewUrl}
+                  mobileImageUrl={mobilePreviewUrl}
                   altText={name || 'Pratinjau Iklan'}
                 />
               </div>
             ) : (
               <div className="text-center p-6 max-w-sm">
                 <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
-                  <i className="fa-solid fa-cloud-arrow-up"></i>
+                  <i className="fa-solid fa-layer-group"></i>
                 </div>
-                <h4 className="font-bold text-gray-800 text-sm mb-1">Pratinjau Siap Divalidasi</h4>
+                <h4 className="font-bold text-gray-800 text-sm mb-1">Pratinjau 3 Banner Responsif</h4>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Silakan upload 1 gambar iklan untuk melihat pratinjau auto-scale tanpa terpotong.
+                  Upload file banner Desktop, Tablet, dan Mobile di kolom sebelah kiri untuk menguji tag &lt;picture&gt;.
                 </p>
               </div>
             )}
@@ -712,7 +723,7 @@ export default function AdIndex() {
           </h2>
           <div className="relative w-full sm:w-72">
             <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" placeholder="Cari nama iklan atau posisi..."
+            <input type="text" placeholder="Cari nama iklan..."
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-gray-300 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
           </div>
@@ -726,45 +737,14 @@ export default function AdIndex() {
           </div>
         ) : (
           <>
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-gray-100">
-              {paginated.map(ad => (
-                <div key={ad.id} className="p-4 flex gap-3 items-start">
-                  <img src={ad.image || ad.image_mobile_url} alt={ad.name}
-                    className="w-16 h-12 object-contain rounded-lg border border-gray-200 shrink-0 bg-gray-100"
-                    onError={e => { e.target.src = ''; e.target.className = 'w-16 h-12 bg-gray-200 rounded-lg shrink-0'; }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900 text-sm line-clamp-1">{ad.name}</p>
-                    <span className={`inline-flex items-center mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${positionBadgeColor(ad.position)}`}>
-                      {positionLabel(ad.position)}
-                    </span>
-                    {ad.link && ad.link !== '-' && (
-                      <p className="text-xs text-blue-600 truncate mt-0.5">{ad.link}</p>
-                    )}
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={() => handleEdit(ad)}
-                        className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
-                        <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
-                      </button>
-                      <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
-                        className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
-                        <i className="fa-solid fa-trash mr-1"></i>Hapus
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200">
                   <tr>
-                    <th className="px-5 py-3">Preview</th>
+                    <th className="px-5 py-3">Banners (Desktop/Tablet/Mobile)</th>
                     <th className="px-5 py-3">Nama Iklan</th>
                     <th className="px-5 py-3">Posisi</th>
-                    <th className="px-5 py-3">Link Tujuan</th>
+                    <th className="px-5 py-3">Link</th>
                     <th className="px-5 py-3 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -772,9 +752,11 @@ export default function AdIndex() {
                   {paginated.map(ad => (
                     <tr key={ad.id} className="hover:bg-blue-50 transition-colors">
                       <td className="px-5 py-3">
-                        <img src={ad.image || ad.image_mobile_url} alt={ad.name}
-                          className="h-10 w-20 object-contain rounded-md border border-gray-200 bg-gray-100"
-                          onError={e => { e.target.src = ''; e.target.className = 'h-10 w-20 bg-gray-200 rounded-md'; }} />
+                        <div className="flex items-center gap-1.5">
+                          <img src={ad.desktop_image_url || ad.image} title="Desktop Banner" alt="Desktop" className="h-8 w-14 object-contain rounded border bg-gray-100" />
+                          <img src={ad.tablet_image_url || ad.image} title="Tablet Banner" alt="Tablet" className="h-8 w-10 object-contain rounded border bg-gray-100" />
+                          <img src={ad.mobile_image_url || ad.image_mobile_url || ad.image} title="Mobile Banner" alt="Mobile" className="h-8 w-8 object-contain rounded border bg-gray-100" />
+                        </div>
                       </td>
                       <td className="px-5 py-3 font-bold text-gray-900 max-w-[160px]">
                         <p className="line-clamp-2">{ad.name}</p>
@@ -786,20 +768,17 @@ export default function AdIndex() {
                       </td>
                       <td className="px-5 py-3">
                         {ad.link && ad.link !== '-' ? (
-                          <a href={ad.link} target="_blank" rel="noreferrer"
-                            className="text-blue-700 hover:underline text-xs font-semibold truncate max-w-[100px] block">
+                          <a href={ad.link} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline text-xs font-semibold truncate max-w-[100px] block">
                             {ad.link}
                           </a>
                         ) : <span className="text-gray-400 text-xs">—</span>}
                       </td>
                       <td className="px-5 py-3 text-right">
                         <div className="flex justify-end gap-2">
-                          <button onClick={() => handleEdit(ad)}
-                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
+                          <button onClick={() => handleEdit(ad)} className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors">
                             Edit
                           </button>
-                          <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }}
-                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
+                          <button onClick={() => { setPendingAction(() => () => handleDelete(ad.id)); setIsPinModalOpen(true); }} className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors">
                             Hapus
                           </button>
                         </div>
@@ -832,9 +811,9 @@ export default function AdIndex() {
         <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh] shadow-2xl">
             <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
-              <h3 className="font-bold text-base flex items-center gap-2">
+              <h3 className="font-bold text-base flex items-center gap-2 capitalize">
                 <i className="fa-solid fa-crop-simple text-red-500"></i>
-                Potong &amp; Sesuaikan Gambar Iklan
+                Potong Banner {cropTarget}
               </h3>
               <button type="button" onClick={handleCancelCrop} className="text-gray-400 hover:text-white text-sm">
                 <i className="fa-solid fa-xmark text-lg"></i>
@@ -854,88 +833,40 @@ export default function AdIndex() {
             </div>
 
             <div className="px-6 py-4 bg-slate-900 border-t border-slate-800 flex flex-col gap-3 text-white">
-              {/* Aspect Ratio Selector */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-slate-400 mr-1">Rasio Banner:</span>
-                <button
-                  type="button"
-                  onClick={() => setCropAspect(4.8 / 1)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    cropAspect === 4.8 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  Banner Laptop (4.8:1)
+                <span className="text-xs font-semibold text-slate-400 mr-1">Rasio Banner Target:</span>
+                <button type="button" onClick={() => setCropAspect(4.8 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${cropAspect === 4.8 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+                  Desktop (4.8:1)
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setCropAspect(3.2 / 1)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    cropAspect === 3.2 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  Banner HP (3.2:1)
+                <button type="button" onClick={() => setCropAspect(4.27 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${cropAspect === 4.27 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+                  Tablet (4.27:1)
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setCropAspect(1 / 1)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    cropAspect === 1 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  Kotak (1:1)
+                <button type="button" onClick={() => setCropAspect(3.2 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${cropAspect === 3.2 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
+                  Mobile (3.2:1)
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setCropAspect(3 / 4)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    cropAspect === 3 / 4 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  Vertikal (3:4)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCropAspect(null)}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
-                    cropAspect === null ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
+                <button type="button" onClick={() => setCropAspect(null)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${cropAspect === null ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300'}`}>
                   Bebas / Free
                 </button>
               </div>
 
-              {/* Zoom Control */}
               <div className="flex items-center gap-4">
                 <span className="text-xs font-semibold text-slate-400">Zoom</span>
-                <input
-                  type="range"
-                  value={zoom}
-                  min={1}
-                  max={3}
-                  step={0.1}
-                  aria-label="Zoom"
-                  onChange={(e) => setZoom(Number(e.target.value))}
-                  className="flex-1 accent-red-600 cursor-pointer"
-                />
+                <input type="range" value={zoom} min={1} max={3} step={0.1} aria-label="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-red-600 cursor-pointer" />
                 <span className="text-xs text-slate-300 font-bold font-mono">{zoom.toFixed(1)}x</span>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex justify-end gap-3 pt-1">
-                <button
-                  type="button"
-                  onClick={handleCancelCrop}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer"
-                >
+                <button type="button" onClick={handleCancelCrop} className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer">
                   Batal
                 </button>
-                <button
-                  type="button"
-                  onClick={handleSaveCrop}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow cursor-pointer flex items-center gap-2"
-                >
+                <button type="button" onClick={handleSaveCrop} className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow cursor-pointer flex items-center gap-2">
                   <i className="fa-solid fa-check"></i>
-                  Konfirmasi Potongan
+                  Konfirmasi Potongan Banner {cropTarget}
                 </button>
               </div>
             </div>
@@ -945,4 +876,3 @@ export default function AdIndex() {
     </AdminLayout>
   );
 }
-

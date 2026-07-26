@@ -4,13 +4,21 @@ export default function ResponsiveAd({
   linkTujuan = '',
   image,
   imageDesktop,
+  imageTablet,
   imageMobile,
-  altText = 'Iklan',
+  desktopImageUrl,
+  tabletImageUrl,
+  mobileImageUrl,
+  altText = 'Iklan PojokTV',
   className = '',
 }) {
-  const imgSrc = image || imageDesktop || imageMobile;
+  const desktopUrl = desktopImageUrl || imageDesktop || image;
+  const tabletUrl = tabletImageUrl || imageTablet || desktopUrl || image;
+  const mobileUrl = mobileImageUrl || imageMobile || image;
 
-  if (!imgSrc) {
+  const fallbackSrc = mobileUrl || tabletUrl || desktopUrl;
+
+  if (!fallbackSrc) {
     return null;
   }
 
@@ -21,12 +29,16 @@ export default function ResponsiveAd({
     linkTujuan.trim() !== '-';
 
   const bannerContent = (
-    <div className="w-full aspect-[3.2/1] md:aspect-[4.8/1] overflow-hidden relative mx-auto rounded-lg shadow-sm">
-      <img
-        src={imgSrc}
-        alt={altText}
-        className="w-full h-full object-cover"
-      />
+    <div className="w-full relative mx-auto rounded-lg overflow-hidden shadow-sm">
+      <picture className="w-full h-auto block">
+        {desktopUrl && <source media="(min-width: 1024px)" srcSet={desktopUrl} />}
+        {tabletUrl && <source media="(min-width: 768px)" srcSet={tabletUrl} />}
+        <img
+          src={mobileUrl || fallbackSrc}
+          alt={altText}
+          className="w-full h-auto object-cover rounded-lg block mx-auto"
+        />
+      </picture>
     </div>
   );
 
@@ -49,3 +61,4 @@ export default function ResponsiveAd({
     </div>
   );
 }
+
