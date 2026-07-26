@@ -4,6 +4,35 @@ import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import PinAuthModal from '@/components/admin/PinAuthModal';
 import ResponsiveAd from '@/components/ResponsiveAd';
+import Cropper from 'react-easy-crop';
+
+// Canvas Cropping Helpers
+const createImage = (url) =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener('load', () => resolve(image));
+    image.addEventListener('error', (error) => reject(error));
+    if (url && !url.startsWith('data:')) {
+      image.setAttribute('crossOrigin', 'anonymous');
+    }
+    image.src = url;
+  });
+
+async function getCroppedImg(imageSrc, pixelCrop) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+  ctx.drawImage(image, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, pixelCrop.width, pixelCrop.height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) { reject(new Error('Canvas is empty')); return; }
+      resolve(blob);
+    }, 'image/jpeg', 0.95);
+  });
+}
 
 // ============================================================
 // Shared Sub-Components
@@ -114,11 +143,77 @@ export default function AdIndex() {
 
   useEffect(() => { fetchAds(); }, []);
 
+  // Cropper states
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [originalFileName, setOriginalFileName] = useState('');
+  const [cropAspect, setCropAspect] = useState(4.8 / 1);
+
+  const getDefaultAspect = (pos) => {
+    if (pos === 'Sidebar Atas' || pos === 'sidebar') return 1 / 1;
+    if (pos === 'Sidebar Bawah') return 3 / 4;
+    return 4.8 / 1;
+  };
+
   const handleImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      setOriginalFileName(file.name);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCropAspect(getDefaultAspect(position));
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setCropImageSrc(reader.result);
+        setIsCropModalOpen(true);
+      });
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleReCrop = () => {
+    if (!previewUrl) return;
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCropAspect(getDefaultAspect(position));
+    setCropImageSrc(previewUrl);
+    setIsCropModalOpen(true);
+  };
+
+  const onCropComplete = (_, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleSaveCrop = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedBlob = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+      if (!croppedBlob) return;
+      const fileExt = originalFileName ? originalFileName.split('.').pop() : 'jpg';
+      const file = new File([croppedBlob], `ad_${Date.now()}.${fileExt}`, { type: croppedBlob.type || 'image/jpeg' });
+
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
       setImageFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      setPreviewUrl(URL.createObjectURL(croppedBlob));
+      setIsCropModalOpen(false);
+    } catch (err) {
+      alert('Gagal memotong gambar: ' + err.message);
+    }
+  };
+
+  const handleCancelCrop = () => {
+    setIsCropModalOpen(false);
+    if (!imageFile) {
+      const fileInput = document.getElementById('ad-image-input');
+      if (fileInput) fileInput.value = '';
+      const fileInputModal = document.getElementById('ad-image-input-modal');
+      if (fileInputModal) fileInputModal.value = '';
     }
   };
 
@@ -274,6 +369,12 @@ export default function AdIndex() {
                 </div>
                 <input id="ad-image-input-modal" type="file" accept="image/*" onChange={handleImageChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
+                {previewUrl && (
+                  <button type="button" onClick={handleReCrop}
+                    className="w-full mt-2 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-3 py-2 rounded-lg border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i className="fa-solid fa-crop-simple"></i> Atur Ulang / Potong Lagi Gambar
+                  </button>
+                )}
               </div>
               <div className="flex flex-col gap-2.5 mt-4">
                 <button type="button" onClick={handleOpenPreview}
@@ -540,6 +641,12 @@ export default function AdIndex() {
               </div>
               <input id="ad-image-input" type="file" accept="image/*" onChange={handleImageChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none bg-white" required={!editingId} />
+              {previewUrl && (
+                <button type="button" onClick={handleReCrop}
+                  className="w-full mt-2 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold px-3 py-2 rounded-lg border border-blue-200 transition-colors flex items-center justify-center gap-1.5 cursor-pointer">
+                  <i className="fa-solid fa-crop-simple"></i> Atur Ulang / Potong Lagi Gambar
+                </button>
+              )}
             </div>
             <div className="flex flex-col gap-2.5 pt-2">
               <button type="button" onClick={handleOpenPreview}
@@ -719,6 +826,123 @@ export default function AdIndex() {
           }
         }}
       />
+
+      {/* Interactive Image Cropper Modal */}
+      {isCropModalOpen && cropImageSrc && (
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh] shadow-2xl">
+            <div className="px-6 py-4 bg-slate-950 text-white flex justify-between items-center border-b border-slate-800">
+              <h3 className="font-bold text-base flex items-center gap-2">
+                <i className="fa-solid fa-crop-simple text-red-500"></i>
+                Potong &amp; Sesuaikan Gambar Iklan
+              </h3>
+              <button type="button" onClick={handleCancelCrop} className="text-gray-400 hover:text-white text-sm">
+                <i className="fa-solid fa-xmark text-lg"></i>
+              </button>
+            </div>
+
+            <div className="relative flex-1 bg-slate-950 min-h-[300px] sm:min-h-[380px]">
+              <Cropper
+                image={cropImageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={cropAspect || undefined}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+              />
+            </div>
+
+            <div className="px-6 py-4 bg-slate-900 border-t border-slate-800 flex flex-col gap-3 text-white">
+              {/* Aspect Ratio Selector */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-slate-400 mr-1">Rasio Banner:</span>
+                <button
+                  type="button"
+                  onClick={() => setCropAspect(4.8 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    cropAspect === 4.8 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Banner Laptop (4.8:1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCropAspect(3.2 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    cropAspect === 3.2 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Banner HP (3.2:1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCropAspect(1 / 1)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    cropAspect === 1 / 1 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Kotak (1:1)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCropAspect(3 / 4)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    cropAspect === 3 / 4 ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Vertikal (3:4)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCropAspect(null)}
+                  className={`px-3 py-1 text-xs font-bold rounded-lg border transition-colors ${
+                    cropAspect === null ? 'bg-red-600 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Bebas / Free
+                </button>
+              </div>
+
+              {/* Zoom Control */}
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-semibold text-slate-400">Zoom</span>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  aria-label="Zoom"
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="flex-1 accent-red-600 cursor-pointer"
+                />
+                <span className="text-xs text-slate-300 font-bold font-mono">{zoom.toFixed(1)}x</span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCancelCrop}
+                  className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-5 py-2 rounded-lg text-sm transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCrop}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-2 rounded-lg text-sm transition-colors shadow cursor-pointer flex items-center gap-2"
+                >
+                  <i className="fa-solid fa-check"></i>
+                  Konfirmasi Potongan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
+
