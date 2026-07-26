@@ -5,9 +5,16 @@ export default function Document() {
     <Html lang="id">
       <Head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f172a" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="PojokTV" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

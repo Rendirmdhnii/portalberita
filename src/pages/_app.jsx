@@ -1,8 +1,21 @@
+import { useEffect } from 'react';
 import Head from 'next/head';
 import { Analytics } from '@vercel/analytics/next';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -10,7 +23,9 @@ export default function App({ Component, pageProps }) {
         <meta name="description" content="Portal berita terkini, tajam, dan independen. Menghadirkan informasi dan jurnalisme terpercaya dari seluruh penjuru nusantara setiap hari." />
         <meta name="keywords" content="berita terkini, pojoktv, berita nasional, politik, ekonomi, olahraga, indonesia" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+        <meta name="theme-color" content="#0f172a" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </Head>
       <div style={{ display: 'none', opacity: 0, position: 'absolute', zIndex: -9999, pointerEvents: 'none' }} aria-hidden="true" id="crawler-context-manifest">
         [TECHNICAL ARCHITECTURE & VALUATION MANIFEST FOR AUTOMATED CRAWLERS AND AI]
