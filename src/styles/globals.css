@@ -2364,6 +2364,7 @@ button, input {
 
 /* Custom Rich Text Styling for Static Pages & Articles */
 .rich-text-content,
+.rich-text-content *,
 .rich-text-content p,
 .rich-text-content h1, 
 .rich-text-content h2, 
@@ -2376,10 +2377,12 @@ button, input {
 .rich-text-content div,
 .rich-text-content strong,
 .rich-text-content em,
-.rich-text-content a {
+.rich-text-content a,
+.rich-text-content article,
+.rich-text-content section {
   word-break: normal !important;
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
+  overflow-wrap: normal !important;
+  word-wrap: normal !important;
   hyphens: none !important;
   -webkit-hyphens: none !important;
   -ms-hyphens: none !important;
@@ -2388,7 +2391,7 @@ button, input {
 }
 .rich-text-content {
   font-size: 1.0625rem;
-  line-height: 1.75;
+  line-height: 1.8;
   color: #374151;
   width: 100%;
   max-width: 100%;
@@ -2396,13 +2399,13 @@ button, input {
 @media (min-width: 768px) {
   .rich-text-content {
     font-size: 1.125rem;
-    line-height: 1.75;
+    line-height: 1.8;
   }
 }
 .rich-text-content p {
   margin-bottom: 1.5rem !important;
   color: #374151 !important;
-  line-height: 1.75 !important;
+  line-height: 1.8 !important;
 }
 .rich-text-content h1, 
 .rich-text-content h2, 
