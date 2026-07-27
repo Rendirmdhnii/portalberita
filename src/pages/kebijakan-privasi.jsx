@@ -39,7 +39,7 @@ export default function KebijakanPrivasi({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content space-y-6 text-left md:text-justify text-slate-700 leading-relaxed"
+              className="rich-text-content space-y-6 text-left text-gray-700 leading-relaxed break-words whitespace-normal"
               dangerouslySetInnerHTML={{ __html: content || '' }}
             />
           </article>

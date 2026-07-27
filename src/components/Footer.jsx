@@ -74,8 +74,8 @@ export default function Footer({ categories = [] }) {
 
         {/* Footer Bawah - bg-white dengan teks gelap */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 py-6 mt-4 border-t border-slate-700 text-sm bg-white text-slate-900 px-6 rounded-lg">
-          <p className="text-xs text-center md:text-left max-w-2xl leading-relaxed text-slate-900 font-medium">
-            @2026 PojokTV.com. Hak cipta dilindungi undang-undang
+          <p className="text-xs text-center md:text-left text-gray-500 font-medium">
+            © 2026 PojokTV.com. Hak cipta dilindungi undang-undang.
           </p>
           <div className="flex flex-wrap justify-center md:justify-end items-center gap-4 md:gap-6 shrink-0 text-slate-900 font-semibold">
             <Link href="/tentang-kami" className="hover:text-red-600 transition-colors">Tentang Kami</Link>
