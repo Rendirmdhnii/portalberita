@@ -2367,6 +2367,28 @@ button, input {
   font-size: 1.05rem;
   line-height: 1.75;
   color: #374151;
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-x: hidden;
+}
+.rich-text-content p,
+.rich-text-content h1, 
+.rich-text-content h2, 
+.rich-text-content h3,
+.rich-text-content h4,
+.rich-text-content h5,
+.rich-text-content h6,
+.rich-text-content li,
+.rich-text-content span,
+.rich-text-content div {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  word-wrap: break-word;
+  white-space: normal !important;
+  max-width: 100%;
 }
 .rich-text-content p {
   margin-bottom: 1.5rem !important;
@@ -2390,6 +2412,7 @@ button, input {
   margin-left: 1.5rem !important;
   margin-bottom: 1.5rem !important;
   list-style-position: outside !important;
+  max-width: 100%;
 }
 .rich-text-content ul {
   list-style-type: disc !important;
@@ -2400,12 +2423,33 @@ button, input {
 .rich-text-content li {
   margin-bottom: 0.5rem !important;
 }
+.rich-text-content table {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+  overflow-x: auto;
+  word-break: normal;
+}
+.rich-text-content img,
+.rich-text-content video,
+.rich-text-content iframe {
+  max-width: 100% !important;
+  height: auto !important;
+}
+.rich-text-content pre,
+.rich-text-content code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  max-width: 100% !important;
+  overflow-x: auto;
+}
 .rich-text-content blockquote {
   border-left: 4px solid #ef4444 !important;
   padding-left: 1.25rem !important;
   font-style: italic !important;
   color: #4b5563 !important;
   margin: 1.5rem 0 !important;
+  max-width: 100%;
 }
 .rich-text-content strong {
   font-weight: 700 !important;
@@ -2417,6 +2461,8 @@ button, input {
 .rich-text-content a {
   color: #2563eb !important;
   text-decoration: underline !important;
+  overflow-wrap: break-word;
+  word-break: break-all;
 }
 .rich-text-content a:hover {
   color: #1d4ed8 !important;
