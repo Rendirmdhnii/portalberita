@@ -23,12 +23,12 @@ export default function TentangKami({ content, title }) {
           </nav>
 
           {/* Article Container Card */}
-          <article className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 md:p-12 shadow-sm">
+          <article className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 md:p-12 shadow-sm break-normal [word-break:normal]">
             <header className="border-b border-slate-100 pb-6 mb-8">
               <span className="inline-block px-3 py-1 bg-red-50 text-red-600 text-[11px] font-extrabold uppercase tracking-wider rounded-md mb-3">
                 Tentang Perusahaan & Redaksi
               </span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight break-normal [word-break:normal]">
                 {title || 'TENTANG KAMI'}
               </h1>
               <p className="text-xs text-slate-400 mt-3 flex items-center gap-2">
@@ -39,7 +39,7 @@ export default function TentangKami({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content space-y-6 text-left text-gray-700 leading-relaxed break-words whitespace-normal"
+              className="rich-text-content space-y-6 text-left text-gray-700 leading-relaxed break-normal whitespace-normal [word-break:normal]"
               dangerouslySetInnerHTML={{ __html: content || '' }}
             />
           </article>

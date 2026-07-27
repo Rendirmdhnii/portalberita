@@ -2363,16 +2363,35 @@ button, input {
 }
 
 /* Custom Rich Text Styling for Static Pages & Articles */
+.rich-text-content,
+.rich-text-content p,
+.rich-text-content h1, 
+.rich-text-content h2, 
+.rich-text-content h3,
+.rich-text-content h4,
+.rich-text-content h5,
+.rich-text-content h6,
+.rich-text-content li,
+.rich-text-content span,
+.rich-text-content div,
+.rich-text-content strong,
+.rich-text-content em,
+.rich-text-content a {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  -ms-hyphens: none !important;
+  white-space: normal !important;
+  text-align: left !important;
+}
 .rich-text-content {
   font-size: 1.0625rem;
   line-height: 1.75;
   color: #374151;
   width: 100%;
   max-width: 100%;
-  text-align: left !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
 }
 @media (min-width: 768px) {
   .rich-text-content {
@@ -2380,22 +2399,10 @@ button, input {
     line-height: 1.75;
   }
 }
-.rich-text-content p,
-.rich-text-content li,
-.rich-text-content span,
-.rich-text-content div {
-  text-align: left !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  word-wrap: break-word !important;
-  white-space: normal !important;
-  max-width: 100%;
-}
 .rich-text-content p {
   margin-bottom: 1.5rem !important;
   color: #374151 !important;
   line-height: 1.75 !important;
-  text-align: left !important;
 }
 .rich-text-content h1, 
 .rich-text-content h2, 
