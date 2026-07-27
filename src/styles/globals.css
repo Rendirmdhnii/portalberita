@@ -2509,5 +2509,13 @@ button, input {
   scrollbar-width: none;
 }
 
+/* OVERRIDE PAKSA UNTUK MENCEGAH TEKS TERPOTONG DI TENGAH KATA */
+p, span, li, div, h1, h2, h3, h4, h5, h6 {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  hyphens: manual !important;
+}
+
 
 

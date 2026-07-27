@@ -28,12 +28,12 @@ export default function KebijakanPrivasi({ content, title }) {
           </nav>
 
           {/* Article Container Card */}
-          <article className="bg-white border border-slate-200/80 rounded-2xl px-6 py-8 md:px-10 md:py-12 shadow-sm !break-normal !whitespace-normal !text-left">
+          <article className="px-6 py-8 md:px-12 md:py-10 bg-white rounded-lg shadow-sm border border-slate-200/80">
             <header className="border-b border-slate-100 pb-6 mb-8">
               <span className="inline-block px-3 py-1 bg-red-50 text-red-600 text-[11px] font-extrabold uppercase tracking-wider rounded-md mb-3">
                 Informasi Hukum & Privasi
               </span>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight !break-normal !whitespace-normal !text-left">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight text-left">
                 {title || 'KEBIJAKAN PRIVASI'}
               </h1>
               <p className="text-xs text-slate-400 mt-3 flex items-center gap-2">
@@ -44,7 +44,7 @@ export default function KebijakanPrivasi({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content space-y-6 !text-left !text-gray-700 !leading-[1.8] !break-normal !whitespace-normal [word-break:normal!important] [overflow-wrap:normal!important]"
+              className="rich-text-content text-base text-gray-700 leading-loose mb-5 text-left space-y-5"
               dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
             />
           </article>
