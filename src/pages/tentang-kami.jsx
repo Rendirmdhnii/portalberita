@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
@@ -9,15 +10,40 @@ export default function TentangKami({ content, title }) {
         <title>{title || 'Tentang Kami'} - PojokTV.com</title>
         <meta name="description" content="PojokTV.com adalah portal berita digital independen yang menyajikan jurnalisme akurat dan berimbang untuk masyarakat Indonesia." />
       </Head>
-      <main className="w-full overflow-x-hidden bg-white">
-        <div className="container mx-auto max-w-4xl px-4 md:px-8 py-8 md:py-12 text-gray-800 break-words whitespace-normal text-wrap overflow-hidden">
-          <h1 className="text-2xl md:text-3xl font-black mb-2 uppercase border-b-4 border-red-600 pb-3 text-slate-900 break-words whitespace-normal leading-tight">
-            {title || 'TENTANG KAMI'}
-          </h1>
-          <div 
-            className="mt-6 md:mt-8 rich-text-content break-words whitespace-normal text-wrap max-w-full overflow-hidden"
-            dangerouslySetInnerHTML={{ __html: content || '' }}
-          />
+      <main className="w-full bg-slate-50/50 py-8 sm:py-12 md:py-16">
+        <div className="container mx-auto max-w-4xl px-5 sm:px-8">
+          
+          {/* Breadcrumb Navigation */}
+          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-6" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-red-600 transition-colors">
+              Beranda
+            </Link>
+            <span className="text-slate-300">/</span>
+            <span className="text-slate-800 font-bold">Tentang Kami</span>
+          </nav>
+
+          {/* Article Container Card */}
+          <article className="bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-10 md:p-12 shadow-sm">
+            <header className="border-b border-slate-100 pb-6 mb-8">
+              <span className="inline-block px-3 py-1 bg-red-50 text-red-600 text-[11px] font-extrabold uppercase tracking-wider rounded-md mb-3">
+                Tentang Perusahaan & Redaksi
+              </span>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                {title || 'TENTANG KAMI'}
+              </h1>
+              <p className="text-xs text-slate-400 mt-3 flex items-center gap-2">
+                <span>PojokTV.com</span>
+                <span>•</span>
+                <span>Jaringan Berita Nasional Terpercaya</span>
+              </p>
+            </header>
+
+            <div 
+              className="rich-text-content space-y-6 text-left md:text-justify text-slate-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: content || '' }}
+            />
+          </article>
+
         </div>
       </main>
     </Layout>
