@@ -15,8 +15,8 @@ export default function PedomanMedia({ content, title }) {
         <title>{title || 'Pedoman Pemberitaan Media Siber'} - PojokTV.com</title>
         <meta name="description" content="Pedoman pemberitaan media siber PojokTV.com sesuai dengan standar Dewan Pers Republik Indonesia." />
       </Head>
-      <main className="w-full bg-slate-50/50 py-8 sm:py-12 md:py-16 !break-normal !whitespace-normal !text-left">
-        <div className="container mx-auto max-w-4xl px-4 sm:px-6 md:px-8">
+      <main className="w-full bg-slate-50/50 py-8 sm:py-12 md:py-16">
+        <div className="max-w-4xl mx-auto w-full overflow-hidden px-4 sm:px-6 md:px-8">
           
           {/* Breadcrumb Navigation */}
           <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-6" aria-label="Breadcrumb">
@@ -28,7 +28,7 @@ export default function PedomanMedia({ content, title }) {
           </nav>
 
           {/* Article Container Card */}
-          <article className="px-6 py-8 md:px-12 md:py-10 bg-white rounded-lg shadow-sm border border-slate-200/80">
+          <div className="px-6 py-8 md:px-12 md:py-10 bg-white rounded-lg shadow-sm border border-slate-200/80">
             <header className="border-b border-slate-100 pb-6 mb-8">
               <span className="inline-block px-3 py-1 bg-red-50 text-red-600 text-[11px] font-extrabold uppercase tracking-wider rounded-md mb-3">
                 Standar Jurnalistik Dewan Pers
@@ -44,10 +44,10 @@ export default function PedomanMedia({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content text-base text-gray-700 leading-loose mb-5 text-left space-y-5"
+              className="rich-text-content text-gray-700 leading-relaxed mb-5 break-words whitespace-normal text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:break-words [&_p]:whitespace-normal [&_p]:text-left"
               dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
             />
-          </article>
+          </div>
 
         </div>
       </main>
