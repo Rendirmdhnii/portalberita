@@ -162,9 +162,23 @@ export default function AdIndex() {
       setZoom(1);
       setCropTarget(target);
 
-      if (target === 'desktop') setCropAspect(4.8 / 1);
-      else if (target === 'tablet') setCropAspect(4.27 / 1);
-      else if (target === 'mobile') setCropAspect(3.2 / 1);
+      const previewUrl = URL.createObjectURL(file);
+      if (target === 'desktop') {
+        setCropAspect(4.8 / 1);
+        if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
+        setDesktopFile(file);
+        setDesktopPreviewUrl(previewUrl);
+      } else if (target === 'tablet') {
+        setCropAspect(4.27 / 1);
+        if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
+        setTabletFile(file);
+        setTabletPreviewUrl(previewUrl);
+      } else if (target === 'mobile') {
+        setCropAspect(3.2 / 1);
+        if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
+        setMobileFile(file);
+        setMobilePreviewUrl(previewUrl);
+      }
 
       const reader = new FileReader();
       reader.addEventListener('load', () => {

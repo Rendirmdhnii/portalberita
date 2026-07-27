@@ -276,7 +276,7 @@ export default function Home({
       </Head>
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Hero) */}
-      {headerAd && headerAd.image && (
+      {headerAd && (
         <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
@@ -487,14 +487,14 @@ export default function Home({
 
 
               {/* Slot Iklan 2: Sidebar Kanan Atas */}
-              {sidebarTopAd && sidebarTopAd.image && (
+              {sidebarTopAd && (
                 <div className="w-full">
                   <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
                 </div>
               )}
 
               {/* Slot Iklan 3: Sidebar Kanan Bawah */}
-              {sidebarBottomAd && sidebarBottomAd.image && (
+              {sidebarBottomAd && (
                 <div className="w-full">
                   <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
                 </div>

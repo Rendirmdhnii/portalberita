@@ -1,20 +1,24 @@
 import React from 'react';
 
 export default function ResponsiveAd({
+  ad = null,
   linkTujuan = '',
-  image,
-  imageDesktop,
-  imageTablet,
-  imageMobile,
-  desktopImageUrl,
-  tabletImageUrl,
-  mobileImageUrl,
+  image = '',
+  imageDesktop = '',
+  imageTablet = '',
+  imageMobile = '',
+  desktopImageUrl = '',
+  tabletImageUrl = '',
+  mobileImageUrl = '',
   altText = 'Iklan PojokTV',
   className = '',
 }) {
-  const desktopUrl = desktopImageUrl || imageDesktop || image;
-  const tabletUrl = tabletImageUrl || imageTablet || desktopUrl || image;
-  const mobileUrl = mobileImageUrl || imageMobile || image;
+  const link = ad?.link || linkTujuan;
+  const alt = ad?.name || altText;
+
+  const desktopUrl = ad?.desktop_image_url || desktopImageUrl || imageDesktop || ad?.image || image;
+  const tabletUrl = ad?.tablet_image_url || tabletImageUrl || imageTablet || desktopUrl || ad?.image || image;
+  const mobileUrl = ad?.mobile_image_url || ad?.image_mobile_url || mobileImageUrl || imageMobile || ad?.image || image || tabletUrl || desktopUrl;
 
   const fallbackSrc = mobileUrl || tabletUrl || desktopUrl;
 
@@ -23,10 +27,10 @@ export default function ResponsiveAd({
   }
 
   const isValidUrl =
-    typeof linkTujuan === 'string' &&
-    linkTujuan.trim() !== '' &&
-    linkTujuan.trim() !== '#' &&
-    linkTujuan.trim() !== '-';
+    typeof link === 'string' &&
+    link.trim() !== '' &&
+    link.trim() !== '#' &&
+    link.trim() !== '-';
 
   const bannerContent = (
     <div className="w-full relative mx-auto rounded-lg overflow-hidden shadow-sm">
@@ -35,7 +39,7 @@ export default function ResponsiveAd({
         {tabletUrl && <source media="(min-width: 768px)" srcSet={tabletUrl} />}
         <img
           src={mobileUrl || fallbackSrc}
-          alt={altText}
+          alt={alt}
           className="w-full h-auto object-cover rounded-lg block mx-auto"
         />
       </picture>
@@ -45,7 +49,7 @@ export default function ResponsiveAd({
   if (isValidUrl) {
     return (
       <a
-        href={linkTujuan.trim()}
+        href={link.trim()}
         target="_blank"
         rel="noopener noreferrer"
         className={`block w-full max-w-[1200px] mx-auto text-center ${className}`}
@@ -61,4 +65,5 @@ export default function ResponsiveAd({
     </div>
   );
 }
+
 

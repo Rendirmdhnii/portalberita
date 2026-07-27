@@ -171,7 +171,7 @@ export default function KategoriPage() {
       </Head>
 
       {/* Pindahkan Slot Iklan Utama ke sini (Di bawah Breaking News dan di atas Kategori) */}
-      {headerAd && headerAd.image && (
+      {headerAd && (
         <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 

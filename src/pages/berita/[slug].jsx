@@ -255,7 +255,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       </Head>
 
       {/* Header Ad Slot */}
-      {headerAd && headerAd.image && (
+      {headerAd && (
         <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
@@ -311,7 +311,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                   />
 
                   {/* Iklan Tengah Konten (Tampil jika ada) */}
-                  {middleAd && middleAd.image && (
+                  {middleAd && (
                     <div className="my-6 w-full flex justify-center">
                       <AdSlot size="728x90" className="w-full h-auto" ad={middleAd} />
                     </div>

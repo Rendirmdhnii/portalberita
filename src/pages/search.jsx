@@ -162,7 +162,7 @@ export default function SearchPage() {
       <BreakingNews />
 
       {/* Header Ad */}
-      {headerAd && headerAd.image && (
+      {headerAd && (
         <div className="w-full max-w-7xl mx-auto mt-4 mb-2 px-2 md:px-4 flex justify-center">
           <AdSlot 
             size="970x90" 
@@ -271,14 +271,14 @@ export default function SearchPage() {
             <aside className="sidebar-wrapper">
               <div className="sidebar-sticky gap-6 flex flex-col">
                 {/* Slot Iklan 2 */}
-                {sidebarTopAd && sidebarTopAd.image && (
+                {sidebarTopAd && (
                   <div className="w-full">
                     <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
                   </div>
                 )}
 
                 {/* Slot Iklan 3 */}
-                {sidebarBottomAd && sidebarBottomAd.image && (
+                {sidebarBottomAd && (
                   <div className="w-full">
                     <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
                   </div>
@@ -290,7 +290,7 @@ export default function SearchPage() {
       </main>
 
       {/* Footer Ad */}
-      {footerAd && footerAd.image && (
+      {footerAd && (
         <div className="max-w-7xl mx-auto px-4 my-8 w-full flex justify-center">
           <AdSlot size="970x250" className="w-full" ad={footerAd} />
         </div>
