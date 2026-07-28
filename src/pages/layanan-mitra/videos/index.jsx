@@ -326,7 +326,7 @@ export default function VideoIndex() {
                 {paginated.map(video => (
                   <div key={video.id} className="p-4 flex gap-3 items-start">
                     <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                      alt={video.judul} className="w-20 h-14 object-cover rounded-lg border border-gray-200 shrink-0" />
+                      alt={video.judul} loading="lazy" className="w-20 h-14 object-cover rounded-lg border border-gray-200 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-gray-900 text-sm line-clamp-2">{video.judul}</p>
                       <p className="text-xs text-gray-500 font-mono mt-0.5">{video.youtube_id}</p>
@@ -355,7 +355,7 @@ export default function VideoIndex() {
                       <tr key={video.id} className="hover:bg-blue-50 transition-colors">
                         <td className="px-6 py-3">
                           <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                            alt={video.judul} className="h-10 w-20 object-cover rounded-md border border-gray-200" />
+                            alt={video.judul} loading="lazy" className="h-10 w-20 object-cover rounded-md border border-gray-200" />
                         </td>
                         <td className="px-6 py-3 font-bold text-gray-900 max-w-xs">
                           <p className="line-clamp-2">{video.judul}</p>

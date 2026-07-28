@@ -40,6 +40,7 @@ export default function ResponsiveAd({
         <img
           src={mobileUrl || fallbackSrc}
           alt={alt}
+          loading="lazy"
           className="w-full h-auto object-cover rounded-lg block mx-auto"
         />
       </picture>

@@ -239,7 +239,7 @@ export default function SearchPage() {
                     <article key={post.id} className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition duration-200">
                       <div className="w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden bg-slate-900">
                         {getThumbnail(post) ? (
-                          <img src={getThumbnail(post)} alt={post.title} className="w-full h-full object-cover" />
+                          <img src={getThumbnail(post)} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
                         ) : (
                           <div className="flex items-center justify-center text-slate-655 font-bold text-sm w-full h-full">
                             No Image

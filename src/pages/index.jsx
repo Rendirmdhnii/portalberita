@@ -370,7 +370,7 @@ export default function Home({
                       {sideHeadlines.map((berita) => (
                         <div key={berita.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                           <div className="relative w-full h-40 md:h-44 bg-gray-200">
-                            <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="absolute inset-0 w-full h-full object-cover" />
+                            <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                           </div>
                           <div className="p-4">
                             <span className="inline-block px-2 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded mb-2">{berita.category || berita.kategori || berita.rubrik}</span>
@@ -422,7 +422,7 @@ export default function Home({
                     <article key={post.id} className="latest-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition duration-200">
                       <div className="latest-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
-                          <img src={getThumbnail(post)} alt={post.title} className="latest-img w-full h-full object-cover" />
+                          <img src={getThumbnail(post)} alt={post.title} loading="lazy" className="latest-img w-full h-full object-cover" />
                         ) : (
                           <div className="latest-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
                             No Image
@@ -520,7 +520,7 @@ export default function Home({
                     <div>
                       <div className="politik-img-wrapper aspect-video relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
-                          <img src={getThumbnail(post)} alt={post.title} className="politik-img w-full h-full object-cover" />
+                          <img src={getThumbnail(post)} alt={post.title} loading="lazy" className="politik-img w-full h-full object-cover" />
                         ) : (
                           <div className="politik-img bg-slate-900 flex items-center justify-center text-slate-655 w-full h-full text-xs font-bold">
                             No Image
@@ -603,6 +603,7 @@ export default function Home({
                         <img
                           src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
                           alt={video.judul}
+                          loading="lazy"
                           className="video-thumb-img-new w-full h-full object-cover"
                         />
                         <div className="video-play-center-btn absolute inset-0 flex items-center justify-center bg-black/40 text-white opacity-90 hover:opacity-100 hover:scale-110 transition-all">
@@ -654,7 +655,7 @@ export default function Home({
               {sorotanNews.map((berita) => (
                 <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="w-full bg-gray-200">
-                     <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} className="w-full aspect-[16/9] object-cover object-center" />
+                     <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} loading="lazy" className="w-full aspect-[16/9] object-cover object-center" />
                   </div>
                   <div className="p-3 md:p-4">
                      <span className="text-xs font-bold text-red-600 uppercase">{berita.category || berita.kategori}</span>
