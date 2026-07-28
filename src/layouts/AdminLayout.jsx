@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
-import { Radar } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
@@ -43,7 +42,6 @@ export default function AdminLayout({ children }) {
     if (pathname.includes('iklan')) return 'Panel Admin / Kelola Iklan';
     if (pathname.includes('videos')) return 'Panel Admin / Kelola Video';
     if (pathname.includes('halaman-statis')) return 'Panel Admin / Kelola Halaman Statis';
-    if (pathname.includes('visitor-logs')) return 'Panel Admin / Pantauan Lalu Lintas';
     return 'Panel Admin';
   };
 
@@ -97,9 +95,6 @@ export default function AdminLayout({ children }) {
           </Link>
           <Link href="/layanan-mitra/halaman-statis" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
             <i className="fa-solid fa-file-lines w-5"></i> Kelola Halaman Statis
-          </Link>
-          <Link href="/layanan-mitra/visitor-logs" className="flex items-center gap-3 text-gray-200 hover:text-white hover:bg-gray-800 px-4 py-3 rounded-lg text-base font-medium transition-colors">
-            <Radar className="w-5 h-5 text-emerald-400 animate-pulse shrink-0" /> Intelijen
           </Link>
         </nav>
 
