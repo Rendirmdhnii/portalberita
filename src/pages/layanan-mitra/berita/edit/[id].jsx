@@ -7,6 +7,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
 import imageCompression from 'browser-image-compression';
+import { compressImage, deleteStorageFiles } from '@/lib/imageCompressor';
 import PinAuthModal from '@/components/admin/PinAuthModal';
 
 // Safely load ReactQuill client-side only
@@ -280,13 +281,14 @@ export default function BeritaEdit() {
             const file = input.files[0];
             if (file) {
               try {
-                const fileExt = file.name.split('.').pop();
+                const compressedFile = await compressImage(file, 0.2);
+                const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
                 const fileName = `${Date.now()}_editor_${Math.random().toString(36).substring(2)}.${fileExt}`;
                 const filePath = `berita/editor/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                   .from('images')
-                  .upload(filePath, file);
+                  .upload(filePath, compressedFile);
 
                 if (uploadError) throw new Error('Gagal upload gambar ke editor: ' + uploadError.message);
 
@@ -327,16 +329,8 @@ export default function BeritaEdit() {
 
       // 1. Upload new thumbnail if selected with compression
       if (newThumbnailFile) {
-        const options = {
-          maxSizeMB: 0.2, // Kompres agresif agar selalu di bawah limit WA
-          maxWidthOrHeight: 1200,
-          useWebWorker: true,
-          fileType: 'image/jpeg', // KONVERSI KE JPEG
-          initialQuality: 0.8
-        };
-        
         try {
-          const compressedFile = await imageCompression(newThumbnailFile, options);
+          const compressedFile = await compressImage(newThumbnailFile, 0.2);
           
           const fileExt = 'jpg';
           const fileName = `${Date.now()}_thumb_${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -351,6 +345,11 @@ export default function BeritaEdit() {
           const { data: { publicUrl } } = supabase.storage
             .from('images')
             .getPublicUrl(filePath);
+
+          // Hapus thumbnail lama dari storage jika diganti
+          if (existingThumbnail && existingThumbnail !== publicUrl) {
+            await deleteStorageFiles(existingThumbnail, 'images');
+          }
 
           finalThumbnailUrl = publicUrl;
         } catch (err) {
@@ -368,16 +367,17 @@ export default function BeritaEdit() {
 
       let finalGalleryUrls = [...existingGallery];
 
-      // 2. Upload new gallery files if any
+      // 2. Upload new gallery files if any with compression
       if (newGalleryFiles.length > 0) {
         for (const file of newGalleryFiles) {
-          const fileExt = file.name.split('.').pop();
+          const compressedFile = await compressImage(file, 0.2);
+          const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
           const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `berita/${fileName}`;
 
           const { error: uploadError } = await supabase.storage
             .from('images')
-            .upload(filePath, file);
+            .upload(filePath, compressedFile);
 
           if (uploadError) throw new Error('Gagal mengunggah gambar pendukung baru: ' + uploadError.message);
 

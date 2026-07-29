@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import { deleteStorageFiles } from '@/lib/imageCompressor';
 import PinAuthModal from '@/components/admin/PinAuthModal';
 
 const ITEMS_PER_PAGE = 10;
@@ -86,9 +87,40 @@ export default function BeritaIndex() {
   const handleDelete = async (id) => {
     if (confirm('Yakin mau hapus berita ini? Tidak bisa dikembalikan lho!')) {
       try {
+        const targetPost = posts.find(p => p.id === id);
+        if (targetPost) {
+          const filesToDelete = [];
+
+          if (targetPost.gambar_utama) filesToDelete.push(targetPost.gambar_utama);
+          if (targetPost.image) filesToDelete.push(targetPost.image);
+          if (targetPost.gambar) filesToDelete.push(targetPost.gambar);
+
+          if (targetPost.images) {
+            try {
+              const parsedImages = typeof targetPost.images === 'string' ? JSON.parse(targetPost.images) : targetPost.images;
+              if (Array.isArray(parsedImages)) {
+                filesToDelete.push(...parsedImages);
+              }
+            } catch (e) {
+              if (typeof targetPost.images === 'string') filesToDelete.push(targetPost.images);
+            }
+          }
+
+          const contentHtml = targetPost.content || targetPost.isi || '';
+          const embeddedImages = [...contentHtml.matchAll(/<img[^>]+src=["']([^"']+)["']/gi)].map(m => m[1]);
+          if (embeddedImages.length > 0) {
+            filesToDelete.push(...embeddedImages);
+          }
+
+          if (filesToDelete.length > 0) {
+            await deleteStorageFiles(filesToDelete, 'images');
+          }
+        }
+
         const { error } = await supabase.from('berita').delete().eq('id', id);
         if (error) throw error;
-        setMessage('✅ Mantap! Berita berhasil dihapus secara permanen.');
+
+        setMessage('✅ Mantap! Berita dan seluruh file fisiknya berhasil dihapus secara permanen.');
         fetchPosts();
         setTimeout(() => setMessage(''), 4000);
       } catch (err) {

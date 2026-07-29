@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/layouts/AdminLayout';
 import { supabase } from '@/lib/supabase';
+import { compressImage, deleteStorageFiles } from '@/lib/imageCompressor';
 import PinAuthModal from '@/components/admin/PinAuthModal';
 import ResponsiveAd from '@/components/ResponsiveAd';
 import Cropper from 'react-easy-crop';
@@ -337,30 +338,33 @@ export default function AdIndex() {
 
       if (isSpanduk) {
         if (desktopFile) {
-          const fileExt = desktopFile.name.split('.').pop();
+          const compressedFile = await compressImage(desktopFile, 0.2);
+          const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
           const fileName = `desktop_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `ads/${fileName}`;
-          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, compressedFile);
           if (uploadErr) throw new Error('Gagal mengunggah banner desktop: ' + uploadErr.message);
           const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
           uploadedDesktopUrl = publicUrl;
         }
 
         if (tabletFile) {
-          const fileExt = tabletFile.name.split('.').pop();
+          const compressedFile = await compressImage(tabletFile, 0.2);
+          const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
           const fileName = `tablet_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `ads/${fileName}`;
-          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, tabletFile);
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, compressedFile);
           if (uploadErr) throw new Error('Gagal mengunggah banner tablet: ' + uploadErr.message);
           const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
           uploadedTabletUrl = publicUrl;
         }
 
         if (mobileFile) {
-          const fileExt = mobileFile.name.split('.').pop();
+          const compressedFile = await compressImage(mobileFile, 0.2);
+          const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
           const fileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `ads/${fileName}`;
-          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, mobileFile);
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, compressedFile);
           if (uploadErr) throw new Error('Gagal mengunggah banner mobile: ' + uploadErr.message);
           const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
           uploadedMobileUrl = publicUrl;
@@ -373,10 +377,11 @@ export default function AdIndex() {
         }
       } else {
         if (desktopFile) {
-          const fileExt = desktopFile.name.split('.').pop();
+          const compressedFile = await compressImage(desktopFile, 0.2);
+          const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
           const fileName = `banner_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
           const filePath = `ads/${fileName}`;
-          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, compressedFile);
           if (uploadErr) throw new Error('Gagal mengunggah banner: ' + uploadErr.message);
           const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
           uploadedDesktopUrl = publicUrl;
@@ -425,10 +430,26 @@ export default function AdIndex() {
   };
 
   const handleDelete = async (id) => {
+    if (!confirm('Yakin ingin menghapus iklan ini secara permanen?')) return;
     try {
+      const targetAd = ads.find(a => a.id === id);
+      if (targetAd) {
+        const filesToDelete = [
+          targetAd.desktop_image_url,
+          targetAd.tablet_image_url,
+          targetAd.mobile_image_url,
+          targetAd.image,
+          targetAd.image_mobile_url,
+        ].filter(Boolean);
+
+        if (filesToDelete.length > 0) {
+          await deleteStorageFiles(filesToDelete, 'images');
+        }
+      }
+
       const { error: deleteErr } = await supabase.from('ads').delete().eq('id', id);
       if (deleteErr) throw deleteErr;
-      setMessage('Iklan berhasil dihapus.');
+      setMessage('Iklan dan seluruh berkas fisiknya berhasil dihapus secara permanen.');
       fetchAds();
       setTimeout(() => setMessage(''), 4000);
     } catch (err) { alert('Gagal menghapus iklan: ' + err.message); }

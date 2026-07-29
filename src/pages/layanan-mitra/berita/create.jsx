@@ -7,6 +7,7 @@ import AdminLayout from '@/layouts/AdminLayout';
 import NewsGallery from '@/components/NewsGallery';
 import { supabase } from '@/lib/supabase';
 import imageCompression from 'browser-image-compression';
+import { compressImage } from '@/lib/imageCompressor';
 import PinAuthModal from '@/components/admin/PinAuthModal';
 
 // Safely load ReactQuill client-side only
@@ -205,13 +206,14 @@ export default function BeritaCreate() {
             const file = input.files[0];
             if (file) {
               try {
-                const fileExt = file.name.split('.').pop();
+                const compressedFile = await compressImage(file, 0.2);
+                const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
                 const fileName = `${Date.now()}_editor_${Math.random().toString(36).substring(2)}.${fileExt}`;
                 const filePath = `berita/editor/${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                   .from('images')
-                  .upload(filePath, file);
+                  .upload(filePath, compressedFile);
 
                 if (uploadError) throw new Error('Gagal upload gambar ke editor: ' + uploadError.message);
 
@@ -296,15 +298,16 @@ export default function BeritaCreate() {
         imageUrls.push(finalImageUrl);
       }
 
-      // 2. Upload gallery images if any
+      // 2. Upload gallery images if any with compression
       for (const file of imageFiles) {
-        const fileExt = file.name.split('.').pop();
+        const compressedFile = await compressImage(file, 0.2);
+        const fileExt = compressedFile.name ? compressedFile.name.split('.').pop() : 'jpg';
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `berita/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('images')
-          .upload(filePath, file);
+          .upload(filePath, compressedFile);
 
         if (uploadError) throw new Error('Gagal mengunggah gambar pendukung: ' + uploadError.message);
 
