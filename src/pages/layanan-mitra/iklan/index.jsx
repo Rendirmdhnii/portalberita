@@ -448,7 +448,7 @@ export default function AdIndex() {
     const suffix = isModal ? '-modal' : '';
     return (
       <div className="space-y-4 pt-2 border-t border-gray-100">
-        {/* Helper Text Warna Merah Dinamis berdasarkan Posisi */}
+        {/* Helper Text Warna Dinamis berdasarkan Posisi (KONDISI A, B, C) */}
         {isSpanduk && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
             <span className="shrink-0">⚠️</span>
@@ -459,7 +459,7 @@ export default function AdIndex() {
         )}
 
         {isKotak && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-xs font-bold leading-relaxed flex items-start gap-2">
             <span className="shrink-0">⚠️</span>
             <span>
               <strong>ATURAN KOTAK:</strong> Posisi ini hanya menerima desain rasio 1:1 (Bujur Sangkar).
@@ -468,7 +468,7 @@ export default function AdIndex() {
         )}
 
         {isVertikal && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
+          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-xs font-bold leading-relaxed flex items-start gap-2">
             <span className="shrink-0">⚠️</span>
             <span>
               <strong>ATURAN VERTIKAL:</strong> Khusus untuk desain potret/berdiri. Jangan memanjang ke samping.
@@ -477,8 +477,7 @@ export default function AdIndex() {
         )}
 
         <p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-          <i className="fa-solid fa-layer-group text-red-600"></i>
-          {isSpanduk ? '3 File Banner Responsif (Wajib Upload)' : '1 File Banner Upload'}
+          {isSpanduk ? '📚 3 FILE BANNER RESPONSIF (WAJIB UPLOAD)' : '🖼️ 1 FILE BANNER (WAJIB UPLOAD)'}
         </p>
 
         {isSpanduk ? (
@@ -486,7 +485,7 @@ export default function AdIndex() {
             {/* Input 1: Banner Desktop */}
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                Upload Banner Desktop <span className="text-gray-500 font-normal">(Desktop (1440x300 px))</span> *
+                Upload Banner Desktop (Desktop (1440x300 px)) *
               </label>
               <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
@@ -506,7 +505,7 @@ export default function AdIndex() {
             {/* Input 2: Banner Tablet */}
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                Upload Banner Tablet <span className="text-gray-500 font-normal">(Tablet (768x180 px))</span> *
+                Upload Banner Tablet (Tablet (768x180 px)) *
               </label>
               <input id={`ad-tablet-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'tablet')}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !tabletPreviewUrl} />
@@ -526,7 +525,7 @@ export default function AdIndex() {
             {/* Input 3: Banner Mobile */}
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                Upload Banner Mobile <span className="text-gray-500 font-normal">(Mobile (640x200 px))</span> *
+                Upload Banner Mobile (Mobile (640x200 px)) *
               </label>
               <input id={`ad-mobile-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'mobile')}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !mobilePreviewUrl} />
@@ -547,7 +546,7 @@ export default function AdIndex() {
           /* Single Input untuk Kotak / Vertikal */
           <div>
             <label className="block text-xs font-bold text-gray-800 mb-1">
-              Upload Gambar Banner <span className="text-gray-500 font-normal">({isKotak ? 'Rekomendasi 300x300 px' : 'Rekomendasi 300x600 px'})</span> *
+              {isKotak ? 'Upload Banner Kotak (Rekomendasi 300x300 px) *' : 'Upload Banner Vertikal (Rekomendasi 300x600 px) *'}
             </label>
             <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
