@@ -124,6 +124,19 @@ export default function AdIndex() {
     return labels[pos] || pos;
   };
 
+  // Helper flags untuk logika state & UI dinamis berdasarkan Posisi Iklan
+  const isSpanduk =
+    position === 'Header' ||
+    position === 'Tengah Konten' ||
+    position === 'Footer' ||
+    position === 'header' ||
+    positionLabel(position).toLowerCase().includes('spanduk') ||
+    position.toLowerCase().includes('tengah');
+
+  const isKotak = position === 'Sidebar Atas' || position === 'sidebar' || positionLabel(position).includes('Kotak');
+
+  const isVertikal = position === 'Sidebar Bawah' || positionLabel(position).includes('Memanjang ke Bawah');
+
   const positionBadgeColor = (pos) => {
     if (pos?.includes('Header') || pos === 'header') return 'bg-purple-100 text-purple-800 border-purple-300';
     if (pos?.includes('Sidebar')) return 'bg-blue-100 text-blue-800 border-blue-300';
@@ -157,43 +170,71 @@ export default function AdIndex() {
   const handleBannerFileChange = (e, target) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setOriginalFileName(file.name);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setCropTarget(target);
-
       const previewUrl = URL.createObjectURL(file);
-      if (target === 'desktop') {
-        setCropAspect(4.8 / 1);
-        if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
-        setDesktopFile(file);
-        setDesktopPreviewUrl(previewUrl);
-      } else if (target === 'tablet') {
-        setCropAspect(4.27 / 1);
-        if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
-        setTabletFile(file);
-        setTabletPreviewUrl(previewUrl);
-      } else if (target === 'mobile') {
-        setCropAspect(3.2 / 1);
-        if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
-        setMobileFile(file);
-        setMobilePreviewUrl(previewUrl);
-      }
+      const img = new Image();
+      img.src = previewUrl;
 
-      const reader = new FileReader();
-      reader.addEventListener('load', () => {
-        setCropImageSrc(reader.result);
-        setIsCropModalOpen(true);
-      });
-      reader.readAsDataURL(file);
+      img.onload = () => {
+        // Validasi JS: Jika Spanduk tapi gambarnya kotak (1:1)
+        if (isSpanduk && img.width === img.height) {
+          alert('Dimensi tidak sesuai! Spanduk wajib menggunakan gambar memanjang (Landscape).');
+        }
+
+        setOriginalFileName(file.name);
+        setCrop({ x: 0, y: 0 });
+        setZoom(1);
+        setCropTarget(target);
+
+        if (isSpanduk) {
+          if (target === 'desktop') {
+            setCropAspect(4.8 / 1);
+            if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
+            setDesktopFile(file);
+            setDesktopPreviewUrl(previewUrl);
+          } else if (target === 'tablet') {
+            setCropAspect(4.27 / 1);
+            if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
+            setTabletFile(file);
+            setTabletPreviewUrl(previewUrl);
+          } else if (target === 'mobile') {
+            setCropAspect(3.2 / 1);
+            if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
+            setMobileFile(file);
+            setMobilePreviewUrl(previewUrl);
+          }
+        } else {
+          // Kotak (1:1) atau Vertikal (300x600 = 0.5)
+          const defaultAspect = isKotak ? 1 : 300 / 600;
+          setCropAspect(defaultAspect);
+          if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
+          setDesktopFile(file);
+          setDesktopPreviewUrl(previewUrl);
+          setTabletFile(file);
+          setTabletPreviewUrl(previewUrl);
+          setMobileFile(file);
+          setMobilePreviewUrl(previewUrl);
+        }
+
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          setCropImageSrc(reader.result);
+          setIsCropModalOpen(true);
+        });
+        reader.readAsDataURL(file);
+      };
     }
   };
 
   const handleReCropTarget = (target) => {
     let url = '';
-    if (target === 'desktop') { url = desktopPreviewUrl; setCropAspect(4.8 / 1); }
-    else if (target === 'tablet') { url = tabletPreviewUrl; setCropAspect(4.27 / 1); }
-    else if (target === 'mobile') { url = mobilePreviewUrl; setCropAspect(3.2 / 1); }
+    if (isSpanduk) {
+      if (target === 'desktop') { url = desktopPreviewUrl; setCropAspect(4.8 / 1); }
+      else if (target === 'tablet') { url = tabletPreviewUrl; setCropAspect(4.27 / 1); }
+      else if (target === 'mobile') { url = mobilePreviewUrl; setCropAspect(3.2 / 1); }
+    } else {
+      url = desktopPreviewUrl;
+      setCropAspect(isKotak ? 1 : 300 / 600);
+    }
 
     if (!url) return;
     setCrop({ x: 0, y: 0 });
@@ -216,16 +257,26 @@ export default function AdIndex() {
       const file = new File([croppedBlob], `ad_${cropTarget}_${Date.now()}.${fileExt}`, { type: croppedBlob.type || 'image/jpeg' });
       const newUrl = URL.createObjectURL(croppedBlob);
 
-      if (cropTarget === 'desktop') {
+      if (isSpanduk) {
+        if (cropTarget === 'desktop') {
+          if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
+          setDesktopFile(file);
+          setDesktopPreviewUrl(newUrl);
+        } else if (cropTarget === 'tablet') {
+          if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
+          setTabletFile(file);
+          setTabletPreviewUrl(newUrl);
+        } else if (cropTarget === 'mobile') {
+          if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
+          setMobileFile(file);
+          setMobilePreviewUrl(newUrl);
+        }
+      } else {
         if (desktopPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(desktopPreviewUrl);
         setDesktopFile(file);
         setDesktopPreviewUrl(newUrl);
-      } else if (cropTarget === 'tablet') {
-        if (tabletPreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(tabletPreviewUrl);
         setTabletFile(file);
         setTabletPreviewUrl(newUrl);
-      } else if (cropTarget === 'mobile') {
-        if (mobilePreviewUrl?.startsWith('blob:')) URL.revokeObjectURL(mobilePreviewUrl);
         setMobileFile(file);
         setMobilePreviewUrl(newUrl);
       }
@@ -284,39 +335,60 @@ export default function AdIndex() {
       let uploadedTabletUrl = tabletPreviewUrl;
       let uploadedMobileUrl = mobilePreviewUrl;
 
-      if (desktopFile) {
-        const fileExt = desktopFile.name.split('.').pop();
-        const fileName = `desktop_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `ads/${fileName}`;
-        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
-        if (uploadErr) throw new Error('Gagal mengunggah banner desktop: ' + uploadErr.message);
-        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-        uploadedDesktopUrl = publicUrl;
-      }
+      if (isSpanduk) {
+        if (desktopFile) {
+          const fileExt = desktopFile.name.split('.').pop();
+          const fileName = `desktop_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `ads/${fileName}`;
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
+          if (uploadErr) throw new Error('Gagal mengunggah banner desktop: ' + uploadErr.message);
+          const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+          uploadedDesktopUrl = publicUrl;
+        }
 
-      if (tabletFile) {
-        const fileExt = tabletFile.name.split('.').pop();
-        const fileName = `tablet_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `ads/${fileName}`;
-        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, tabletFile);
-        if (uploadErr) throw new Error('Gagal mengunggah banner tablet: ' + uploadErr.message);
-        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-        uploadedTabletUrl = publicUrl;
-      }
+        if (tabletFile) {
+          const fileExt = tabletFile.name.split('.').pop();
+          const fileName = `tablet_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `ads/${fileName}`;
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, tabletFile);
+          if (uploadErr) throw new Error('Gagal mengunggah banner tablet: ' + uploadErr.message);
+          const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+          uploadedTabletUrl = publicUrl;
+        }
 
-      if (mobileFile) {
-        const fileExt = mobileFile.name.split('.').pop();
-        const fileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `ads/${fileName}`;
-        const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, mobileFile);
-        if (uploadErr) throw new Error('Gagal mengunggah banner mobile: ' + uploadErr.message);
-        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
-        uploadedMobileUrl = publicUrl;
-      }
+        if (mobileFile) {
+          const fileExt = mobileFile.name.split('.').pop();
+          const fileName = `mobile_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `ads/${fileName}`;
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, mobileFile);
+          if (uploadErr) throw new Error('Gagal mengunggah banner mobile: ' + uploadErr.message);
+          const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+          uploadedMobileUrl = publicUrl;
+        }
 
-      if (!editingId) {
-        if (!uploadedDesktopUrl || !uploadedTabletUrl || !uploadedMobileUrl) {
-          throw new Error('Semua 3 file banner (Desktop, Tablet, Mobile) wajib diunggah!');
+        if (!editingId) {
+          if (!uploadedDesktopUrl || !uploadedTabletUrl || !uploadedMobileUrl) {
+            throw new Error('Semua 3 file banner (Desktop, Tablet, Mobile) wajib diunggah!');
+          }
+        }
+      } else {
+        if (desktopFile) {
+          const fileExt = desktopFile.name.split('.').pop();
+          const fileName = `banner_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `ads/${fileName}`;
+          const { error: uploadErr } = await supabase.storage.from('images').upload(filePath, desktopFile);
+          if (uploadErr) throw new Error('Gagal mengunggah banner: ' + uploadErr.message);
+          const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(filePath);
+          uploadedDesktopUrl = publicUrl;
+          uploadedTabletUrl = publicUrl;
+          uploadedMobileUrl = publicUrl;
+        } else {
+          uploadedTabletUrl = uploadedDesktopUrl;
+          uploadedMobileUrl = uploadedDesktopUrl;
+        }
+
+        if (!editingId && !uploadedDesktopUrl) {
+          throw new Error('File banner wajib diunggah!');
         }
       }
 
@@ -340,7 +412,7 @@ export default function AdIndex() {
       } else {
         const { error: insertError } = await supabase.from('ads').insert([payload]);
         if (insertError) throw insertError;
-        setMessage('Iklan 3 banner responsif berhasil ditayangkan.');
+        setMessage('Iklan berhasil ditayangkan.');
       }
 
       resetForm();
@@ -376,70 +448,122 @@ export default function AdIndex() {
     const suffix = isModal ? '-modal' : '';
     return (
       <div className="space-y-4 pt-2 border-t border-gray-100">
+        {/* Helper Text Warna Merah Dinamis berdasarkan Posisi */}
+        {isSpanduk && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
+            <span className="shrink-0">⚠️</span>
+            <span>
+              <strong>ATURAN SPANDUK:</strong> Desain WAJIB berbentuk memanjang (Landscape) rasio 4.8:1. JANGAN upload gambar kotak! Klik tombol Bebas/Free pada saat crop jika diperlukan.
+            </span>
+          </div>
+        )}
+
+        {isKotak && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
+            <span className="shrink-0">⚠️</span>
+            <span>
+              <strong>ATURAN KOTAK:</strong> Posisi ini hanya menerima desain rasio 1:1 (Bujur Sangkar).
+            </span>
+          </div>
+        )}
+
+        {isVertikal && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-xs font-bold leading-relaxed flex items-start gap-2">
+            <span className="shrink-0">⚠️</span>
+            <span>
+              <strong>ATURAN VERTIKAL:</strong> Khusus untuk desain potret/berdiri. Jangan memanjang ke samping.
+            </span>
+          </div>
+        )}
+
         <p className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
           <i className="fa-solid fa-layer-group text-red-600"></i>
-          3 File Banner Responsif (Wajib Upload)
+          {isSpanduk ? '3 File Banner Responsif (Wajib Upload)' : '1 File Banner Upload'}
         </p>
 
-        {/* Input 1: Banner Desktop */}
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">
-            Upload Banner Desktop <span className="text-gray-500 font-normal">(Rekomendasi: 1440x300 px | Rasio 4.8:1)</span> *
-          </label>
-          <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
-          {desktopPreviewUrl && (
-            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
-              <div className="flex items-center gap-2">
-                <img src={desktopPreviewUrl} alt="Desktop" className="h-8 w-20 object-contain rounded border bg-white" />
-                <span className="text-[11px] text-green-700 font-bold">✓ Banner Desktop Siap</span>
-              </div>
-              <button type="button" onClick={() => handleReCropTarget('desktop')} className="text-[11px] text-blue-700 hover:underline font-bold">
-                Potong Lagi
-              </button>
+        {isSpanduk ? (
+          <>
+            {/* Input 1: Banner Desktop */}
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1">
+                Upload Banner Desktop <span className="text-gray-500 font-normal">(Desktop (1440x300 px))</span> *
+              </label>
+              <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
+              {desktopPreviewUrl && (
+                <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <img src={desktopPreviewUrl} alt="Desktop" className="h-8 w-20 object-contain rounded border bg-white" />
+                    <span className="text-[11px] text-green-700 font-bold">✓ Banner Desktop Siap</span>
+                  </div>
+                  <button type="button" onClick={() => handleReCropTarget('desktop')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                    Potong Lagi
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Input 2: Banner Tablet */}
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">
-            Upload Banner Tablet <span className="text-gray-500 font-normal">(Rekomendasi: 768x180 px | Rasio 4.27:1)</span> *
-          </label>
-          <input id={`ad-tablet-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'tablet')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !tabletPreviewUrl} />
-          {tabletPreviewUrl && (
-            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
-              <div className="flex items-center gap-2">
-                <img src={tabletPreviewUrl} alt="Tablet" className="h-8 w-20 object-contain rounded border bg-white" />
-                <span className="text-[11px] text-green-700 font-bold">✓ Banner Tablet Siap</span>
-              </div>
-              <button type="button" onClick={() => handleReCropTarget('tablet')} className="text-[11px] text-blue-700 hover:underline font-bold">
-                Potong Lagi
-              </button>
+            {/* Input 2: Banner Tablet */}
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1">
+                Upload Banner Tablet <span className="text-gray-500 font-normal">(Tablet (768x180 px))</span> *
+              </label>
+              <input id={`ad-tablet-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'tablet')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !tabletPreviewUrl} />
+              {tabletPreviewUrl && (
+                <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <img src={tabletPreviewUrl} alt="Tablet" className="h-8 w-20 object-contain rounded border bg-white" />
+                    <span className="text-[11px] text-green-700 font-bold">✓ Banner Tablet Siap</span>
+                  </div>
+                  <button type="button" onClick={() => handleReCropTarget('tablet')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                    Potong Lagi
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Input 3: Banner Mobile */}
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">
-            Upload Banner Mobile <span className="text-gray-500 font-normal">(Rekomendasi: 640x200 px | Rasio 3.2:1)</span> *
-          </label>
-          <input id={`ad-mobile-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'mobile')}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !mobilePreviewUrl} />
-          {mobilePreviewUrl && (
-            <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
-              <div className="flex items-center gap-2">
-                <img src={mobilePreviewUrl} alt="Mobile" className="h-8 w-16 object-contain rounded border bg-white" />
-                <span className="text-[11px] text-green-700 font-bold">✓ Banner Mobile Siap</span>
-              </div>
-              <button type="button" onClick={() => handleReCropTarget('mobile')} className="text-[11px] text-blue-700 hover:underline font-bold">
-                Potong Lagi
-              </button>
+            {/* Input 3: Banner Mobile */}
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1">
+                Upload Banner Mobile <span className="text-gray-500 font-normal">(Mobile (640x200 px))</span> *
+              </label>
+              <input id={`ad-mobile-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'mobile')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !mobilePreviewUrl} />
+              {mobilePreviewUrl && (
+                <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <img src={mobilePreviewUrl} alt="Mobile" className="h-8 w-16 object-contain rounded border bg-white" />
+                    <span className="text-[11px] text-green-700 font-bold">✓ Banner Mobile Siap</span>
+                  </div>
+                  <button type="button" onClick={() => handleReCropTarget('mobile')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                    Potong Lagi
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        ) : (
+          /* Single Input untuk Kotak / Vertikal */
+          <div>
+            <label className="block text-xs font-bold text-gray-800 mb-1">
+              Upload Gambar Banner <span className="text-gray-500 font-normal">({isKotak ? 'Rekomendasi 300x300 px' : 'Rekomendasi 300x600 px'})</span> *
+            </label>
+            <input id={`ad-desktop-input${suffix}`} type="file" accept="image/*" onChange={(e) => handleBannerFileChange(e, 'desktop')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs focus:outline-none bg-white" required={!editingId && !desktopPreviewUrl} />
+            {desktopPreviewUrl && (
+              <div className="mt-1.5 flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <img src={desktopPreviewUrl} alt="Banner" className="h-12 w-12 object-contain rounded border bg-white" />
+                  <span className="text-[11px] text-green-700 font-bold">✓ Banner Gambar Siap</span>
+                </div>
+                <button type="button" onClick={() => handleReCropTarget('desktop')} className="text-[11px] text-blue-700 hover:underline font-bold">
+                  Potong Lagi
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
@@ -649,11 +773,11 @@ export default function AdIndex() {
               <label className="block text-sm font-bold text-gray-800 mb-1">Posisi Iklan</label>
               <select value={position} onChange={e => setPosition(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-400" required>
-                 <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
-                 <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
-                 <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
-                 <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah)</option>
-                 <option value="Footer">Spanduk Paling Bawah Website</option>
+                <option value="Header">Spanduk Paling Atas (Di Bawah Logo)</option>
+                <option value="Tengah Konten">Menyelip di Tengah Daftar Berita</option>
+                <option value="Sidebar Atas">Samping Kanan (Bentuk Kotak)</option>
+                <option value="Sidebar Bawah">Samping Kanan (Memanjang ke Bawah)</option>
+                <option value="Footer">Spanduk Paling Bawah Website</option>
               </select>
             </div>
             <div>
@@ -808,9 +932,9 @@ export default function AdIndex() {
         )}
       </div>
 
-      <PinAuthModal 
-        isOpen={isPinModalOpen} 
-        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }} 
+      <PinAuthModal
+        isOpen={isPinModalOpen}
+        onClose={() => { setIsPinModalOpen(false); setPendingAction(null); }}
         onSuccess={() => {
           setIsPinModalOpen(false);
           if (pendingAction) {
