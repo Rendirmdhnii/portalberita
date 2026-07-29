@@ -22,6 +22,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const [currentTime, setCurrentTime] = useState('22:40:11 WIB');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [adsList, setAdsList] = useState(ads || []);
 
   useEffect(() => {
     if (!berita?.slug) return;
@@ -38,6 +39,29 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       .catch((err) => console.error('Gagal update views:', err));
   }, [berita?.slug]);
 
+  useEffect(() => {
+    // Client-side fetch data iklan aktif dari Supabase (sama seperti Beranda dan Kategori)
+    const fetchAds = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('ads')
+          .select('*')
+          .eq('is_active', true);
+        if (!error && data) {
+          setAdsList(data);
+        }
+      } catch (err) {
+        console.error('Gagal fetch data iklan di DetailBerita:', err);
+      }
+    };
+    fetchAds();
+  }, []);
+
+  useEffect(() => {
+    if (ads && ads.length > 0) {
+      setAdsList(ads);
+    }
+  }, [ads]);
 
   const images = (() => {
     if (!berita) return [];
@@ -112,15 +136,56 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     }
   };
 
-  const headerAd = ads?.find(a => a.position === 'Header' || a.position === 'header');
-  const sidebarTopAd = ads?.find(a => a.position === 'Sidebar Atas' || a.position === 'sidebar');
-  const sidebarBottomAd = ads?.find(a => a.position === 'Sidebar Bawah');
-  const footerAd = ads?.find(a => a.position === 'Footer');
-  const middleAd = ads?.find(a => a.position === 'Tengah Konten');
+  const findAdByPosition = (adsArray, targetPosition) => {
+    if (!adsArray || !Array.isArray(adsArray)) return null;
+
+    return adsArray.find(a => {
+      if (!a || a.is_active === false) return false;
+      const pos = String(a.position || '').trim().toLowerCase();
+
+      switch (targetPosition) {
+        case 'header':
+          return pos === 'header' || pos === 'spanduk paling atas (di bawah logo)' || pos.includes('header') || pos.includes('spanduk paling atas');
+        case 'sidebarTop':
+          return pos === 'sidebar atas' || pos === 'sidebar' || pos === 'samping kanan (bentuk kotak)' || pos.includes('sidebar atas') || pos.includes('bentuk kotak');
+        case 'sidebarBottom':
+          return pos === 'sidebar bawah' || pos === 'samping kanan (memanjang ke bawah)' || pos.includes('sidebar bawah') || pos.includes('memanjang');
+        case 'middle':
+          return pos === 'tengah konten' || pos === 'menyelip di tengah' || pos === 'menyelip di tengah daftar berita' || pos.includes('tengah');
+        case 'footer':
+          return pos === 'footer' || pos === 'spanduk paling bawah website' || pos.includes('footer') || pos.includes('spanduk paling bawah');
+        default:
+          return false;
+      }
+    });
+  };
+
+  const headerAd = findAdByPosition(adsList, 'header');
+  const sidebarTopAd = findAdByPosition(adsList, 'sidebarTop');
+  const sidebarBottomAd = findAdByPosition(adsList, 'sidebarBottom');
+  const middleAd = findAdByPosition(adsList, 'middle');
+  const footerAd = findAdByPosition(adsList, 'footer');
 
   const cleanHTML = berita && (berita.content || berita.isi)
     ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
     : '';
+
+  // Logika menyelipkan iklan di tengah-tengah paragraf artikel
+  const { firstHalf, secondHalf } = (() => {
+    if (!cleanHTML) return { firstHalf: '', secondHalf: '' };
+    if (!middleAd) return { firstHalf: cleanHTML, secondHalf: '' };
+
+    const pMatches = [...cleanHTML.matchAll(/<\/p>/gi)];
+    if (pMatches.length >= 2) {
+      const midIndex = Math.floor(pMatches.length / 2);
+      const splitPos = pMatches[midIndex - 1].index + 4;
+      return {
+        firstHalf: cleanHTML.slice(0, splitPos),
+        secondHalf: cleanHTML.slice(splitPos),
+      };
+    }
+    return { firstHalf: cleanHTML, secondHalf: '' };
+  })();
 
   if (!berita) {
     return (
@@ -307,14 +372,21 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                   {/* ===== ISI ARTIKEL ===== */}
                   <div 
                     className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
-                    dangerouslySetInnerHTML={{ __html: cleanHTML }} 
+                    dangerouslySetInnerHTML={{ __html: firstHalf }} 
                   />
 
-                  {/* Iklan Tengah Konten (Tampil jika ada) */}
+                  {/* Iklan Menyelip di Tengah Konten (Tampil jika ada) */}
                   {middleAd && (
                     <div className="my-6 w-full flex justify-center">
                       <AdSlot size="728x90" className="w-full h-auto" ad={middleAd} />
                     </div>
+                  )}
+
+                  {secondHalf && (
+                    <div 
+                      className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                      dangerouslySetInnerHTML={{ __html: secondHalf }} 
+                    />
                   )}
 
                   {/* Share / Tags section */}
@@ -421,11 +493,6 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
             <aside className="w-full min-w-0 md:col-span-4">
               <div className="flex flex-col gap-6">
 
-                {/* Iklan Sidebar Atas */}
-                <div className="w-full">
-                  <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
-                </div>
-
                 {/* Widget Berita Populer */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                   <h3 className="text-sm font-black uppercase text-slate-900 border-b border-gray-200 pb-2 mb-4 tracking-wide">
@@ -454,10 +521,19 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                   </div>
                 </div>
 
-                {/* Iklan Sidebar Bawah */}
-                <div className="w-full">
-                  <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
-                </div>
+                {/* Iklan Samping Kanan (Bentuk Kotak) - Berada tepat di bawah Berita Populer */}
+                {sidebarTopAd && (
+                  <div className="w-full">
+                    <AdSlot size="300x250" className="w-full" ad={sidebarTopAd} />
+                  </div>
+                )}
+
+                {/* Iklan Samping Kanan (Memanjang ke Bawah) - Berada tepat di bawah Berita Populer / Iklan Kotak */}
+                {sidebarBottomAd && (
+                  <div className="w-full">
+                    <AdSlot size="300x600" className="w-full" ad={sidebarBottomAd} />
+                  </div>
+                )}
 
               </div>
             </aside>
@@ -539,7 +615,7 @@ export async function getStaticProps({ params }) {
         .order('sort_order', { ascending: true }),
       supabase
         .from('ads')
-        .select('id, name, position, image, link, is_active')
+        .select('*')
         .eq('is_active', true),
       supabase
         .from('berita')
