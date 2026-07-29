@@ -15,7 +15,7 @@ export default function Footer({ categories = [] }) {
               <a href="https://www.facebook.com/share/1BJb1xwa6H/" target="_blank" rel="noopener noreferrer" className="hover:text-red-450 transition" aria-label="Facebook">
                 <i className="fa-brands fa-facebook-f text-2xl"></i>
               </a>
-              <a href="https://www.instagram.com/pojoktv_com?igsh=ZmRra3JqbGFsbWFl" target="_blank" rel="noopener noreferrer" className="hover:text-red-450 transition" aria-label="Instagram">
+              <a href="https://www.instagram.com/pojoktvcom/" target="_blank" rel="noopener noreferrer" className="hover:text-red-450 transition" aria-label="Instagram">
                 <i className="fa-brands fa-instagram text-2xl"></i>
               </a>
               <a href="https://www.youtube.com/channel/UC7-Jj-CtUK-MxbYEvcE_rJA" target="_blank" rel="noopener noreferrer" className="hover:text-red-450 transition" aria-label="Youtube">
