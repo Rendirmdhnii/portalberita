@@ -1,4 +1,5 @@
 import React from 'react';
+import { imageKitLoader } from '@/lib/imageKitLoader';
 
 export default function ResponsiveAd({
   ad = null,
@@ -16,9 +17,13 @@ export default function ResponsiveAd({
   const link = ad?.link || linkTujuan;
   const alt = ad?.name || altText;
 
-  const desktopUrl = ad?.desktop_image_url || desktopImageUrl || imageDesktop || ad?.image || image;
-  const tabletUrl = ad?.tablet_image_url || tabletImageUrl || imageTablet || desktopUrl || ad?.image || image;
-  const mobileUrl = ad?.mobile_image_url || ad?.image_mobile_url || mobileImageUrl || imageMobile || ad?.image || image || tabletUrl || desktopUrl;
+  const rawDesktopUrl = ad?.desktop_image_url || desktopImageUrl || imageDesktop || ad?.image || image;
+  const rawTabletUrl = ad?.tablet_image_url || tabletImageUrl || imageTablet || rawDesktopUrl || ad?.image || image;
+  const rawMobileUrl = ad?.mobile_image_url || ad?.image_mobile_url || mobileImageUrl || imageMobile || ad?.image || image || rawTabletUrl || rawDesktopUrl;
+
+  const desktopUrl = imageKitLoader(rawDesktopUrl);
+  const tabletUrl = imageKitLoader(rawTabletUrl);
+  const mobileUrl = imageKitLoader(rawMobileUrl);
 
   const fallbackSrc = mobileUrl || tabletUrl || desktopUrl;
 

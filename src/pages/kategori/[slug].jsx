@@ -6,6 +6,7 @@ import AdSlot from '@/components/AdSlot';
 import EmptyState from '@/components/EmptyState';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
+import { imageKitLoader } from '@/lib/imageKitLoader';
 const stripHtmlAndEntities = (htmlString) => {
   if (!htmlString) return '';
   // Hapus tag HTML dan ubah &nbsp; menjadi spasi
@@ -126,23 +127,25 @@ export default function KategoriPage() {
 
   const getThumbnail = (post) => {
     if (!post) return '';
-    const imagesData = post.images || post.image;
-    if (!imagesData) return '';
-    if (Array.isArray(imagesData)) {
-      return imagesData[0] || '';
-    }
-    if (typeof imagesData === 'string') {
+    const imagesData = post.images || post.image || post.gambar || post.gambar_utama;
+    let rawUrl = '';
+    if (!imagesData) {
+      rawUrl = post.gambar_utama || '';
+    } else if (Array.isArray(imagesData)) {
+      rawUrl = imagesData[0] || '';
+    } else if (typeof imagesData === 'string') {
       try {
         if (imagesData.startsWith('[')) {
           const parsed = JSON.parse(imagesData);
-          return parsed[0] || '';
+          rawUrl = parsed[0] || '';
+        } else {
+          rawUrl = imagesData;
         }
       } catch (e) {
-        // ignore
+        rawUrl = imagesData;
       }
-      return imagesData;
     }
-    return '';
+    return imageKitLoader(rawUrl);
   };
 
   const handleLiveTv = () => {

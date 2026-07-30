@@ -6,6 +6,7 @@ import AdSlot from '@/components/AdSlot';
 import EmptyState from '@/components/EmptyState';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
+import { imageKitLoader } from '@/lib/imageKitLoader';
 
 // State-independent helper functions declared at the file level to prevent TDZ and recreate overhead
 const formatTimeAgo = (dateString) => {
@@ -27,23 +28,25 @@ const formatTimeAgo = (dateString) => {
 
 const getThumbnail = (post) => {
   if (!post) return '';
-  const imagesData = post.images || post.image;
-  if (!imagesData) return '';
-  if (Array.isArray(imagesData)) {
-    return imagesData[0] || '';
-  }
-  if (typeof imagesData === 'string') {
+  const imagesData = post.images || post.image || post.gambar || post.gambar_utama;
+  let rawUrl = '';
+  if (!imagesData) {
+    rawUrl = post.gambar_utama || '';
+  } else if (Array.isArray(imagesData)) {
+    rawUrl = imagesData[0] || '';
+  } else if (typeof imagesData === 'string') {
     try {
       if (imagesData.startsWith('[')) {
         const parsed = JSON.parse(imagesData);
-        return parsed[0] || '';
+        rawUrl = parsed[0] || '';
+      } else {
+        rawUrl = imagesData;
       }
     } catch (e) {
-      // ignore
+      rawUrl = imagesData;
     }
-    return imagesData;
   }
-  return '';
+  return imageKitLoader(rawUrl);
 };
 
 const cleanExcerpt = (text) => {
@@ -325,7 +328,7 @@ export default function Home({
                             {/* Lapisan Visual (Image) */}
                             <div className="relative w-full h-[220px] md:h-full shrink-0">
                               <img 
-                                src={slide.gambar_utama || getThumbnail(slide)} 
+                                src={imageKitLoader(slide.gambar_utama) || getThumbnail(slide)} 
                                 alt={slide.title} 
                                 className="absolute inset-0 w-full h-full object-cover select-none" 
                                 draggable="false"
@@ -370,7 +373,7 @@ export default function Home({
                       {sideHeadlines.map((berita) => (
                         <div key={berita.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                           <div className="relative w-full h-40 md:h-44 bg-gray-200">
-                            <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+                            <img src={imageKitLoader(berita.gambar_utama) || getThumbnail(berita)} alt={berita.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
                           </div>
                           <div className="p-4">
                             <span className="inline-block px-2 py-1 bg-red-600 text-white text-[10px] font-bold uppercase rounded mb-2">{berita.category || berita.kategori || berita.rubrik}</span>
@@ -655,7 +658,7 @@ export default function Home({
               {sorotanNews.map((berita) => (
                 <div key={berita.id} className="flex-none w-[75vw] sm:w-[260px] md:w-[300px] bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                   <div className="w-full bg-gray-200">
-                     <img src={berita.gambar_utama || getThumbnail(berita)} alt={berita.title} loading="lazy" className="w-full aspect-[16/9] object-cover object-center" />
+                     <img src={imageKitLoader(berita.gambar_utama) || getThumbnail(berita)} alt={berita.title} loading="lazy" className="w-full aspect-[16/9] object-cover object-center" />
                   </div>
                   <div className="p-3 md:p-4">
                      <span className="text-xs font-bold text-red-600 uppercase">{berita.category || berita.kategori}</span>

@@ -7,6 +7,7 @@ import EmptyState from '@/components/EmptyState';
 import NewsGallery from '@/components/NewsGallery';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
+import { imageKitLoader, transformHtmlImageUrls } from '@/lib/imageKitLoader';
 const stripHtmlAndEntities = (htmlString) => {
   if (!htmlString) return '';
   // Hapus tag HTML dan ubah &nbsp; menjadi spasi
@@ -67,18 +68,23 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     if (!berita) return [];
     const imgs = berita.images || berita.image || berita.gambar || berita.gambar_utama_url;
     if (!imgs) return [];
-    if (Array.isArray(imgs)) return imgs;
-    if (typeof imgs === 'string') {
+    let list = [];
+    if (Array.isArray(imgs)) {
+      list = imgs;
+    } else if (typeof imgs === 'string') {
       try {
         if (imgs.startsWith('[')) {
-          return JSON.parse(imgs);
+          list = JSON.parse(imgs);
+        } else {
+          list = [imgs];
         }
-        return [imgs];
       } catch (e) {
-        return [imgs];
+        list = [imgs];
       }
+    } else {
+      list = [imgs];
     }
-    return [imgs];
+    return list.map((item) => imageKitLoader(item));
   })();
 
   useEffect(() => {
@@ -167,7 +173,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const footerAd = findAdByPosition(adsList, 'footer');
 
   const cleanHTML = berita && (berita.content || berita.isi)
-    ? (berita.content || berita.isi).replace(/&nbsp;/g, ' ')
+    ? transformHtmlImageUrls((berita.content || berita.isi).replace(/&nbsp;/g, ' '))
     : '';
 
   // Logika menyelipkan iklan di tengah-tengah paragraf artikel
@@ -657,7 +663,7 @@ export async function getStaticProps({ params }) {
         
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
         const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
-        return `${cleanSupabaseUrl}${path}`;
+        return imageKitLoader(`${cleanSupabaseUrl}${path}`);
       };
 
       if (mainBerita.gambar_utama && typeof mainBerita.gambar_utama === 'string' && mainBerita.gambar_utama.trim() !== '') {

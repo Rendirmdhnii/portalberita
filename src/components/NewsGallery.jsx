@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { imageKitLoader } from '@/lib/imageKitLoader';
 
 export default function NewsGallery({ images, caption }) {
   if (!images || !Array.isArray(images) || images.length === 0) {
@@ -13,7 +14,7 @@ export default function NewsGallery({ images, caption }) {
       {/* Wrapper */}
       <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-sm mb-4 group">
         <Image
-          src={images[currentImageIndex]}
+          src={imageKitLoader(images[currentImageIndex])}
           alt="Foto Utama Berita"
           fill
           priority={currentImageIndex === 0}
