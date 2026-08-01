@@ -366,123 +366,130 @@ export default function VideoIndex() {
         </div>
       )}
 
-      {message && <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold"><i className="fa-solid fa-check mr-2"></i>{message}</div>}
+      {/* Outer Layout Container locked to viewport height */}
+      <div className="h-[calc(100vh-112px)] flex flex-col overflow-hidden">
+        {message && <div className="mb-3 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold shrink-0"><i className="fa-solid fa-check mr-2"></i>{message}</div>}
 
-      {/* Page Header */}
-      <div className="flex items-center justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Kelola Pojok Video</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{videos.length} video tayang</p>
-        </div>
-        <button onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors">
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Tambah Video</span>
-          <span className="sm:hidden">Tambah</span>
-        </button>
-      </div>
-
-      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Klik <strong>+ Tambah Video</strong> lalu tempel link YouTube (format: youtube.com/watch?v=... atau youtu.be/...). Sistem akan otomatis mengekstrak ID video. Video yang salah bisa dihapus dengan tombol Hapus di setiap baris.</p>
-      </GuideBox>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Desktop Form */}
-        <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit sticky top-6">
-          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Video Baru</h3>
-          <AddForm />
+        {/* Page Header */}
+        <div className="flex items-center justify-between gap-3 mb-4 shrink-0">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Kelola Pojok Video</h1>
+            <p className="text-sm text-gray-500 mt-0.5">{videos.length} video tayang</p>
+          </div>
+          <button onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors">
+            <i className="fa-solid fa-plus"></i>
+            <span className="hidden sm:inline">Tambah Video</span>
+            <span className="sm:hidden">Tambah</span>
+          </button>
         </div>
 
-        {/* Daftar Video */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-          {/* Search */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="relative">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-              <input type="text" placeholder="Cari judul video..." value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
-            </div>
+        <div className="shrink-0">
+          <GuideBox title="💡 Cara Menggunakan Halaman Ini">
+            <p>Klik <strong>+ Tambah Video</strong> lalu tempel link YouTube (format: youtube.com/watch?v=... atau youtu.be/...). Sistem akan otomatis mengekstrak ID video. Video yang salah bisa dihapus dengan tombol Hapus di setiap baris.</p>
+          </GuideBox>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 overflow-hidden">
+          {/* Desktop Form (Static/Fixed on Left) */}
+          <div className="hidden lg:block bg-white p-6 rounded-xl shadow-sm border border-gray-200 h-fit shrink-0">
+            <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Video Baru</h3>
+            <AddForm />
           </div>
 
-          {loading ? (
-            <div className="text-center py-12 text-gray-400 font-bold"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat video...</div>
-          ) : paginated.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 font-bold text-sm">
-              {searchQuery ? `Tidak ada video "${searchQuery}"` : 'Belum ada video tayang.'}
+          {/* Daftar Video (Right Column) */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full min-h-0">
+            {/* Search Bar (Static Top Header) */}
+            <div className="p-4 border-b border-gray-200 shrink-0">
+              <div className="relative">
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" placeholder="Cari judul video..." value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400" />
+              </div>
             </div>
-          ) : (
-            <>
-              {/* Scrollable Container for Table and Cards */}
-              <div className="max-h-[600px] overflow-y-auto">
-                {/* Mobile Cards */}
-                <div className="md:hidden divide-y divide-gray-100">
-                  {paginated.map(video => (
-                    <div key={video.id} className="p-4 flex gap-3 items-start">
-                      <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                        alt={video.judul} loading="lazy" className="w-20 h-14 object-cover rounded-lg border border-gray-200 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900 text-sm line-clamp-2">{video.judul}</p>
-                        <p className="text-xs text-gray-500 font-mono mt-0.5">{video.youtube_id}</p>
-                        <div className="flex gap-2 mt-2">
-                          <button onClick={() => handleOpenEditModal(video)}
-                            className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors cursor-pointer">
-                            <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
-                          </button>
-                          <button onClick={() => { setPendingAction(() => () => handleDelete(video.id)); setIsPinModalOpen(true); }}
-                            className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors cursor-pointer">
-                            <i className="fa-solid fa-trash mr-1"></i>Hapus
-                          </button>
+
+            {loading ? (
+              <div className="text-center py-12 text-gray-400 font-bold flex-1"><i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat video...</div>
+            ) : paginated.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 font-bold text-sm flex-1">
+                {searchQuery ? `Tidak ada video "${searchQuery}"` : 'Belum ada video tayang.'}
+              </div>
+            ) : (
+              <>
+                {/* Scrollable Table/Cards Wrapper */}
+                <div className="h-[calc(100vh-320px)] overflow-y-auto flex-1 min-h-0">
+                  {/* Mobile Cards */}
+                  <div className="md:hidden divide-y divide-gray-100">
+                    {paginated.map(video => (
+                      <div key={video.id} className="p-4 flex gap-3 items-start">
+                        <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                          alt={video.judul} loading="lazy" className="w-20 h-14 object-cover rounded-lg border border-gray-200 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-900 text-sm line-clamp-2">{video.judul}</p>
+                          <p className="text-xs text-gray-500 font-mono mt-0.5">{video.youtube_id}</p>
+                          <div className="flex gap-2 mt-2">
+                            <button onClick={() => handleOpenEditModal(video)}
+                              className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors cursor-pointer">
+                              <i className="fa-solid fa-pen-to-square mr-1"></i>Edit
+                            </button>
+                            <button onClick={() => { setPendingAction(() => () => handleDelete(video.id)); setIsPinModalOpen(true); }}
+                              className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors cursor-pointer">
+                              <i className="fa-solid fa-trash mr-1"></i>Hapus
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                {/* Desktop Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200 sticky top-0 z-10">
-                      <tr>
-                        <th className="px-6 py-3">Preview</th>
-                        <th className="px-6 py-3">Judul Video</th>
-                        <th className="px-6 py-3">YouTube ID</th>
-                        <th className="px-6 py-3 text-right">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {paginated.map(video => (
-                        <tr key={video.id} className="hover:bg-blue-50 transition-colors">
-                          <td className="px-6 py-3">
-                            <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
-                              alt={video.judul} loading="lazy" className="h-10 w-20 object-cover rounded-md border border-gray-200" />
-                          </td>
-                          <td className="px-6 py-3 font-bold text-gray-900 max-w-xs">
-                            <p className="line-clamp-2">{video.judul}</p>
-                          </td>
-                          <td className="px-6 py-3 font-mono text-xs text-gray-500">{video.youtube_id}</td>
-                          <td className="px-6 py-3 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => handleOpenEditModal(video)}
-                                className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors cursor-pointer">
-                                Edit
-                              </button>
-                              <button onClick={() => { setPendingAction(() => () => handleDelete(video.id)); setIsPinModalOpen(true); }}
-                                className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors cursor-pointer">
-                                Hapus
-                              </button>
-                            </div>
-                          </td>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-gray-50 text-xs uppercase text-gray-700 font-bold border-b border-gray-200 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-6 py-3">Preview</th>
+                          <th className="px-6 py-3">Judul Video</th>
+                          <th className="px-6 py-3">YouTube ID</th>
+                          <th className="px-6 py-3 text-right">Aksi</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {paginated.map(video => (
+                          <tr key={video.id} className="hover:bg-blue-50 transition-colors">
+                            <td className="px-6 py-3">
+                              <img src={`https://img.youtube.com/vi/${video.youtube_id}/mqdefault.jpg`}
+                                alt={video.judul} loading="lazy" className="h-10 w-20 object-cover rounded-md border border-gray-200" />
+                            </td>
+                            <td className="px-6 py-3 font-bold text-gray-900 max-w-xs">
+                              <p className="line-clamp-2">{video.judul}</p>
+                            </td>
+                            <td className="px-6 py-3 font-mono text-xs text-gray-500">{video.youtube_id}</td>
+                            <td className="px-6 py-3 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => handleOpenEditModal(video)}
+                                  className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 px-3 py-1.5 rounded-lg border border-blue-200 font-bold transition-colors cursor-pointer">
+                                  Edit
+                                </button>
+                                <button onClick={() => { setPendingAction(() => () => handleDelete(video.id)); setIsPinModalOpen(true); }}
+                                  className="text-xs bg-red-50 hover:bg-red-100 text-red-800 px-3 py-1.5 rounded-lg border border-red-200 font-bold transition-colors cursor-pointer">
+                                  Hapus
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
 
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-            </>
-          )}
+                <div className="shrink-0 border-t border-gray-200">
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
       <PinAuthModal 
