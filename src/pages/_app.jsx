@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import Head from 'next/head';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
@@ -64,6 +65,7 @@ export default function App({ Component, pageProps }) {
       </div>
       <Component {...pageProps} />
       <Analytics />
+      <SpeedInsights />
     </>
   );
 }
