@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 
@@ -62,13 +63,13 @@ export default function Header({ activeSlug, activeCategoryName }) {
         {/* Tengah: Logo */}
         <div className="flex-1 flex items-center justify-center">
           <Link href="/" className="block flex-shrink-0">
-            <img 
+            <Image 
               src="/logo-pojoktv.png" 
               alt="PojokTV" 
+              width={240}
+              height={100}
+              priority={true}
               className="h-[80px] md:h-[110px] lg:h-[130px] w-auto object-contain" 
-              onError={(e) => {
-                e.target.src = "/logo.png";
-              }}
             />
           </Link>
         </div>
@@ -132,13 +133,13 @@ export default function Header({ activeSlug, activeCategoryName }) {
         {/* Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="block flex-shrink-0 mr-4 lg:mr-8">
-            <img 
+            <Image 
               src="/logo-pojoktv.png" 
               alt="PojokTV" 
+              width={240}
+              height={100}
+              priority={true}
               className="h-[80px] md:h-[110px] lg:h-[130px] w-auto object-contain" 
-              onError={(e) => {
-                e.target.src = "/logo.png";
-              }}
             />
           </Link>
         </div>

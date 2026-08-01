@@ -330,6 +330,8 @@ export default function Home({
                               <img 
                                 src={imageKitLoader(slide.gambar_utama) || getThumbnail(slide)} 
                                 alt={slide.title} 
+                                fetchPriority={idx === 0 ? "high" : "auto"}
+                                loading={idx === 0 ? "eager" : "lazy"}
                                 className="absolute inset-0 w-full h-full object-cover select-none" 
                                 draggable="false"
                               />

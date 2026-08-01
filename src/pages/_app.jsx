@@ -1,9 +1,28 @@
 import { useEffect } from 'react';
 import Head from 'next/head';
 import Script from 'next/script';
+import { Inter, Lora, Oswald } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import '../styles/globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const lora = Lora({
+  subsets: ['latin'],
+  variable: '--font-lora',
+  display: 'swap',
+});
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  variable: '--font-oswald',
+  display: 'swap',
+});
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -19,7 +38,7 @@ export default function App({ Component, pageProps }) {
   }, []);
 
   return (
-    <>
+    <main className={`${inter.variable} ${lora.variable} ${oswald.variable} font-sans`}>
       <Head>
         <title>PojokTV - Jaringan Berita Nasional Terpercaya</title>
         <meta name="description" content="Portal berita terkini, tajam, dan independen. Menghadirkan informasi dan jurnalisme terpercaya dari seluruh penjuru nusantara setiap hari." />
@@ -66,6 +85,6 @@ export default function App({ Component, pageProps }) {
       <Component {...pageProps} />
       <Analytics />
       <SpeedInsights />
-    </>
+    </main>
   );
 }
