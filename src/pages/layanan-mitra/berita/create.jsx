@@ -715,7 +715,7 @@ export default function BeritaCreate() {
                           className={
                             previewDevice === 'mobile'
                               ? "article-content berita-content prose prose-sm max-w-none font-sans text-gray-800 leading-relaxed break-words whitespace-pre-wrap w-full overflow-hidden [&_p]:mb-4"
-                              : "article-content berita-content prose prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title w-full max-w-full overflow-hidden break-words whitespace-pre-wrap [&_p]:mb-6"
+                              : "article-content berita-content prose prose-lg max-w-none font-sans text-gray-800 leading-relaxed prose-serif-title w-full overflow-hidden break-words whitespace-pre-wrap [&_p]:mb-6"
                           }
                           dangerouslySetInnerHTML={{ __html: content ? content.replace(/&nbsp;/g, ' ') : '<p class="text-gray-400 italic">Isi berita kosong. Silakan tulis di editor.</p>' }}
                         />
