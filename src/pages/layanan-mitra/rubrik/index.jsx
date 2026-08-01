@@ -243,171 +243,181 @@ export default function CategoryIndex() {
         </div>
       )}
 
-      {message && (
-        <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold">
-          <i className="fa-solid fa-check mr-2"></i>{message}
-        </div>
-      )}
+      {/* Outer Layout Container locked to viewport height */}
+      <div className="h-[calc(100vh-112px)] flex flex-col overflow-hidden">
+        {message && (
+          <div className="mb-3 p-3 bg-green-100 border border-green-300 rounded-lg text-green-900 text-sm font-bold shrink-0">
+            <i className="fa-solid fa-check mr-2"></i>{message}
+          </div>
+        )}
 
-      {/* Page Header */}
-      <div className="flex items-center justify-between gap-3 mb-5">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Kelola Rubrik Kategori</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{categories.length} rubrik aktif</p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors"
-        >
-          <i className="fa-solid fa-plus"></i>
-          <span className="hidden sm:inline">Tambah Rubrik</span>
-          <span className="sm:hidden">Tambah</span>
-        </button>
-      </div>
-
-      {/* Panduan */}
-      <GuideBox title="💡 Cara Menggunakan Halaman Ini">
-        <p>Klik tombol <strong>+ Tambah Rubrik</strong> untuk membuat kategori baru. Rubrik yang sudah ada bisa dihapus dengan tombol merah di kanan setiap item. <strong>Hati-hati:</strong> menghapus rubrik bisa memengaruhi berita yang terkategori di rubrik tersebut.</p>
-      </GuideBox>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form (Desktop only — di mobile pakai modal) */}
-        <div className="hidden lg:block bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-fit">
-          <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Rubrik Baru</h3>
-          <AddForm />
+        {/* Page Header */}
+        <div className="flex items-center justify-between gap-3 mb-4 shrink-0">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Kelola Rubrik Kategori</h1>
+            <p className="text-sm text-gray-500 mt-0.5">{categories.length} rubrik aktif</p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-sm transition-colors"
+          >
+            <i className="fa-solid fa-plus"></i>
+            <span className="hidden sm:inline">Tambah Rubrik</span>
+            <span className="sm:hidden">Tambah</span>
+          </button>
         </div>
 
-        {/* Daftar Rubrik */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Search */}
-          <div className="p-3 border-b border-gray-200">
-            <div className="relative">
-              <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-              <input
-                type="text"
-                placeholder="Cari nama rubrik..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-            </div>
+        {/* Panduan */}
+        <div className="shrink-0">
+          <GuideBox title="💡 Cara Menggunakan Halaman Ini">
+            <p>Klik tombol <strong>+ Tambah Rubrik</strong> untuk membuat kategori baru. Rubrik yang sudah ada bisa dihapus dengan tombol merah di kanan setiap item. <strong>Hati-hati:</strong> menghapus rubrik bisa memengaruhi berita yang terkategori di rubrik tersebut.</p>
+          </GuideBox>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 overflow-hidden">
+          {/* Form (Desktop only — statis/fixed di kiri) */}
+          <div className="hidden lg:block bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-fit shrink-0">
+            <h3 className="font-bold text-base text-gray-900 mb-4 border-b pb-2">Tambah Rubrik Baru</h3>
+            <AddForm />
           </div>
 
-          {loading ? (
-            <div className="text-center py-12 text-gray-400 font-bold">
-              <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat rubrik...
-            </div>
-          ) : paginated.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 font-bold text-sm">
-              {searchQuery ? `Tidak ada rubrik "${searchQuery}"` : 'Belum ada rubrik terdaftar.'}
-            </div>
-          ) : (
-            <>
-              {/* Mobile Cards */}
-              <div className="md:hidden divide-y divide-gray-100">
-                {paginated.map(cat => {
-                  const globalIdx = categories.findIndex(c => c.id === cat.id);
-                  const isFirst = globalIdx === 0;
-                  const isLast = globalIdx === categories.length - 1;
-                  return (
-                    <div key={cat.id} className="flex items-center justify-between px-4 py-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-gray-900 text-sm">{cat.name}</p>
-                          <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200">
-                            Urutan: {cat.sort_order ?? 0}
-                          </span>
-                        </div>
-                        <p className="text-xs text-gray-500 font-mono">/kategori/{cat.slug}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <button
-                          onClick={() => moveUp(cat)}
-                          disabled={isFirst || processing}
-                          className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                          title="Naik"
-                        >
-                          <i className="fa-solid fa-arrow-up text-xs"></i>
-                        </button>
-                        <button
-                          onClick={() => moveDown(cat)}
-                          disabled={isLast || processing}
-                          className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                          title="Turun"
-                        >
-                          <i className="fa-solid fa-arrow-down text-xs"></i>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(cat.id)}
-                          className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg border border-red-200 font-bold transition-colors shrink-0"
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+          {/* Daftar Rubrik (Right Column) */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full min-h-0">
+            {/* Search Header */}
+            <div className="p-3 border-b border-gray-200 shrink-0">
+              <div className="relative">
+                <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input
+                  type="text"
+                  placeholder="Cari nama rubrik..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                />
               </div>
+            </div>
 
-              {/* Desktop Table */}
-              <div className="hidden md:block max-h-[50vh] sm:max-h-[55vh] overflow-y-auto overflow-x-auto relative">
-                <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
-                    <tr>
-                      <th className="px-6 py-1.5">Nama Rubrik</th>
-                      <th className="px-6 py-1.5">Urutan</th>
-                      <th className="px-6 py-1.5">Slug URL</th>
-                      <th className="px-6 py-1.5 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
+            {loading ? (
+              <div className="text-center py-12 text-gray-400 font-bold flex-1">
+                <i className="fa-solid fa-spinner animate-spin mr-2"></i>Memuat rubrik...
+              </div>
+            ) : paginated.length === 0 ? (
+              <div className="text-center py-12 text-gray-500 font-bold text-sm flex-1">
+                {searchQuery ? `Tidak ada rubrik "${searchQuery}"` : 'Belum ada rubrik terdaftar.'}
+              </div>
+            ) : (
+              <>
+                {/* Scrollable Container for Table and Mobile Cards */}
+                <div className="h-[calc(100vh-320px)] overflow-y-auto flex-1 min-h-0">
+                  {/* Mobile Cards */}
+                  <div className="md:hidden divide-y divide-gray-100">
                     {paginated.map(cat => {
                       const globalIdx = categories.findIndex(c => c.id === cat.id);
                       const isFirst = globalIdx === 0;
                       const isLast = globalIdx === categories.length - 1;
                       return (
-                        <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
-                          <td className="px-6 py-1.5 font-bold text-gray-900 text-sm">{cat.name}</td>
-                          <td className="px-6 py-1.5 font-semibold text-gray-700 text-sm">
-                            <span className="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded border border-gray-200 text-xs font-mono">
-                              {cat.sort_order ?? 0}
-                            </span>
-                          </td>
-                          <td className="px-6 py-1.5 font-mono text-xs text-gray-500 text-sm">/kategori/{cat.slug}</td>
-                          <td className="px-6 py-1.5 text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              <button
-                                onClick={() => moveUp(cat)}
-                                disabled={isFirst || processing}
-                                className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                                title="Naik"
-                              >
-                                <i className="fa-solid fa-arrow-up text-xs"></i>
-                              </button>
-                              <button
-                                onClick={() => moveDown(cat)}
-                                disabled={isLast || processing}
-                                className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                                title="Turun"
-                              >
-                                <i className="fa-solid fa-arrow-down text-xs"></i>
-                              </button>
-                              <button onClick={() => { setPendingAction(() => () => handleDelete(cat.id)); setIsPinModalOpen(true); }}
-                                className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
-                                Hapus Rubrik
-                              </button>
+                        <div key={cat.id} className="flex items-center justify-between px-4 py-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-gray-900 text-sm">{cat.name}</p>
+                              <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 rounded border border-gray-200">
+                                Urutan: {cat.sort_order ?? 0}
+                              </span>
                             </div>
-                          </td>
-                        </tr>
+                            <p className="text-xs text-gray-500 font-mono">/kategori/{cat.slug}</p>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              onClick={() => moveUp(cat)}
+                              disabled={isFirst || processing}
+                              className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                              title="Naik"
+                            >
+                              <i className="fa-solid fa-arrow-up text-xs"></i>
+                            </button>
+                            <button
+                              onClick={() => moveDown(cat)}
+                              disabled={isLast || processing}
+                              className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                              title="Turun"
+                            >
+                              <i className="fa-solid fa-arrow-down text-xs"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(cat.id)}
+                              className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg border border-red-200 font-bold transition-colors shrink-0"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
 
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-            </>
-          )}
+                  {/* Desktop Table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="sticky top-0 bg-gray-50 z-10 shadow-sm border-b border-gray-200 text-xs uppercase text-gray-700 font-bold">
+                        <tr>
+                          <th className="px-6 py-2.5">Nama Rubrik</th>
+                          <th className="px-6 py-2.5">Urutan</th>
+                          <th className="px-6 py-2.5">Slug URL</th>
+                          <th className="px-6 py-2.5 text-right">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {paginated.map(cat => {
+                          const globalIdx = categories.findIndex(c => c.id === cat.id);
+                          const isFirst = globalIdx === 0;
+                          const isLast = globalIdx === categories.length - 1;
+                          return (
+                            <tr key={cat.id} className="hover:bg-blue-50 transition-colors">
+                              <td className="px-6 py-2.5 font-bold text-gray-900 text-sm">{cat.name}</td>
+                              <td className="px-6 py-2.5 font-semibold text-gray-700 text-sm">
+                                <span className="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded border border-gray-200 text-xs font-mono">
+                                  {cat.sort_order ?? 0}
+                                </span>
+                              </td>
+                              <td className="px-6 py-2.5 font-mono text-xs text-gray-500">/kategori/{cat.slug}</td>
+                              <td className="px-6 py-2.5 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => moveUp(cat)}
+                                    disabled={isFirst || processing}
+                                    className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                    title="Naik"
+                                  >
+                                    <i className="fa-solid fa-arrow-up text-xs"></i>
+                                  </button>
+                                  <button
+                                    onClick={() => moveDown(cat)}
+                                    disabled={isLast || processing}
+                                    className="text-blue-700 hover:text-white hover:bg-blue-600 p-1.5 rounded border border-blue-200 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                                    title="Turun"
+                                  >
+                                    <i className="fa-solid fa-arrow-down text-xs"></i>
+                                  </button>
+                                  <button onClick={() => { setPendingAction(() => () => handleDelete(cat.id)); setIsPinModalOpen(true); }}
+                                    className="text-red-700 text-xs bg-red-50 hover:bg-red-100 px-3 py-1 rounded-lg border border-red-200 font-bold transition-colors">
+                                    Hapus Rubrik
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="shrink-0 border-t border-gray-200">
+                  <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
       <PinAuthModal 
