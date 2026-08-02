@@ -49,30 +49,16 @@ export default function TentangKami({ content, title }) {
           </nav>
 
           {/* Hero Header Card */}
-          <div className="relative overflow-hidden bg-slate-900 rounded-2xl shadow-lg mb-8 border border-slate-800 text-white p-6 sm:p-10 md:p-12">
+          <div className="relative overflow-hidden bg-slate-900 rounded-2xl shadow-lg mb-8 border border-slate-800 text-white p-6 sm:p-8 md:p-10">
             <div className="relative z-10 max-w-3xl">
-              <div className="inline-block px-3 py-1 bg-red-600 text-white text-[11px] font-extrabold uppercase tracking-wider rounded-full mb-4">
+              <div className="inline-block px-3 py-1 bg-red-600 text-white text-[11px] font-extrabold uppercase tracking-wider rounded-full mb-3">
                 PT. SARANA PERDANA MEDIA
               </div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">
                 Tentang Kami & Susunan Redaksi
               </h1>
-              <p className="text-slate-300 text-sm sm:text-base md:text-lg font-normal leading-relaxed">
-                PojokTV.com adalah portal berita digital independen yang menyajikan berita terkini, terpercaya, akurat, dan berimbang dengan menjunjung tinggi Kode Etik Jurnalistik dan Undang-Undang Pers.
-              </p>
             </div>
           </div>
-
-          {/* CMS Dynamic Content (jika ada) */}
-          {content && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200/80 p-6 sm:p-8 mb-8">
-              <h2 className="text-xl font-bold text-slate-900 mb-4 border-b pb-3">Profil Perusahaan</h2>
-              <div 
-                className="rich-text-content text-slate-700 leading-relaxed break-words whitespace-normal text-left [&_p]:text-slate-700 [&_p]:leading-relaxed [&_p]:mb-4"
-                dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
-              />
-            </div>
-          )}
 
           {/* Section 1: Susunan Redaksi & Manajemen */}
           <div className="mb-10">
