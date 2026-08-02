@@ -10,9 +10,87 @@ import { supabase } from '@/lib/supabase';
 import { imageKitLoader, transformHtmlImageUrls } from '@/lib/imageKitLoader';
 const stripHtmlAndEntities = (htmlString) => {
   if (!htmlString) return '';
-  // Hapus tag HTML dan ubah &nbsp; menjadi spasi
-  return htmlString.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+  // Ganti tag HTML dengan spasi agar kata antar paragraf tidak menempel
+  return htmlString
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 };
+
+const INDONESIAN_CONJUNCTIONS = new Set([
+  'dan', 'di', 'ke', 'dari', 'yang', 'untuk', 'pada', 'atau', 'dengan',
+  'ini', 'itu', 'terkait', 'sebab', 'oleh', 'dalam', 'bagi', 'tentang',
+  'serta', 'via', 'vs', 'per', 'an'
+]);
+
+const ACRONYMS = new Set([
+  'KPK', 'DPR', 'DPRD', 'TNI', 'POLRI', 'BMKG', 'PSSI', 'KPU', 'BAWASLU',
+  'Polda', 'Polres', 'Polsek', 'Pj', 'Pj.', 'BBM', 'OSIS', 'STNK', 'BPKB',
+  'SIM', 'PNS', 'ASN', 'USA', 'UK', 'EU', 'UNESCO', 'WHO', 'FIFA', 'TV',
+  'WIB', 'WITA', 'WIT', 'RI', 'NKRI', 'SD', 'SMP', 'SMA', 'SMK', 'S1', 'S2', 'S3'
+]);
+
+/**
+ * Converts titles (including ALL CAPS titles) into professional Title Case headline style.
+ */
+export function toTitleCase(str) {
+  if (!str || typeof str !== 'string') return '';
+  const trimmed = str.trim();
+  if (!trimmed) return '';
+
+  const words = trimmed.split(/\s+/);
+  const formattedWords = words.map((word, index) => {
+    const cleanWord = word.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+    if (!cleanWord) return word;
+
+    const upperClean = cleanWord.toUpperCase();
+    let isAcronym = false;
+    for (const acr of ACRONYMS) {
+      if (acr.toUpperCase() === upperClean) {
+        isAcronym = true;
+        break;
+      }
+    }
+    if (isAcronym && upperClean.length >= 2) {
+      return word.replace(cleanWord, upperClean);
+    }
+
+    const lowerClean = cleanWord.toLowerCase();
+    if (index > 0 && INDONESIAN_CONJUNCTIONS.has(lowerClean)) {
+      return word.replace(cleanWord, lowerClean);
+    }
+
+    const capitalized = cleanWord.charAt(0).toUpperCase() + cleanWord.slice(1).toLowerCase();
+    return word.replace(cleanWord, capitalized);
+  });
+
+  return formattedWords.join(' ');
+}
+
+/**
+ * Helper to generate clean, branded meta description starting with 'PojokTV.com - '
+ */
+export function getNewsDescription(berita) {
+  const prefix = 'PojokTV.com - ';
+  let rawDesc = '';
+
+  if (berita?.description && berita.description.trim()) {
+    rawDesc = stripHtmlAndEntities(berita.description);
+  } else {
+    rawDesc = stripHtmlAndEntities(berita?.content || berita?.isi || '');
+  }
+
+  if (rawDesc) {
+    if (rawDesc.startsWith(prefix)) {
+      rawDesc = rawDesc.substring(prefix.length).trim();
+    }
+    const truncated = rawDesc.length > 145 ? rawDesc.substring(0, 145).trim() + '...' : rawDesc;
+    return `${prefix}${truncated}`;
+  }
+
+  return `${prefix}Baca berita selengkapnya di portal berita nasional PojokTV.com`;
+}
 
 /**
  * Helper to ensure image URLs are complete absolute URLs (starting with https://)
@@ -117,7 +195,7 @@ export async function generateMetadata(paramsInput) {
 
   if (!berita) {
     const fallbackTitle = 'Berita Tidak Ditemukan - PojokTV';
-    const fallbackDesc = 'Halaman berita yang Anda cari tidak ditemukan di PojokTV.com';
+    const fallbackDesc = 'PojokTV.com - Halaman berita yang Anda cari tidak ditemukan di PojokTV.com';
     const fallbackUrl = slug ? `${siteDomain}/berita/${slug}` : siteDomain;
     const fallbackImage = `${siteDomain}/logo-pojoktv.png`;
 
@@ -149,9 +227,8 @@ export async function generateMetadata(paramsInput) {
     };
   }
 
-  const title = berita.title || 'PojokTV';
-  const plainText = stripHtmlAndEntities(berita.content || berita.isi || '');
-  const description = berita.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
+  const title = berita.title ? toTitleCase(berita.title) : 'PojokTV';
+  const description = getNewsDescription(berita);
   const pageUrl = `${siteDomain}/berita/${berita.slug}`;
   const absoluteImageUrl = getAbsoluteImageUrl(berita.gambar_utama || berita.images || berita.image || berita.gambar, { isOg: true });
 
@@ -386,9 +463,9 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
     );
   }
 
-  const plainText = stripHtmlAndEntities(berita?.content || berita?.isi || '');
-  const metaDescription = berita?.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
-  const keywords = `${berita?.category || ''}, berita ${berita?.category || ''}, ${berita?.title || ''}, PojokTV, berita terkini, berita nasional`;
+  const formattedTitle = berita?.title ? toTitleCase(berita.title) : 'Berita';
+  const metaDescription = getNewsDescription(berita);
+  const keywords = `${berita?.category || ''}, berita ${berita?.category || ''}, ${formattedTitle}, PojokTV, berita terkini, berita nasional`;
   const siteDomain = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pojoktv.com').replace(/\/$/, '');
   const canonicalUrl = `${siteDomain}/berita/${berita?.slug}`;
   const publishedTime = berita?.created_at ? new Date(berita.created_at).toISOString() : '';
@@ -397,7 +474,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const categorySlug = berita?.category ? berita.category.toLowerCase().replace(/\s+/g, '-') : '';
 
   // Guaranteed absolute URL (starts with https://) for social media link preview (WhatsApp, Facebook, Twitter)
-  const absoluteOgImage = getAbsoluteImageUrl(fixImageUrl || berita?.gambar_utama || berita?.images || berita?.image);
+  const absoluteOgImage = getAbsoluteImageUrl(fixImageUrl || berita?.gambar_utama || berita?.images || berita?.image, { isOg: true });
 
   const newsArticleSchema = {
     "@context": "https://schema.org",
@@ -406,7 +483,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       "@type": "WebPage",
       "@id": canonicalUrl
     },
-    "headline": berita?.title || '',
+    "headline": formattedTitle,
     "image": images && images.length > 0 ? images : [absoluteOgImage],
     "datePublished": publishedTime,
     "dateModified": modifiedTime,
@@ -445,7 +522,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       {
         "@type": "ListItem",
         "position": 3,
-        "name": berita?.title || "Detail Berita",
+        "name": formattedTitle,
         "item": canonicalUrl
       }
     ]
@@ -454,7 +531,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   return (
     <Layout activeCategoryName={berita?.category}>
       <Head>
-        <title>{`${berita?.title} | PojokTV.com - Jaringan Berita Nasional`}</title>
+        <title>{berita?.title ? `${formattedTitle} | PojokTV.com - Jaringan Berita Nasional` : 'Berita - PojokTV.com'}</title>
         <meta name="description" content={metaDescription} />
         <meta name="keywords" content={keywords} />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -462,7 +539,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content={berita?.title} />
+        <meta property="og:title" content={formattedTitle} />
         <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="PojokTV" />
@@ -480,7 +557,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
         {/* Twitter Cards */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={berita?.title} />
+        <meta name="twitter:title" content={formattedTitle} />
         <meta name="twitter:description" content={metaDescription} />
         <meta name="twitter:image" content={absoluteOgImage} />
         <meta name="twitter:site" content="@PojokTV" />
@@ -627,7 +704,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
                         onClick={(e) => {
                           e.preventDefault();
                           const cleanUrl = `https://pojoktv.com/berita/${berita?.slug}`;
-                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent((berita?.title || '') + " | Baca selengkapnya di: " + cleanUrl)}`, '_blank');
+                          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(cleanUrl)}`, '_blank');
                         }}
                         className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-transform hover:scale-110 bg-[#25d366] text-white cursor-pointer"
                         aria-label="Share WhatsApp"
