@@ -17,8 +17,11 @@ const stripHtmlAndEntities = (htmlString) => {
 /**
  * Helper to ensure image URLs are complete absolute URLs (starting with https://)
  * for Open Graph metadata (WhatsApp, Facebook, Twitter, etc).
+ * Automatically applies transformation to force JPG format & resize to 800x418 (80% quality)
+ * for ImageKit images so WhatsApp Android parses previews reliably without WebP/size issues.
  */
-export function getAbsoluteImageUrl(rawImg) {
+export function getAbsoluteImageUrl(rawImg, options = {}) {
+  const { isOg = true, width = 800, height = 418, quality = 80, format = 'jpg' } = options;
   const fallbackUrl = 'https://pojoktv.com/logo-pojoktv.png';
   if (!rawImg) return fallbackUrl;
 
@@ -56,6 +59,13 @@ export function getAbsoluteImageUrl(rawImg) {
     formatted = `https://pojoktv.com${formatted}`;
   } else if (!formatted.startsWith('https://')) {
     formatted = `https://pojoktv.com/${formatted}`;
+  }
+
+  // Force JPG format, dimension w-800, h-418, q-80 for OG social previews (WhatsApp Android compatibility)
+  if (isOg && formatted.includes('ik.imagekit.io')) {
+    formatted = formatted.replace(/[?&]tr=[^&]*/g, '');
+    const joiner = formatted.includes('?') ? '&' : '?';
+    formatted = `${formatted}${joiner}tr=f-${format},w-${width},h-${height},q-${quality}`;
   }
 
   return formatted;
@@ -103,6 +113,7 @@ export async function generateMetadata(paramsInput) {
   }
 
   const siteDomain = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pojoktv.com').replace(/\/$/, '');
+  const metadataBase = new URL(siteDomain);
 
   if (!berita) {
     const fallbackTitle = 'Berita Tidak Ditemukan - PojokTV';
@@ -111,17 +122,20 @@ export async function generateMetadata(paramsInput) {
     const fallbackImage = `${siteDomain}/logo-pojoktv.png`;
 
     return {
+      metadataBase,
       title: fallbackTitle,
       description: fallbackDesc,
       openGraph: {
+        type: 'article',
         title: fallbackTitle,
         description: fallbackDesc,
         url: fallbackUrl,
         images: [
           {
             url: fallbackImage,
-            width: 1200,
-            height: 630,
+            width: 800,
+            height: 418,
+            type: 'image/jpeg',
             alt: fallbackTitle,
           },
         ],
@@ -139,20 +153,23 @@ export async function generateMetadata(paramsInput) {
   const plainText = stripHtmlAndEntities(berita.content || berita.isi || '');
   const description = berita.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
   const pageUrl = `${siteDomain}/berita/${berita.slug}`;
-  const absoluteImageUrl = getAbsoluteImageUrl(berita.gambar_utama || berita.images || berita.image || berita.gambar);
+  const absoluteImageUrl = getAbsoluteImageUrl(berita.gambar_utama || berita.images || berita.image || berita.gambar, { isOg: true });
 
   return {
+    metadataBase,
     title: title,
     description: description,
     openGraph: {
+      type: 'article',
       title: title,
       description: description,
       url: pageUrl,
       images: [
         {
           url: absoluteImageUrl,
-          width: 1200,
-          height: 630,
+          width: 800,
+          height: 418,
+          type: 'image/jpeg',
           alt: title,
         },
       ],
@@ -451,8 +468,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <meta property="og:site_name" content="PojokTV" />
         <meta property="og:image" content={absoluteOgImage} />
         <meta property="og:image:secure_url" content={absoluteOgImage} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
+        <meta property="og:image:width" content="800" />
+        <meta property="og:image:height" content="418" />
         <meta property="og:image:type" content="image/jpeg" />
 
         {/* Article Specific Metadata */}
