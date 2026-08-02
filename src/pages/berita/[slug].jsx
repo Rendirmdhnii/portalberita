@@ -14,6 +14,159 @@ const stripHtmlAndEntities = (htmlString) => {
   return htmlString.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
 };
 
+/**
+ * Helper to ensure image URLs are complete absolute URLs (starting with https://)
+ * for Open Graph metadata (WhatsApp, Facebook, Twitter, etc).
+ */
+export function getAbsoluteImageUrl(rawImg) {
+  const fallbackUrl = 'https://pojoktv.com/logo-pojoktv.png';
+  if (!rawImg) return fallbackUrl;
+
+  let imgStr = '';
+  if (typeof rawImg === 'string') {
+    imgStr = rawImg.trim();
+  } else if (Array.isArray(rawImg) && rawImg.length > 0) {
+    imgStr = typeof rawImg[0] === 'string' ? rawImg[0].trim() : '';
+  } else if (typeof rawImg === 'object' && rawImg !== null) {
+    imgStr = rawImg.url || rawImg.src || '';
+  }
+
+  if (!imgStr) return fallbackUrl;
+
+  // Handle stringified JSON array e.g. "[\"path/to/image.jpg\"]"
+  if (imgStr.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(imgStr);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        imgStr = String(parsed[0]).trim();
+      }
+    } catch (e) {
+      // Ignore JSON parse error
+    }
+  }
+
+  let formatted = imageKitLoader(imgStr);
+  if (!formatted) formatted = imgStr;
+
+  if (formatted.startsWith('http://')) {
+    formatted = formatted.replace('http://', 'https://');
+  } else if (formatted.startsWith('//')) {
+    formatted = `https:${formatted}`;
+  } else if (formatted.startsWith('/')) {
+    formatted = `https://pojoktv.com${formatted}`;
+  } else if (!formatted.startsWith('https://')) {
+    formatted = `https://pojoktv.com/${formatted}`;
+  }
+
+  return formatted;
+}
+
+/**
+ * Dynamic SEO & Open Graph (OG) metadata generator function.
+ * Follows standard Next.js generateMetadata signature.
+ *
+ * @param {Object|string} paramsInput - Page params object, slug, or berita object
+ * @returns {Promise<Object>} Next.js Metadata object
+ */
+export async function generateMetadata(paramsInput) {
+  let berita = null;
+  let slug = '';
+
+  if (paramsInput && typeof paramsInput === 'object') {
+    if (paramsInput.berita) {
+      berita = paramsInput.berita;
+      slug = berita.slug;
+    } else if (paramsInput.slug) {
+      slug = paramsInput.slug;
+    } else if (paramsInput.params) {
+      const resolved = typeof paramsInput.params.then === 'function'
+        ? await paramsInput.params
+        : paramsInput.params;
+      slug = resolved?.slug;
+    }
+  } else if (typeof paramsInput === 'string') {
+    slug = paramsInput;
+  }
+
+  if (!berita && slug) {
+    try {
+      const { data } = await supabase
+        .from('berita')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'Published')
+        .single();
+      berita = data;
+    } catch (e) {
+      console.error('Error fetching berita in generateMetadata:', e);
+    }
+  }
+
+  const siteDomain = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pojoktv.com').replace(/\/$/, '');
+
+  if (!berita) {
+    const fallbackTitle = 'Berita Tidak Ditemukan - PojokTV';
+    const fallbackDesc = 'Halaman berita yang Anda cari tidak ditemukan di PojokTV.com';
+    const fallbackUrl = slug ? `${siteDomain}/berita/${slug}` : siteDomain;
+    const fallbackImage = `${siteDomain}/logo-pojoktv.png`;
+
+    return {
+      title: fallbackTitle,
+      description: fallbackDesc,
+      openGraph: {
+        title: fallbackTitle,
+        description: fallbackDesc,
+        url: fallbackUrl,
+        images: [
+          {
+            url: fallbackImage,
+            width: 1200,
+            height: 630,
+            alt: fallbackTitle,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: fallbackTitle,
+        description: fallbackDesc,
+        images: [fallbackImage],
+      },
+    };
+  }
+
+  const title = berita.title || 'PojokTV';
+  const plainText = stripHtmlAndEntities(berita.content || berita.isi || '');
+  const description = berita.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
+  const pageUrl = `${siteDomain}/berita/${berita.slug}`;
+  const absoluteImageUrl = getAbsoluteImageUrl(berita.gambar_utama || berita.images || berita.image || berita.gambar);
+
+  return {
+    title: title,
+    description: description,
+    openGraph: {
+      title: title,
+      description: description,
+      url: pageUrl,
+      images: [
+        {
+          url: absoluteImageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
+      images: [absoluteImageUrl],
+    },
+  };
+}
+
+
 export default function DetailBerita({ berita, categories = [], ads = [], latestBerita = [], popularBerita = [], fixImageUrl }) {
   const router = useRouter();
   const { slug } = router.query;
@@ -219,11 +372,15 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
   const plainText = stripHtmlAndEntities(berita?.content || berita?.isi || '');
   const metaDescription = berita?.description || (plainText ? (plainText.length > 152 ? plainText.substring(0, 152).trim() + '...' : plainText) : 'Baca berita selengkapnya di PojokTV.com');
   const keywords = `${berita?.category || ''}, berita ${berita?.category || ''}, ${berita?.title || ''}, PojokTV, berita terkini, berita nasional`;
-  const canonicalUrl = `https://pojoktv.com/berita/${berita?.slug}`;
+  const siteDomain = (process.env.NEXT_PUBLIC_SITE_URL || 'https://pojoktv.com').replace(/\/$/, '');
+  const canonicalUrl = `${siteDomain}/berita/${berita?.slug}`;
   const publishedTime = berita?.created_at ? new Date(berita.created_at).toISOString() : '';
   const modifiedTime = (berita?.updated_at || berita?.created_at) ? new Date(berita.updated_at || berita.created_at).toISOString() : '';
   const authorName = berita?.author || 'Redaksi PojokTV';
   const categorySlug = berita?.category ? berita.category.toLowerCase().replace(/\s+/g, '-') : '';
+
+  // Guaranteed absolute URL (starts with https://) for social media link preview (WhatsApp, Facebook, Twitter)
+  const absoluteOgImage = getAbsoluteImageUrl(fixImageUrl || berita?.gambar_utama || berita?.images || berita?.image);
 
   const newsArticleSchema = {
     "@context": "https://schema.org",
@@ -233,7 +390,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
       "@id": canonicalUrl
     },
     "headline": berita?.title || '',
-    "image": images && images.length > 0 ? images : [fixImageUrl],
+    "image": images && images.length > 0 ? images : [absoluteOgImage],
     "datePublished": publishedTime,
     "dateModified": modifiedTime,
     "author": {
@@ -292,8 +449,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <meta property="og:description" content={metaDescription} />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:site_name" content="PojokTV" />
-        <meta property="og:image" content={fixImageUrl} />
-        <meta property="og:image:secure_url" content={fixImageUrl} />
+        <meta property="og:image" content={absoluteOgImage} />
+        <meta property="og:image:secure_url" content={absoluteOgImage} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:type" content="image/jpeg" />
@@ -308,7 +465,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={berita?.title} />
         <meta name="twitter:description" content={metaDescription} />
-        <meta name="twitter:image" content={fixImageUrl} />
+        <meta name="twitter:image" content={absoluteOgImage} />
         <meta name="twitter:site" content="@PojokTV" />
         <meta name="twitter:creator" content="@PojokTV" />
 
@@ -642,49 +799,10 @@ export async function getStaticProps({ params }) {
     const latestBerita = latestRes.data || [];
     const popularBerita = popularRes.data || [];
 
-    // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp
+    // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp & Media Sosial
     let fixImageUrl = 'https://pojoktv.com/logo-pojoktv.png'; // Fallback aman
     if (mainBerita) {
-      const checkAndFormat = (rawImg) => {
-        if (!rawImg || typeof rawImg !== 'string' || rawImg.trim() === '') return null;
-        if (rawImg.startsWith('http')) return rawImg;
-        
-        let path = rawImg;
-        if (!path.startsWith('/storage/v1/object/public/') && !path.startsWith('storage/v1/object/public/')) {
-          const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-          if (!cleanPath.startsWith('images/')) {
-            path = `/storage/v1/object/public/images/${cleanPath}`;
-          } else {
-            path = `/storage/v1/object/public/${cleanPath}`;
-          }
-        } else {
-          path = path.startsWith('/') ? path : `/${path}`;
-        }
-        
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qhtwymloyulvyctztktd.supabase.co';
-        const cleanSupabaseUrl = supabaseUrl.endsWith('/') ? supabaseUrl.slice(0, -1) : supabaseUrl;
-        return imageKitLoader(`${cleanSupabaseUrl}${path}`);
-      };
-
-      if (mainBerita.gambar_utama && typeof mainBerita.gambar_utama === 'string' && mainBerita.gambar_utama.trim() !== '') {
-        const formatted = checkAndFormat(mainBerita.gambar_utama);
-        if (formatted) fixImageUrl = formatted;
-      } else if (mainBerita.images) {
-        try {
-          const parsedImages = typeof mainBerita.images === 'string' ? JSON.parse(mainBerita.images) : mainBerita.images;
-          if (Array.isArray(parsedImages) && parsedImages.length > 0) {
-            const formatted = checkAndFormat(parsedImages[0]);
-            if (formatted) fixImageUrl = formatted;
-          }
-        } catch (error) {
-          if (typeof mainBerita.images === 'string' && mainBerita.images.trim() !== '') {
-            const formatted = checkAndFormat(mainBerita.images);
-            if (formatted) fixImageUrl = formatted;
-          }
-        }
-      }
-      
-      // Update mainBerita.gambar_utama dengan URL absolut/fallback yang siap digunakan
+      fixImageUrl = getAbsoluteImageUrl(mainBerita.gambar_utama || mainBerita.images || mainBerita.image || mainBerita.gambar);
       mainBerita.gambar_utama = fixImageUrl;
     }
 
