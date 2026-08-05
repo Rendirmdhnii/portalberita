@@ -1,31 +1,14 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { supabase } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export default function KetentuanLayanan() {
+  const title = 'KETENTUAN LAYANAN (TERMS OF SERVICE)';
 
-const cleanStaticContent = (html) => {
-  if (!html) return '';
-  return html
-    .replace(/&shy;/g, '')
-    .replace(/\u00AD/g, '')
-    .replace(/&#173;/g, '')
-    .replace(/&#8203;/g, '')
-    .replace(/\u200B/g, '')
-    .replace(/(\w+)-\s+(\w+)/g, '$1$2')
-    .replace(/\bbreak-all\b/g, 'break-normal')
-    .replace(/\bbreak-words\b/g, 'break-normal')
-    .replace(/word-break:\s*break-all;?/gi, 'word-break: normal;')
-    .replace(/word-break:\s*break-word;?/gi, 'word-break: normal;');
-};
-
-export default function KetentuanLayanan({ content, title }) {
   return (
     <Layout>
       <Head>
-        <title>{title || 'Ketentuan Layanan'} - PojokTV.com</title>
+        <title>{title} - PojokTV.com</title>
         <meta name="description" content="Ketentuan layanan (Terms of Service) penggunaan situs PojokTV.com." />
       </Head>
       <main className="w-full bg-slate-50/50 py-8 sm:py-12 md:py-16">
@@ -47,7 +30,7 @@ export default function KetentuanLayanan({ content, title }) {
                 Informasi Hukum & Layanan
               </span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight text-left">
-                {title || 'KETENTUAN LAYANAN (TERMS OF SERVICE)'}
+                {title}
               </h1>
               <p className="text-xs text-slate-400 mt-3 flex items-center gap-2">
                 <span>PojokTV.com</span>
@@ -56,46 +39,22 @@ export default function KetentuanLayanan({ content, title }) {
               </p>
             </header>
 
-            <div 
-              className="rich-text-content text-gray-700 leading-relaxed mb-5 [&_*]:!break-words [&_*]:!whitespace-normal prose max-w-none text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:text-left"
-              style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
-              dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
-            />
+            <div className="prose max-w-none text-gray-700 space-y-6 [&_*]:!break-words [&_*]:!whitespace-normal leading-relaxed">
+              <p>Selamat datang di portal <strong>PojokTV.com</strong>. Dengan mengunjungi dan membaca situs kami, Anda secara otomatis sepakat untuk tunduk pada seluruh aturan berikut ini:</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Hak Cipta Konten</h3>
+              <p>Semua materi jurnalistik berupa teks berita, foto liputan, video, logo, dan grafis di PojokTV.com dilindungi sah oleh Undang-Undang Hak Cipta. Segala bentuk penyalinan atau penggandaan konten untuk tujuan komersial tanpa izin tertulis dari pihak redaksi merupakan pelanggaran hukum.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Kutipan Berita</h3>
+              <p>Penggunaan artikel PojokTV untuk bahan referensi tugas, penelitian, atau edukasi sangat diperbolehkan. Namun, pengguna diwajibkan mencantumkan tautan atau link aktif yang mengarah langsung ke halaman aslinya di situs PojokTV.com.</p>
+
+              <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Tanggung Jawab Pengguna</h3>
+              <p>Setiap pembaca dilarang keras menulis komentar yang memuat unsur SARA, hoaks, provokasi, atau ujaran kebencian. Tim redaksi PojokTV memegang hak penuh untuk menghapus komentar yang melanggar aturan tanpa perlu memberikan peringatan sebelumnya.</p>
+            </div>
           </div>
 
         </div>
       </main>
     </Layout>
   );
-}
-
-export async function getServerSideProps({ res }) {
-  if (res) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('halaman_statis')
-      .select('judul, konten')
-      .eq('slug', 'ketentuan-layanan')
-      .single();
-
-    if (error) throw error;
-
-    return {
-      props: {
-        content: data?.konten || '',
-        title: data?.judul || 'KETENTUAN LAYANAN (TERMS OF SERVICE)',
-      },
-    };
-  } catch (err) {
-    console.error('Error fetching ketentuan-layanan content:', err);
-    return {
-      props: {
-        content: '',
-        title: 'KETENTUAN LAYANAN (TERMS OF SERVICE)',
-      },
-    };
-  }
 }

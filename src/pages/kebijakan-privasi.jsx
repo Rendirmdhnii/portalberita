@@ -1,31 +1,14 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { supabase } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export default function KebijakanPrivasi() {
+  const title = 'KEBIJAKAN PRIVASI';
 
-const cleanStaticContent = (html) => {
-  if (!html) return '';
-  return html
-    .replace(/&shy;/g, '')
-    .replace(/\u00AD/g, '')
-    .replace(/&#173;/g, '')
-    .replace(/&#8203;/g, '')
-    .replace(/\u200B/g, '')
-    .replace(/(\w+)-\s+(\w+)/g, '$1$2')
-    .replace(/\bbreak-all\b/g, 'break-normal')
-    .replace(/\bbreak-words\b/g, 'break-normal')
-    .replace(/word-break:\s*break-all;?/gi, 'word-break: normal;')
-    .replace(/word-break:\s*break-word;?/gi, 'word-break: normal;');
-};
-
-export default function KebijakanPrivasi({ content, title }) {
   return (
     <Layout>
       <Head>
-        <title>{title || 'Kebijakan Privasi'} - PojokTV.com</title>
+        <title>{title} - PojokTV.com</title>
         <meta name="description" content="Kebijakan privasi PojokTV.com menjelaskan cara kami mengumpulkan, menggunakan, dan melindungi data pribadi pengguna." />
       </Head>
       <main className="w-full bg-slate-50/50 py-8 sm:py-12 md:py-16">
@@ -47,7 +30,7 @@ export default function KebijakanPrivasi({ content, title }) {
                 Informasi Hukum & Privasi
               </span>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight text-left">
-                {title || 'KEBIJAKAN PRIVASI'}
+                {title}
               </h1>
               <p className="text-xs text-slate-400 mt-3 flex items-center gap-2">
                 <span>PojokTV.com</span>
@@ -56,46 +39,19 @@ export default function KebijakanPrivasi({ content, title }) {
               </p>
             </header>
 
-            <div 
-              className="rich-text-content text-gray-700 leading-relaxed mb-5 [&_*]:!break-words [&_*]:!whitespace-normal prose max-w-none text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:text-left"
-              style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
-              dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
-            />
+            <div className="prose max-w-none text-gray-700 space-y-6 [&_*]:!break-words [&_*]:!whitespace-normal leading-relaxed">
+              <p><strong>PojokTV.com</strong> sangat menghargai privasi Anda. Kami berkomitmen penuh menjaga keamanan data pribadi seluruh pengunjung. Halaman ini memuat aturan mengenai cara kami mencatat, memakai, serta melindungi data Anda saat membaca portal berita kami.</p>
+              
+              <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Pengumpulan Data</h3>
+              <p>Sistem kami secara otomatis mencatat info teknis non-pribadi. Contohnya seperti alamat IP, jenis browser, dan rekaman kunjungan. Kami memakai teknologi cookies murni untuk meningkatkan kenyamanan visual (UI/UX) dan menyajikan berita yang relevan.</p>
+              
+              <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">Penggunaan Informasi</h3>
+              <p>Seluruh data yang terkumpul hanya dipakai untuk keperluan internal PojokTV. Mulai dari analisis trafik, optimasi server, hingga perbaikan fitur web. Kami tidak akan pernah menjual atau membagikan data Anda kepada pihak ketiga tanpa izin resmi, kecuali jika diwajibkan oleh hukum dan perundang-undangan di Republik Indonesia.</p>
+            </div>
           </div>
 
         </div>
       </main>
     </Layout>
   );
-}
-
-export async function getServerSideProps({ res }) {
-  if (res) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('halaman_statis')
-      .select('judul, konten')
-      .eq('slug', 'kebijakan-privasi')
-      .single();
-
-    if (error) throw error;
-
-    return {
-      props: {
-        content: data?.konten || '',
-        title: data?.judul || 'KEBIJAKAN PRIVASI',
-      },
-    };
-  } catch (err) {
-    console.error('Error fetching kebijakan-privasi content:', err);
-    return {
-      props: {
-        content: '',
-        title: 'KEBIJAKAN PRIVASI',
-      },
-    };
-  }
 }
