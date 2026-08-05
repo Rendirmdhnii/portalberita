@@ -682,7 +682,7 @@ export default function Home({
   );
 }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   try {
     const [
       { data: catData },
@@ -708,17 +708,19 @@ export async function getServerSideProps() {
         initialSorotan: sorotanData || [],
         initialAds: adsData || [],
         initialVideos: videosData || [],
-      }
+      },
+      revalidate: 60,
     };
   } catch (err) {
-    console.error('Error in getServerSideProps:', err);
+    console.error('Error in getStaticProps:', err);
     return {
       props: {
         initialCategories: [],
         initialBerita: [],
         initialAds: [],
         initialVideos: [],
-      }
+      },
+      revalidate: 60,
     };
   }
 }

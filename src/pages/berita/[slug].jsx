@@ -9,8 +9,6 @@ import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 import { imageKitLoader, transformHtmlImageUrls } from '@/lib/imageKitLoader';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 const stripHtmlAndEntities = (htmlString) => {
   if (!htmlString) return '';
   // Ganti tag HTML dengan spasi agar kata antar paragraf tidak menempel
