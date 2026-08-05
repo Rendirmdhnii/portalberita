@@ -2422,6 +2422,13 @@ button, input {
   color: #1d4ed8;
 }
 
+.rich-text-content, .rich-text-content p, .rich-text-content *, .article-content, .article-content p, .article-content * {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  word-wrap: break-word !important;
+  hyphens: manual !important;
+}
+
 /* Scrollbar Hiding Utilities */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;

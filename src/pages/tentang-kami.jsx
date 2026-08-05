@@ -8,9 +8,14 @@ const cleanStaticContent = (html) => {
   return html
     .replace(/&shy;/g, '')
     .replace(/\u00AD/g, '')
+    .replace(/&#173;/g, '')
+    .replace(/&#8203;/g, '')
+    .replace(/\u200B/g, '')
     .replace(/(\w+)-\s+(\w+)/g, '$1$2')
-    .replace(/\bbreak-all\b/g, 'break-words')
-    .replace(/word-break:\s*break-all;?/gi, 'word-break: break-words;');
+    .replace(/\bbreak-all\b/g, 'break-normal')
+    .replace(/\bbreak-words\b/g, 'break-normal')
+    .replace(/word-break:\s*break-all;?/gi, 'word-break: normal;')
+    .replace(/word-break:\s*break-word;?/gi, 'word-break: normal;');
 };
 
 export default function TentangKami({ content, title }) {

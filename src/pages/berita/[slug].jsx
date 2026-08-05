@@ -579,7 +579,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                   {/* ===== ISI ARTIKEL ===== */}
                   <div 
-                    className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                    className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left break-normal whitespace-normal [&>p]:mb-5 [&>p]:break-normal [&>p]:whitespace-normal [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                    style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
                     dangerouslySetInnerHTML={{ __html: firstHalf }} 
                   />
 
@@ -592,7 +593,8 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                   {secondHalf && (
                     <div 
-                      className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left whitespace-pre-wrap break-words [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                      className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left break-normal whitespace-normal [&>p]:mb-5 [&>p]:break-normal [&>p]:whitespace-normal [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                      style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
                       dangerouslySetInnerHTML={{ __html: secondHalf }} 
                     />
                   )}

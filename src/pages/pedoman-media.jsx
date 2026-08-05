@@ -8,9 +8,14 @@ const cleanStaticContent = (html) => {
   return html
     .replace(/&shy;/g, '')
     .replace(/\u00AD/g, '')
+    .replace(/&#173;/g, '')
+    .replace(/&#8203;/g, '')
+    .replace(/\u200B/g, '')
     .replace(/(\w+)-\s+(\w+)/g, '$1$2')
-    .replace(/\bbreak-all\b/g, 'break-words')
-    .replace(/word-break:\s*break-all;?/gi, 'word-break: break-words;');
+    .replace(/\bbreak-all\b/g, 'break-normal')
+    .replace(/\bbreak-words\b/g, 'break-normal')
+    .replace(/word-break:\s*break-all;?/gi, 'word-break: normal;')
+    .replace(/word-break:\s*break-word;?/gi, 'word-break: normal;');
 };
 
 export default function PedomanMedia({ content, title }) {
@@ -49,7 +54,8 @@ export default function PedomanMedia({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content text-gray-700 leading-relaxed mb-5 break-words whitespace-normal text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:break-words [&_p]:whitespace-normal [&_p]:text-left"
+              className="rich-text-content text-gray-700 leading-relaxed mb-5 break-normal whitespace-normal text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:break-normal [&_p]:whitespace-normal [&_p]:text-left"
+              style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
               dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
             />
           </div>
