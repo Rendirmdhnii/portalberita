@@ -195,8 +195,8 @@ export default function TentangKami({ content, title }) {
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-150">
-                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1">Status Dewan Pers</span>
-                  <span className="text-sm font-bold text-amber-700 block">Dalam Proses</span>
+                  <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider block mb-1">Legalitas Pers</span>
+                  <span className="text-sm font-bold text-slate-900 block">Mengacu pada UU Pers No. 40 Tahun 1999</span>
                 </div>
 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-150">
