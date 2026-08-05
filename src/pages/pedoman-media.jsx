@@ -3,6 +3,9 @@ import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const cleanStaticContent = (html) => {
   if (!html) return '';
   return html
@@ -54,7 +57,7 @@ export default function PedomanMedia({ content, title }) {
             </header>
 
             <div 
-              className="rich-text-content text-gray-700 leading-relaxed mb-5 break-normal whitespace-normal text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:break-normal [&_p]:whitespace-normal [&_p]:text-left"
+              className="rich-text-content text-gray-700 leading-relaxed mb-5 [&_*]:!break-words [&_*]:!whitespace-normal prose max-w-none text-left [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-5 [&_p]:text-left"
               style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
               dangerouslySetInnerHTML={{ __html: cleanStaticContent(content) }}
             />
@@ -66,7 +69,11 @@ export default function PedomanMedia({ content, title }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ res }) {
+  if (res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  }
+
   try {
     const { data, error } = await supabase
       .from('halaman_statis')

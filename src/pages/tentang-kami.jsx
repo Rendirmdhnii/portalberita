@@ -3,6 +3,9 @@ import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const cleanStaticContent = (html) => {
   if (!html) return '';
   return html
@@ -302,7 +305,10 @@ export default function TentangKami({ content, title }) {
   );
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ res }) {
+  if (res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  }
   try {
     const { data } = await supabase
       .from('halaman_statis')

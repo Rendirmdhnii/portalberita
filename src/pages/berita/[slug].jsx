@@ -8,6 +8,9 @@ import NewsGallery from '@/components/NewsGallery';
 import Layout from '@/components/Layout';
 import { supabase } from '@/lib/supabase';
 import { imageKitLoader, transformHtmlImageUrls } from '@/lib/imageKitLoader';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 const stripHtmlAndEntities = (htmlString) => {
   if (!htmlString) return '';
   // Ganti tag HTML dengan spasi agar kata antar paragraf tidak menempel
@@ -579,7 +582,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                   {/* ===== ISI ARTIKEL ===== */}
                   <div 
-                    className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left break-normal whitespace-normal [&>p]:mb-5 [&>p]:break-normal [&>p]:whitespace-normal [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                    className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left [&_*]:!break-words [&_*]:!whitespace-normal prose max-w-none [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
                     style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
                     dangerouslySetInnerHTML={{ __html: firstHalf }} 
                   />
@@ -593,7 +596,7 @@ export default function DetailBerita({ berita, categories = [], ads = [], latest
 
                   {secondHalf && (
                     <div 
-                      className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left break-normal whitespace-normal [&>p]:mb-5 [&>p]:break-normal [&>p]:whitespace-normal [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
+                      className="w-full text-base md:text-lg leading-relaxed text-gray-800 text-left [&_*]:!break-words [&_*]:!whitespace-normal prose max-w-none [&>p]:mb-5 [&>h1]:mb-4 [&>h2]:mb-4 [&>h3]:mb-3 [&>ul]:mb-5 [&>ul]:ml-5 [&>ul]:list-disc [&>ol]:mb-5 [&>ol]:ml-5 [&>ol]:list-decimal"
                       style={{ wordBreak: 'normal', overflowWrap: 'break-word', wordWrap: 'break-word' }}
                       dangerouslySetInnerHTML={{ __html: secondHalf }} 
                     />
