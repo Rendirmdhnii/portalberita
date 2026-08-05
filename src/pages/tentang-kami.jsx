@@ -240,7 +240,7 @@ export default function TentangKami({ content, title }) {
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 mb-2 border-b border-slate-100 pb-3">Kantor Redaksi & Operasional</h3>
                   <p className="text-slate-700 text-sm leading-relaxed mb-4 font-normal">
-                    Perum Citra Pesona Buduran Blok E3 No. 25, RT. 037 RW. 007, Desa/Kelurahan Sidokepung, Kec. Buduran, Kab. Sidoarjo, Provinsi Jawa Timur 61252.
+                    Kawasan Citra Pesona Blok E3 No. 25, Sidokepung, Buduran, Sidoarjo, Jawa Timur 61252.
                   </p>
                 </div>
                 <div className="pt-4 border-t border-slate-100 text-xs text-slate-400 font-medium">

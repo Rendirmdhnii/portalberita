@@ -55,7 +55,7 @@ export default function Footer({ categories = [] }) {
               </div>
               <div className="flex items-start gap-2">
                 <i className="fa-solid fa-location-dot text-gray-400 mt-1 shrink-0"></i>
-                <span>Perum Citra Pesona Buduran Blok E3 No. 25, RT. 037 RW. 007, Desa/Kelurahan Sidokepung, Kec. Buduran, Kab. Sidoarjo, Provinsi Jawa Timur 61252</span>
+                <span>Kawasan Citra Pesona Blok E3 No. 25, Sidokepung, Buduran, Sidoarjo, Jawa Timur 61252</span>
               </div>
               <div className="flex items-start gap-2">
                 <i className="fa-brands fa-whatsapp text-gray-400 mt-1 shrink-0"></i>
