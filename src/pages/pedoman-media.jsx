@@ -5,7 +5,12 @@ import { supabase } from '@/lib/supabase';
 
 const cleanStaticContent = (html) => {
   if (!html) return '';
-  return html.replace(/&shy;/g, '').replace(/\u00AD/g, '');
+  return html
+    .replace(/&shy;/g, '')
+    .replace(/\u00AD/g, '')
+    .replace(/(\w+)-\s+(\w+)/g, '$1$2')
+    .replace(/\bbreak-all\b/g, 'break-words')
+    .replace(/word-break:\s*break-all;?/gi, 'word-break: break-words;');
 };
 
 export default function PedomanMedia({ content, title }) {
