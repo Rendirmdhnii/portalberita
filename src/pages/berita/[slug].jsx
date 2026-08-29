@@ -817,6 +817,9 @@ export async function getStaticProps({ params }) {
 
     // Incremented client-side via api/increment-view
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     // Parallelisasi 4 query independen — 4x lebih cepat dari sequential await
     const [categoriesRes, adsRes, latestRes, popularRes] = await Promise.all([
       supabase
@@ -836,8 +839,9 @@ export async function getStaticProps({ params }) {
         .limit(5),
       supabase
         .from('berita')
-        .select('id, title, slug, views, category')
+        .select('id, title, slug, views, category, created_at')
         .eq('status', 'Published')
+        .gte('created_at', sevenDaysAgo.toISOString())
         .order('views', { ascending: false })
         .limit(5),
     ]);
@@ -845,7 +849,17 @@ export async function getStaticProps({ params }) {
     const categories = categoriesRes.data || [];
     const ads = adsRes.data || [];
     const latestBerita = latestRes.data || [];
-    const popularBerita = popularRes.data || [];
+    let popularBerita = popularRes.data || [];
+
+    if (popularBerita.length === 0) {
+      const { data: fallbackPopular } = await supabase
+        .from('berita')
+        .select('id, title, slug, views, category, created_at')
+        .eq('status', 'Published')
+        .order('views', { ascending: false })
+        .limit(5);
+      popularBerita = fallbackPopular || [];
+    }
 
     // Logika mengekstrak gambar absolut untuk Open Graph share WhatsApp & Media Sosial
     let fixImageUrl = 'https://pojoktv.com/logo-pojoktv.png'; // Fallback aman
