@@ -59,6 +59,7 @@ export default function Home({
   initialBerita = [],
   initialHeadlines = [],
   initialSorotan = [],
+  initialPopular = [],
   initialAds = [],
   initialVideos = []
 }) {
@@ -75,6 +76,7 @@ export default function Home({
   const [berita, setBerita] = useState(initialBerita);
   const [headlines, setHeadlines] = useState(initialHeadlines);
   const [sorotan, setSorotan] = useState(initialSorotan);
+  const [popular, setPopular] = useState(initialPopular);
   const [ads, setAds] = useState(initialAds);
   const [videos, setVideos] = useState(initialVideos);
   const [loading, setLoading] = useState(initialBerita.length === 0);
@@ -132,18 +134,23 @@ export default function Home({
   const fetchData = async () => {
     try {
       setLoading(true);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       const [
         { data: catData },
         { data: beritaData },
         { data: headlineData },
         { data: sorotanData },
+        { data: popularData },
         { data: adsData },
         { data: videosData }
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }).limit(20),
+        supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(15),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(10),
+        supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(4),
+        supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
@@ -152,6 +159,7 @@ export default function Home({
       setBerita(beritaData || []);
       setHeadlines(headlineData || []);
       setSorotan(sorotanData || []);
+      setPopular(popularData || []);
       setAds(adsData || []);
       setVideos(videosData || []);
     } catch (err) {
@@ -263,11 +271,12 @@ export default function Home({
 
   // Bucketed lists processed above to prevent TDZ
 
-  // Sorted by views (combining all news categories)
+  // Sorted by views (combining all news categories, with priority to 7-day trending query)
   const popularNews = useMemo(() => {
+    if (popular && popular.length > 0) return popular;
     const allNews = [...(headlines || []), ...(sorotan || []), ...(berita || [])];
     return allNews.sort((a, b) => (b.views || 0) - (a.views || 0));
-  }, [headlines, sorotan, berita]);
+  }, [popular, headlines, sorotan, berita]);
 
   return (
     <Layout>
@@ -422,8 +431,8 @@ export default function Home({
               </div>
 
               <div className="flex flex-col gap-4">
-                {feedBerita && feedBerita.slice(0, 9).length > 0 ? (
-                  feedBerita.slice(0, 9).map((post) => (
+                {feedBerita && feedBerita.length > 0 ? (
+                  feedBerita.map((post) => (
                     <article key={post.id} className="latest-item bg-white rounded-xl overflow-hidden shadow-sm border border-gray-150 p-4 flex flex-col sm:flex-row gap-4 hover:shadow-md transition duration-200">
                       <div className="latest-img-wrapper w-full h-48 sm:w-36 sm:h-24 shrink-0 relative rounded-lg overflow-hidden">
                         {getThumbnail(post) ? (
@@ -684,18 +693,23 @@ export default function Home({
 
 export async function getStaticProps() {
   try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
     const [
       { data: catData },
       { data: beritaData },
       { data: headlineData },
       { data: sorotanData },
+      { data: popularData },
       { data: adsData },
       { data: videosData }
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'berita_terbaru').order('created_at', { ascending: false }).limit(20),
+      supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(15),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'sorotan').order('created_at', { ascending: false }).limit(10),
+      supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(4),
+      supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);
@@ -706,6 +720,7 @@ export async function getStaticProps() {
         initialBerita: beritaData || [],
         initialHeadlines: headlineData || [],
         initialSorotan: sorotanData || [],
+        initialPopular: popularData || [],
         initialAds: adsData || [],
         initialVideos: videosData || [],
       },
@@ -717,6 +732,9 @@ export async function getStaticProps() {
       props: {
         initialCategories: [],
         initialBerita: [],
+        initialHeadlines: [],
+        initialSorotan: [],
+        initialPopular: [],
         initialAds: [],
         initialVideos: [],
       },
