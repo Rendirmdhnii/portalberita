@@ -149,16 +149,29 @@ export default function Home({
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
         supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(15),
         supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-        supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(4),
+        supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(10),
         supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
 
+      const headlines = headlineData || [];
+      const sorotan = sorotanData || [];
+      const beritaTerbaru = beritaData || [];
+
+      const usedIds = [
+        ...headlines.map((item) => item.id),
+        ...sorotan.map((item) => item.id)
+      ].filter(Boolean);
+
+      const filteredBeritaTerbaru = beritaTerbaru.filter(
+        (berita) => !usedIds.includes(berita.id)
+      );
+
       setCategories(catData || []);
-      setBerita(beritaData || []);
-      setHeadlines(headlineData || []);
-      setSorotan(sorotanData || []);
+      setBerita(filteredBeritaTerbaru);
+      setHeadlines(headlines);
+      setSorotan(sorotan);
       setPopular(popularData || []);
       setAds(adsData || []);
       setVideos(videosData || []);
@@ -708,18 +721,31 @@ export async function getStaticProps() {
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
       supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(15),
       supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
-      supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(4),
+      supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(10),
       supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);
 
+    const headlines = headlineData || [];
+    const sorotan = sorotanData || [];
+    const beritaTerbaru = beritaData || [];
+
+    const usedIds = [
+      ...headlines.map((item) => item.id),
+      ...sorotan.map((item) => item.id)
+    ].filter(Boolean);
+
+    const filteredBeritaTerbaru = beritaTerbaru.filter(
+      (berita) => !usedIds.includes(berita.id)
+    );
+
     return {
       props: {
         initialCategories: catData || [],
-        initialBerita: beritaData || [],
-        initialHeadlines: headlineData || [],
-        initialSorotan: sorotanData || [],
+        initialBerita: filteredBeritaTerbaru,
+        initialHeadlines: headlines,
+        initialSorotan: sorotan,
         initialPopular: popularData || [],
         initialAds: adsData || [],
         initialVideos: videosData || [],
