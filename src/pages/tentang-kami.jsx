@@ -152,6 +152,10 @@ export default function TentangKami({ content, title }) {
                         <span className="font-bold text-slate-900 block text-xs">Anto</span>
                         <span className="text-[10px] text-slate-500 font-medium">Liputan Surabaya</span>
                       </li>
+                      <li className="bg-slate-50 p-2.5 rounded-lg border border-slate-150">
+                        <span className="font-bold text-slate-900 block text-xs">Iwan Said</span>
+                        <span className="text-[10px] text-slate-500 font-medium">Liputan Malang</span>
+                      </li>
                     </ul>
                   </div>
                 </div>
