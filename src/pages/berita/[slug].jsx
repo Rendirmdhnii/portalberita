@@ -877,7 +877,7 @@ export async function getStaticProps({ params }) {
         popularBerita,
         fixImageUrl,
       },
-      revalidate: 60,
+      revalidate: 3600,
     };
   } catch (err) {
     console.error('Error in getStaticProps:', err);
@@ -890,7 +890,7 @@ export async function getStaticProps({ params }) {
         popularBerita: [],
         fixImageUrl: 'https://pojoktv.com/logo-pojoktv.png',
       },
-      revalidate: 60,
+      revalidate: 3600,
     };
   }
 }

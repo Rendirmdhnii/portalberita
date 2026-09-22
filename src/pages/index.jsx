@@ -750,7 +750,7 @@ export async function getStaticProps() {
         initialAds: adsData || [],
         initialVideos: videosData || [],
       },
-      revalidate: 60,
+      revalidate: 3600,
     };
   } catch (err) {
     console.error('Error in getStaticProps:', err);
@@ -764,7 +764,7 @@ export async function getStaticProps() {
         initialAds: [],
         initialVideos: [],
       },
-      revalidate: 60,
+      revalidate: 3600,
     };
   }
 }
