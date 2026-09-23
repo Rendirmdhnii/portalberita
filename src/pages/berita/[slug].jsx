@@ -91,11 +91,13 @@ export function getAbsoluteImageUrl(rawImg, options = {}) {
     formatted = `https://pojoktv.com/${formatted}`;
   }
 
-  // Force JPG format, dimension w-800, h-418, q-80 for OG social previews (WhatsApp Android compatibility)
-  if (isOg && formatted.includes('ik.imagekit.io')) {
+  // Pastikan URL ImageKit dibersihkan dan dialihkan langsung ke Supabase
+  if (formatted.includes('ik.imagekit.io')) {
     formatted = formatted.replace(/[?&]tr=[^&]*/g, '');
-    const joiner = formatted.includes('?') ? '&' : '?';
-    formatted = `${formatted}${joiner}tr=f-${format},w-${width},h-${height},q-${quality}`;
+    formatted = formatted.replace(
+      /https:\/\/ik\.imagekit\.io\/pojoktv\/(images\/)?/gi,
+      'https://qhtwymloyulvyctztktd.supabase.co/storage/v1/object/public/images/'
+    );
   }
 
   return formatted;

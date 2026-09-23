@@ -6,8 +6,8 @@ export default function Document() {
       <Head>
         <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-        <link rel="preconnect" href="https://ik.imagekit.io" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://ik.imagekit.io" />
+        <link rel="preconnect" href="https://qhtwymloyulvyctztktd.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://qhtwymloyulvyctztktd.supabase.co" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0f172a" />

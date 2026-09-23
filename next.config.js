@@ -2,7 +2,27 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    domains: [
+      'qhtwymioyulvyctztktd.supabase.co',
+      'qhtwymloyulvyctztktd.supabase.co',
+      'pojoktv.com',
+    ],
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'qhtwymioyulvyctztktd.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'qhtwymloyulvyctztktd.supabase.co',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co',
+        pathname: '/**',
+      },
       {
         protocol: 'https',
         hostname: '**',
