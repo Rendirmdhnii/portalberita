@@ -130,6 +130,17 @@ export default function Home({
   }, []);
 
 
+  // Sinkronisasi state ketika props dari getServerSideProps diperbarui
+  useEffect(() => {
+    setCategories(initialCategories);
+    setBerita(initialBerita);
+    setHeadlines(initialHeadlines);
+    setSorotan(initialSorotan);
+    setPopular(initialPopular);
+    setAds(initialAds);
+    setVideos(initialVideos);
+  }, [initialCategories, initialBerita, initialHeadlines, initialSorotan, initialPopular, initialAds, initialVideos]);
+
   // Fetch data on load
   const fetchData = async () => {
     try {
@@ -148,16 +159,21 @@ export default function Home({
       ] = await Promise.all([
         supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
         supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(30),
-        supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
+        supabase.from('berita').select('*').eq('status', 'Published').or('posisi.ilike.%headline%,posisi_tampilan.ilike.%headline%,is_headline.eq.true').order('created_at', { ascending: false }).limit(5),
         supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(10),
         supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
         supabase.from('ads').select('*').eq('is_active', true),
         supabase.from('videos').select('*').order('id', { ascending: false })
       ]);
 
-      const headlines = headlineData || [];
+      let headlines = headlineData || [];
       const sorotan = sorotanData || [];
       const beritaTerbaru = beritaData || [];
+
+      // Fallback jika belum ada artikel headline yang diset khusus
+      if (headlines.length === 0 && beritaTerbaru.length > 0) {
+        headlines = beritaTerbaru.slice(0, 3);
+      }
 
       const usedIds = [
         ...headlines.map((item) => item.id),
@@ -704,7 +720,12 @@ export default function Home({
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps({ res }) {
+  if (res) {
+    // Cache pendek 10 detik di CDN/Browser, revalidasi otomatis agar admin redaksi langsung melihat update headline
+    res.setHeader('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=59');
+  }
+
   try {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -720,16 +741,21 @@ export async function getStaticProps() {
     ] = await Promise.all([
       supabase.from('categories').select('*').eq('status', 'Aktif').order('sort_order', { ascending: true }),
       supabase.from('berita').select('*').eq('status', 'Published').order('created_at', { ascending: false }).limit(30),
-      supabase.from('berita').select('*').eq('status', 'Published').eq('posisi', 'headline').order('created_at', { ascending: false }).limit(5),
+      supabase.from('berita').select('*').eq('status', 'Published').or('posisi.ilike.%headline%,posisi_tampilan.ilike.%headline%,is_headline.eq.true').order('created_at', { ascending: false }).limit(5),
       supabase.from('berita').select('*').eq('status', 'Published').in('category', ['Pemerintahan', 'Hukum', 'Pendidikan', 'Peristiwa']).order('created_at', { ascending: false }).limit(10),
       supabase.from('berita').select('*').eq('status', 'Published').gte('created_at', sevenDaysAgo.toISOString()).order('views', { ascending: false }).limit(5),
       supabase.from('ads').select('*').eq('is_active', true),
       supabase.from('videos').select('*').order('id', { ascending: false })
     ]);
 
-    const headlines = headlineData || [];
+    let headlines = headlineData || [];
     const sorotan = sorotanData || [];
     const beritaTerbaru = beritaData || [];
+
+    // Fallback jika belum ada artikel headline yang diset khusus
+    if (headlines.length === 0 && beritaTerbaru.length > 0) {
+      headlines = beritaTerbaru.slice(0, 3);
+    }
 
     const usedIds = [
       ...headlines.map((item) => item.id),
@@ -750,10 +776,9 @@ export async function getStaticProps() {
         initialAds: adsData || [],
         initialVideos: videosData || [],
       },
-      revalidate: 3600,
     };
   } catch (err) {
-    console.error('Error in getStaticProps:', err);
+    console.error('Error in getServerSideProps:', err);
     return {
       props: {
         initialCategories: [],
@@ -764,7 +789,6 @@ export async function getStaticProps() {
         initialAds: [],
         initialVideos: [],
       },
-      revalidate: 3600,
     };
   }
 }
